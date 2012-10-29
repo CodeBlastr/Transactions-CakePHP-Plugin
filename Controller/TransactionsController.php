@@ -1,39 +1,164 @@
 <?php
-
 App::uses('TransactionsAppController', 'Transactions.Controller');
-
 /**
  * Transactions Controller
  *
- * All transactions should be pushed through this controller. It
- * is the catch all, and handles transaction types.
- *
- * PHP versions 5
- *
- * Zuha(tm) : Business Management Applications (http://zuha.com)
- * Copyright 2009-2012, Zuha Foundation Inc. (http://zuha.org)
- *
- * Licensed under GPL v3 License
- * Must retain the above copyright notice and release modifications publicly.
- *
- * @copyright     Copyright 2009-2012, Zuha Foundation Inc. (http://zuha.com)
- * @link          http://zuha.com Zuha(tm) Project
- * @package       zuha
- * @subpackage    zuha.app.plugins.transactions.controllers
- * @since         Zuha(tm) v 0.0.1
- * @license       GPL v3 License (http://www.gnu.org/licenses/gpl.html) and Future Versions
- * @todo	  Extend this controller by leaps and bounds to handle many transaction types and scenarios.
+ * @property Transaction $Transaction
  */
 class TransactionsController extends TransactionsAppController {
 
+	public $name = 'Transactions';
+	
+	public $uses = array('Transactions.Transaction');
+	
+	public $components = array('Ssl', 'Transactions.Payments');
+	
+/**
+ * checkout method
+ * processes the order and payment
+ *
+ * @return void
+ */
+	public function checkout() {
+	    if($this->request->data) {
+		// get their official Transaction
+		$officalTransaction = $this->Transaction->finalizeTransaction($this->Session->read('Auth.User.id'), $this->request->data);
 
-    public  $name = 'Transactions';
-	    //$components = array('Ssl', 'Orders.Payments' /* , 'Shipping.Fedex' */),
+		// process the payment
+		$response = $this->Payments->pay($officalTransaction);
+		if ($response['response_code'] != 1) {
+		    // Transaction failed
+		    // save the billing and shipping details anyway
+		    $this->Transaction->TransactionPayment->save($officalTransaction);
+		    $this->Transaction->TransactionShipment->save($officalTransaction);
+		    $this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
+		    $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
+		}
 
+		// if error with payment, return them to /myCart
 
+		// else redirect them to success page
 
-    public function __construct($request = null, $response = null) {
-        parent::__construct($request, $response);
-    }
-    
+	    } else {
+		$this->Session->setFlash('Invalid transaction.');
+		$this->redirect($this->referer());
+	    }
+	}
+	
+/**
+ * index method
+ *
+ * @return void
+ */
+	public function index() {
+		$this->Transaction->recursive = 0;
+		$this->set('transactions', $this->paginate());
+	}
+
+/**
+ * view method
+ *
+ * @param string $id
+ * @return void
+ */
+	public function view($id = null) {
+		$this->Transaction->id = $id;
+		if (!$this->Transaction->exists()) {
+			throw new NotFoundException(__('Invalid transaction'));
+		}
+		$this->set('transaction', $this->Transaction->read(null, $id));
+	}
+	public function myCart() {
+	    	// ensure that SSL is on if it's supposed to be
+		if (defined('__ORDERS_SSL') && !strpos($_SERVER['HTTP_HOST'], 'localhost')) : $this->Ssl->force(); endif;
+		
+		// get their cart and process it
+		$myCart = $this->Transaction->processCart($this->Session->read('Auth.User.id'));
+		
+		if (!$myCart) {
+			throw new NotFoundException(__('Invalid transaction'));
+		}
+		
+		// gather checkout options like shipping, payments, etc
+		$options = $this->Transaction->gatherCheckoutOptions();
+		
+		// display their cart
+		$this->set(compact('myCart', 'options'));
+	}
+
+/**
+ * add method
+ *
+ * @return void
+ */
+	public function add() {
+		if ($this->request->is('post')) {
+			$this->Transaction->create();
+			if ($this->Transaction->save($this->request->data)) {
+				$this->Session->setFlash(__('The transaction has been saved'));
+				$this->redirect(array('action' => 'index'));
+			} else {
+				$this->Session->setFlash(__('The transaction could not be saved. Please, try again.'));
+			}
+		}
+		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
+		$transactionShipments = $this->Transaction->TransactionShipment->find('list');
+		$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
+		$customers = $this->Transaction->Customer->find('list');
+		$contacts = $this->Transaction->Contact->find('list');
+		$assignees = $this->Transaction->Assignee->find('list');
+		$this->set(compact('transactionPayments', 'transactionShipments', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
+	}
+
+/**
+ * edit method
+ *
+ * @param string $id
+ * @return void
+ */
+	public function edit($id = null) {
+		$this->Transaction->id = $id;
+		if (!$this->Transaction->exists()) {
+			throw new NotFoundException(__('Invalid transaction'));
+		}
+		if ( ($this->request->is('post') || $this->request->is('put')) && !empty($this->request->data)) {
+			if ($this->Transaction->save($this->request->data)) {
+				$this->Session->setFlash(__('The transaction has been saved'));
+				$this->redirect(array('action' => 'index'));
+			} else {
+				$this->Session->setFlash(__('The transaction could not be saved. Please, try again.'));
+			}
+		} else {
+			$this->request->data = $this->Transaction->read(null, $id);
+		}
+		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
+		$transactionShipments = $this->Transaction->TransactionShipment->find('list');
+		$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
+		$customers = $this->Transaction->Customer->find('list');
+		$contacts = $this->Transaction->Contact->find('list');
+		$assignees = $this->Transaction->Assignee->find('list');
+		$this->set(compact('transactionPayments', 'transactionShipments', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
+	}
+
+/**
+ * delete method
+ *
+ * @param string $id
+ * @return void
+ */
+	public function delete($id = null) {
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+		$this->Transaction->id = $id;
+		if (!$this->Transaction->exists()) {
+			throw new NotFoundException(__('Invalid transaction'));
+		}
+		if ($this->Transaction->delete()) {
+			$this->Session->setFlash(__('Transaction deleted'));
+			$this->redirect(array('action' => 'index'));
+		}
+		$this->Session->setFlash(__('Transaction was not deleted'));
+		$this->redirect(array('action' => 'index'));
+	}
 }
