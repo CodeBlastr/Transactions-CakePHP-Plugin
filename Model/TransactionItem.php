@@ -88,18 +88,20 @@ class TransactionItem extends TransactionsAppModel {
 
 
     /**
-     * Creates a new cart or returns the id of the existing cart for a user, based on their session's User.id
+     * Creates a new cart or returns the id of the existing cart for a user, based on their user id
+	 * 
+	 * @param integer $userId The UUID of a current or future User, who is currently using a Transaction cart.
      * @return string Id of the cart in question
      */
-    public function setCartId() {
+    public function setCartId($userId) {
 	// an item was added, check for a shopping cart.
 	$myCart = $this->Transaction->find('first', array(
-	    'customer_id' => CakeSession::read('Auth.User.id')
+	    'customer_id' => $userId
 		));
 	if (!$myCart) {
 	    // no cart found. give them a new shopping cart.
 	    $this->Transaction->create(array(
-		'customer_id' => CakeSession::read('Auth.User.id')
+		'customer_id' => $userId
 	    ));
 	    $this->Transaction->save();
 	} else {
@@ -134,7 +136,7 @@ class TransactionItem extends TransactionsAppModel {
 		array(
 		    'TransactionItem' => array(
 			'transaction_id' => $this->Transaction->id,
-			'customer_id' => CakeSession::read('Auth.User.id')
+			'customer_id' => $this->Transaction->getCustomersId()
 		    )
 		)
 	);

@@ -10,6 +10,14 @@ class TransactionItemsController extends TransactionsAppController {
 	public	$name = 'TransactionItems';
 	public	$uses = array('Transactions.TransactionItem');
 
+	
+	/**
+	 * 
+	 */
+	public function beforeFilter() {
+		parent::beforeFilter();
+	}
+	
 
 /**
  * index method
@@ -42,9 +50,11 @@ class TransactionItemsController extends TransactionsAppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
+			// determine the user's "ID"
+			$userId = $this->TransactionItem->Transaction->getCustomersId();
 		    
 			// set a transaction id (cart id) for this user
-			$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId();
+			$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId($userId);
 			
 			/** @todo check stock and cart max **/
 			$isAddable = $this->TransactionItem->verifyItemRequest($this->request->data);

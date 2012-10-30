@@ -130,13 +130,13 @@ class Transaction extends TransactionsAppModel {
 	    $options['paymentMode'] = defined('__ORDERS_DEFAULT_PAYMENT') ? __ORDERS_DEFAULT_PAYMENT : null;
 	    $options['paymentOptions'] = defined('__ORDERS_ENABLE_PAYMENT_OPTIONS') ? unserialize(__ORDERS_ENABLE_PAYMENT_OPTIONS) : null;
 
-	    if (defined('__ORDERS_ENABLE_SINGLE_PAYMENT_TYPE')) :
-		$options['singlePaymentKeys'] = $this->Session->read('OrderPaymentType');
-		if (!empty($options['singlePaymentKeys'])) :
-		    $options['singlePaymentKeys'] = array_flip($options['singlePaymentKeys']);
-		    $options['paymentOptions'] = array_intersect_key($options['paymentOptions'], $options['singlePaymentKeys']);
-		endif;
-	    endif;
+	    if (defined('__ORDERS_ENABLE_SINGLE_PAYMENT_TYPE')) {
+		  $options['singlePaymentKeys'] = $this->Session->read('OrderPaymentType');
+		  if (!empty($options['singlePaymentKeys'])) {
+			  $options['singlePaymentKeys'] = array_flip($options['singlePaymentKeys']);
+			  $options['paymentOptions'] = array_intersect_key($options['paymentOptions'], $options['singlePaymentKeys']);
+		  }
+		}
 
 	    $options['defaultShippingCharge'] = defined('__ORDERS_FLAT_SHIPPING_RATE') ? __ORDERS_FLAT_SHIPPING_RATE : 0;
 	    
@@ -145,8 +145,29 @@ class Transaction extends TransactionsAppModel {
 	
 	
 	/**
+	 * This function returns the UUID to use for a User by first checking the Auth Session, then by checking for a Transaction Guest session,
+	 * and finally, creating a Transaction Guest session if necessary.
+	 *  
+	 * @return string The UUID of the User
+	 */
+	public function getCustomersId() {
+	  $authUserId = CakeSession::read('Auth.User.id');
+	  $transactionGuestId = CakeSession::read('Transaction._guestId');
+	  if ($authUserId) {
+		$userId = $authUserId;
+	  } elseif($transactionGuestId) {
+		$userId = $transactionGuestId;
+	  } else {
+		$userId = String::uuid();
+		CakeSession::write('Transaction._guestId', $userId);
+	  }
+	  return $userId;
+	}
+
+
+	/**
 	 * We could do all sorts of processing in here
-	 * @param integer $userId
+	 * @param string $userId
 	 * @return boolean|array
 	 */
 	public function processCart($userId) {
@@ -162,13 +183,13 @@ class Transaction extends TransactionsAppModel {
 		));
 	    
 	    if(!$theCart) {
-		return FALSE;
+		  return FALSE;
 	    }
 	    
 	    // figure out the subTotal
 	    $subTotal = 0;
 	    foreach($theCart['TransactionItem'] as $txnItem) {
-		$subTotal += $txnItem['price'] * $txnItem['quantity'];
+		  $subTotal += $txnItem['price'] * $txnItem['quantity'];
 	    }
 	    
 	    $theCart['Transaction']['order_charge'] = $subTotal;

@@ -13,6 +13,15 @@ class TransactionsController extends TransactionsAppController {
 	
 	public $components = array('Ssl', 'Transactions.Payments');
 	
+	
+	/**
+	 * 
+	 */
+	public function beforeFilter() {
+		parent::beforeFilter();
+	}
+	
+	
 /**
  * checkout method
  * processes the order and payment
@@ -21,27 +30,27 @@ class TransactionsController extends TransactionsAppController {
  */
 	public function checkout() {
 	    if($this->request->data) {
-		// get their official Transaction
-		$officalTransaction = $this->Transaction->finalizeTransaction($this->Session->read('Auth.User.id'), $this->request->data);
+		  // get their official Transaction
+		  $officalTransaction = $this->Transaction->finalizeTransaction($this->Transaction->getCustomersId(), $this->request->data);
 
-		// process the payment
-		$response = $this->Payments->pay($officalTransaction);
-		if ($response['response_code'] != 1) {
-		    // Transaction failed
-		    // save the billing and shipping details anyway
-		    $this->Transaction->TransactionPayment->save($officalTransaction);
-		    $this->Transaction->TransactionShipment->save($officalTransaction);
-		    $this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
-		    $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
-		}
-
-		// if error with payment, return them to /myCart
-
-		// else redirect them to success page
+		  // process the payment
+		  $response = $this->Payments->pay($officalTransaction);
+		  // if error with payment, return them to /myCart
+		  if ($response['response_code'] != 1) {
+			  // Transaction failed
+			  // save the billing and shipping details anyway
+			  $this->Transaction->TransactionPayment->save($officalTransaction);
+			  $this->Transaction->TransactionShipment->save($officalTransaction);
+			  $this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
+			  $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
+		  } else {
+			// else redirect them to success page
+			$this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
+		  }
 
 	    } else {
-		$this->Session->setFlash('Invalid transaction.');
-		$this->redirect($this->referer());
+		  $this->Session->setFlash('Invalid transaction.');
+		  $this->redirect($this->referer());
 	    }
 	}
 	
@@ -69,11 +78,11 @@ class TransactionsController extends TransactionsAppController {
 		$this->set('transaction', $this->Transaction->read(null, $id));
 	}
 	public function myCart() {
-	    	// ensure that SSL is on if it's supposed to be
+	    // ensure that SSL is on if it's supposed to be
 		if (defined('__ORDERS_SSL') && !strpos($_SERVER['HTTP_HOST'], 'localhost')) : $this->Ssl->force(); endif;
 		
 		// get their cart and process it
-		$myCart = $this->Transaction->processCart($this->Session->read('Auth.User.id'));
+		$myCart = $this->Transaction->processCart($this->Transaction->getCustomersId());
 		
 		if (!$myCart) {
 			throw new NotFoundException(__('Invalid transaction'));

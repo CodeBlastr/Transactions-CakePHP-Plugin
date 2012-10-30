@@ -24,6 +24,7 @@
 <div id="transactionsCheckout" class="transactions checkout form">
     <?php
     echo $this->Html->script('system/jquery.validate.min');
+    echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
     echo $this->Form->create('Transaction', array('action' => 'checkout'));
     ?>
 
