@@ -52,13 +52,13 @@ class Transaction extends TransactionsAppModel {
 //			'fields' => '',
 //			'order' => ''
 //		),
-		'TransactionCoupon' => array(
-			'className' => 'Transactions.TransactionCoupon',
-			'foreignKey' => 'transaction_coupon_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
-		),
+//		'TransactionCoupon' => array(
+//			'className' => 'Transactions.TransactionCoupon',
+//			'foreignKey' => 'transaction_coupon_id',
+//			'conditions' => '',
+//			'fields' => '',
+//			'order' => ''
+//		),
 		'Customer' => array(
 			'className' => 'Users.User',
 			'foreignKey' => 'customer_id',
@@ -163,25 +163,49 @@ class Transaction extends TransactionsAppModel {
 		$userId = String::uuid();
 		CakeSession::write('Transaction._guestId', $userId);
 	  }
+
+	  // Assign their Guest Cart to their Logged in self, if neccessary
+	  $this->reassignGuestCart($transactionGuestId, $authUserId);
+	  
 	  return $userId;
 	}
 
+	
+//	/**
+//	 * This function is meant to transfer a cart when a guest shopper logs in.
+//	 * After doing so, it deletes their Transaction._guestId session.
+//	 * 
+//	 * @param mixed $fromId
+//	 * @param mixed $toId
+//	 * @return boolean
+//	 * @throws Exception 
+//	 */
+//	public function reassignGuestCart($fromId, $toId) {
+//	  if($fromId && $toId) {
+//		if ($this->updateAll(array('customer_id' => $toId), array('customer_id' => $fromId))) {
+//		  return true;
+//		} else {
+//		  throw new Exception(__d('transactions', 'Guest cart merge failed'));
+//		}
+//	  }
+//	}
+	
 
-	/**
-	 * We could do all sorts of processing in here
-	 * @param string $userId
-	 * @return boolean|array
-	 */
+/**
+ * We could do all sorts of processing in here
+ * @param string $userId
+ * @return boolean|array
+ */
 	public function processCart($userId) {
 	    
 	    $theCart = $this->find('first', array(
-		'conditions' => array('customer_id' => $userId),
-		'contain' => array(
-		    'TransactionItem',
-		    'TransactionShipment',  // saved shipping addresses
-		    'TransactionPayment',   // saved billing addresses
-		    'Customer'		    // customer's user data
-		    )
+		  'conditions' => array('customer_id' => $userId),
+		  'contain' => array(
+			  'TransactionItem',
+			  'TransactionShipment',  // saved shipping addresses
+			  'TransactionPayment',   // saved billing addresses
+			  'Customer'			  // customer's user data
+			  )
 		));
 	    
 	    if(!$theCart) {
@@ -202,6 +226,8 @@ class Transaction extends TransactionsAppModel {
 	
 	/**
 	 * Combine the pre-checkout and post-checkout Transactions.
+	 * 
+	 * @todo Handle being passed empty carts
 	 * @param integer $userId
 	 * @param array $data
 	 * @return type
@@ -211,29 +237,29 @@ class Transaction extends TransactionsAppModel {
 		$currentTransaction = $this->find('first', array(
 		    'conditions' => array('customer_id' => $userId),
 		    'contain' => array(
-			'TransactionItem',
-			'TransactionShipment',  // saved shipping addresses
-			'TransactionPayment',   // saved billing addresses
-			'Customer'		    // customer's user data
-			)
-		    ));
+			  'TransactionItem',
+			  'TransactionShipment',  // saved shipping addresses
+			  'TransactionPayment',	  // saved billing addresses
+			  'Customer'			  // customer's user data
+			  )
+		));
 
-	    	// update quantities
+	    // update quantities
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
-			foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
-			    if($currentTxnItem['id'] == $submittedTxnItem['id']) {
-				$currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
-				$finalTxnItems[] = $currentTxnItem;
-			    }
-			}
+			  foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
+				  if($currentTxnItem['id'] == $submittedTxnItem['id']) {
+					$currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
+					$finalTxnItems[] = $currentTxnItem;
+				  }
+			  }
 		    }
 		}
 			
 		// unset the submitted TransactionItem's. They will be replaced after the merge.
 		unset($submittedTransaction['TransactionItem']);
 		
-		// combine the two Transactions
+		// combine the Current and Submitted Transactions
 		$officialTransaction = Set::merge($currentTransaction, $submittedTransaction);
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
 		
@@ -255,7 +281,7 @@ class Transaction extends TransactionsAppModel {
 	public function statuses() {
 	    $statuses = array();
 	    foreach (Zuha::enum('ORDER_TRANSACTION_STATUS') as $status) {
-		$statuses[Inflector::underscore($status)] = $status;
+		  $statuses[Inflector::underscore($status)] = $status;
 	    }
 	    return Set::merge(array('failed' => 'Failed', 'paid' => 'Paid', 'shipped' => 'Shipped'), $statuses);
 	}

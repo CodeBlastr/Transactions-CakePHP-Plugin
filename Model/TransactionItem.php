@@ -101,11 +101,12 @@ class TransactionItem extends TransactionsAppModel {
 	  if (!$myCart) {
 		  // no cart found. give them a new shopping cart.
 		  $this->Transaction->create(array(
-			'customer_id' => $userId
+			'customer_id' => $userId,
+			'status' => 'open'
 		  ));
 		  $this->Transaction->save();
 	  } else {
-		  // existing shopping cart found.  use it.
+		  // existing shopping cart(s) found..  use it.
 		  $this->Transaction->id = $myCart['Transaction']['id'];
 	  }
 

@@ -15,26 +15,35 @@
  * @copyright     Copyright 2009-2012, Zuha Foundation Inc. (http://zuha.com)
  * @link          http://zuha.com Zuha� Project
  * @package       zuha
- * @subpackage    zuha.app.plugins.orders.views
+ * @subpackage    zuha.app.plugins.transactions.views
  * @since         Zuha(tm) v 0.0.1
  * @license       GPL v3 License (http://www.gnu.org/licenses/gpl.html) and Future Versions
  */
+//debug($myCart['Customer']['id']);
 ?>
 
 <div id="transactionsCheckout" class="transactions checkout form">
     <?php
-    echo $this->Html->script('system/jquery.validate.min');
+    echo $this->Html->script('system/jquery.validate.min', array('inline' => false));
     echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
     echo $this->Form->create('Transaction', array('action' => 'checkout'));
     ?>
 
+  	<?php
+	if($myCart['Customer']['id'] == NULL) {
+	  // show a login button
+	  echo __d('transactions', 'Returning Customer?') . '&nbsp;';
+	  echo $this->Html->link(__d('transactions', 'Please Login'), array('plugin' => 'users', 'controller' => 'users', 'action' => 'login'), array('class' => 'btn'));
+	}
+	?>
+  
     <h2>
 	<?php echo __d('transactions', 'You are 30 seconds away from ordering...'); ?>
     </h2>
-
+ 
     <div id="orderTransactionForm" class="orderTransactionForm text-inputs">
 	  <h3><?php echo __d('transactions', 'Please fill in your billing details'); ?></h3>
-
+	  
 	  <div id="transactionCartLeft">
 
 		  <div id="orderTransactionAddress">

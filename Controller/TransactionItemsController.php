@@ -29,12 +29,12 @@ class TransactionItemsController extends TransactionsAppController {
 		$this->set('transactionItems', $this->paginate());
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
+
+	/**
+	 * 
+	 * @param string $id
+	 * @throws NotFoundException
+	 */
 	public function view($id = null) {
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
@@ -65,23 +65,29 @@ class TransactionItemsController extends TransactionsAppController {
 			
 			// It puts the item in the cart.
 			if ($this->TransactionItem->save($this->request->data)) {
+//			  // If they have two carts, we are going to ask the customer what to do with them
+//			  $numberOfCarts = $this->TransactionItem->Transaction->find('count', array('conditions' => array('customer_id' => $userId)));
+//			  if($numberOfCarts == 1) {
 				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
 				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'myCart'));
+//			  } else {
+//				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
+//			  }
 			} else {
-				$this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
-				$this->redirect($this->referer());
+			  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
+			  $this->redirect($this->referer());
 			}
 		} else {
 		    throw new NotFoundException(__d('transactions', 'Invalid transaction request'));
 		}
 	}
 
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
+
+	/**
+	 * 
+	 * @param string $id
+	 * @throws NotFoundException
+	 */
 	public function edit($id = null) {
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
@@ -109,12 +115,13 @@ class TransactionItemsController extends TransactionsAppController {
 		$this->set(compact('catalogItems', 'transactionPayments', 'transactionShipments', 'transactions', 'customers', 'contacts', 'assignees', 'creators', 'modifiers'));
 	}
 
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
+
+	/**
+	 * 
+	 * @param string $id
+	 * @throws MethodNotAllowedException
+	 * @throws NotFoundException
+	 */
 	public function delete($id = null) {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();

@@ -14,9 +14,6 @@ class TransactionsController extends TransactionsAppController {
 	public $components = array('Ssl', 'Transactions.Payments');
 	
 	
-	/**
-	 * 
-	 */
 	public function beforeFilter() {
 		parent::beforeFilter();
 	}
@@ -64,12 +61,11 @@ class TransactionsController extends TransactionsAppController {
 		$this->set('transactions', $this->paginate());
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
+  /**
+   * 
+   * @param string $id
+   * @throws NotFoundException
+   */
 	public function view($id = null) {
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
@@ -77,6 +73,11 @@ class TransactionsController extends TransactionsAppController {
 		}
 		$this->set('transaction', $this->Transaction->read(null, $id));
 	}
+	
+	/**
+	 * 
+	 * @throws NotFoundException
+	 */
 	public function myCart() {
 	  	// gather checkout options like shipping, payments, ssl, etc
 		$options = $this->Transaction->gatherCheckoutOptions();
@@ -86,22 +87,34 @@ class TransactionsController extends TransactionsAppController {
 		  $this->Ssl->force();
 		}
 		
-		// get their cart and process it
-		$myCart = $this->Transaction->processCart($this->Transaction->getCustomersId());
-		
-		if (!$myCart) {
-			throw new NotFoundException(__d('transactions', 'Invalid cart'));
+		// If they have two carts, we are going to ask the customer what to do with them
+		// determine the user's "ID"
+		$userId = $this->Transaction->getCustomersId();
+		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('customer_id' => $userId)));
+		if($numberOfCarts !== 1) {
+		  
+		  $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
+		  
+		} else {
+		  
+		  // get their cart and process it
+		  $myCart = $this->Transaction->processCart($userId);
+
+		  if (!$myCart) {
+			throw new NotFoundException(__d('transactions', 'Cart is empty'));
+		  }
+
+		  // sent the variables to display in the cart
+		  $this->set(compact('myCart', 'options'));
+		  
 		}
-		
-		// sent the variables to display in the cart
-		$this->set(compact('myCart', 'options'));
 	}
 
-/**
- * add method
- *
- * @return void
- */
+	/**
+	 * add method
+	 *
+	 * @return void
+	 */
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->Transaction->create();
@@ -121,12 +134,12 @@ class TransactionsController extends TransactionsAppController {
 		$this->set(compact('transactionPayments', 'transactionShipments', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
 	}
 
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
+
+	/**
+	 * 
+	 * @param string $id
+	 * @throws NotFoundException
+	 */
 	public function edit($id = null) {
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
@@ -151,12 +164,13 @@ class TransactionsController extends TransactionsAppController {
 		$this->set(compact('transactionPayments', 'transactionShipments', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
 	}
 
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
+
+	/**
+	 * 
+	 * @param string $id
+	 * @throws MethodNotAllowedException
+	 * @throws NotFoundException
+	 */
 	public function delete($id = null) {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
@@ -172,4 +186,22 @@ class TransactionsController extends TransactionsAppController {
 		$this->Session->setFlash(__d('transactions', 'Transaction was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
+	
+	
+	
+	public function mergeCarts() {
+	  // find their carts.
+	  // there should only be 2
+	  $transactions = $this->Transaction->find('all',array(
+		  'conditions' => array(
+			  'customer_id' => $this->Session->read('Auth.User.id'),
+			  'status' => 'open'
+			  ),
+		  'order' => array('Transaction.modified' => 'asc')
+	  ));
+	  
+	  $this->set('transactions', $transactions);
+	  
+	}
+	
 }

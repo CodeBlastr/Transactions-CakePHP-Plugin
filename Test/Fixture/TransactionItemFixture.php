@@ -75,7 +75,7 @@ class TransactionItemFixture extends CakeTestFixture {
 			'model' => 'Lorem ipsum dolor sit amet',
 			'is_virtual' => 1,
 			'hours_expire' => 1,
-			'customer_id' => 'Lorem ipsum dolor sit amet',
+			'customer_id' => '5738299d-9040-43c9-85b1-22d400000000',
 			'contact_id' => 'Lorem ipsum dolor sit amet',
 			'assignee_id' => 'Lorem ipsum dolor sit amet',
 			'creator_id' => 'Lorem ipsum dolor sit amet',
