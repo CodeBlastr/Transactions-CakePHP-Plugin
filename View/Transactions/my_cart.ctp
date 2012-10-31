@@ -29,18 +29,18 @@
     ?>
 
     <h2>
-	<?php echo __('You are 30 seconds away from ordering...'); ?>
+	<?php echo __d('transactions', 'You are 30 seconds away from ordering...'); ?>
     </h2>
 
     <div id="orderTransactionForm" class="orderTransactionForm text-inputs">
-	<h3><?php echo __('Please fill in your billing details'); ?></h3>
+	<h3><?php echo __d('transactions', 'Please fill in your billing details'); ?></h3>
 
 	<div id="transactionCartLeft">
 
 	    <div id="orderTransactionAddress">
 		<fieldset id="billingAddress">
 		    <legend>
-			<?php echo __('Billing Address'); ?>
+			<?php echo __d('transactions', 'Billing Address'); ?>
 		    </legend>
 		    <?php
 		    echo $this->Form->input('TransactionPayment.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
@@ -55,7 +55,7 @@
 		    ?>
 		</fieldset>
 		<fieldset id="shippingAddress">
-		    <legend><?php echo __('Shipping Address'); ?></legend>
+		    <legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
 		    <div id="shipping_error"></div>
 		    <?php
 		    echo $this->Form->input('TransactionShipment.first_name', array('label' => 'First Name ', 'div' => array('style' => 'display:inline-block')));
@@ -72,7 +72,7 @@
 
 
 	    <fieldset id="paymentInformation">
-		<legend><?php echo __('Payment Information'); ?></legend>
+		<legend><?php echo __d('transactions', 'Payment Information'); ?></legend>
 		<?php
 		    echo $this->Element(strtolower($options['paymentMode']));
 		?>
@@ -86,7 +86,7 @@
 		echo $this->Element('trust_logos', array('plugin' => 'orders'));
 	    ?>
 	    <fieldset id="orderTransactionItems" class="orderTransactionItems">
-		<legend>Shopping Cart</legend>
+		<legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
 
 		<?php
 		//debug($myCart);
@@ -110,7 +110,7 @@
 	    </fieldset><!-- end orderTransactionItems -->
 	    
 	    <fieldset>
-		<legend>Order Summary</legend>
+		<legend><?php echo __d('transactions', 'Order Summary') ?></legend>
 	    <?php
 		#echo !empty($enableShipping) ? $this->Form->input('Transaction.shipping_charge', array('readonly' => true, 'value' => ZuhaInflector::pricify($options['defaultShippingCharge']))) : $this->Form->hidden('OrderTransaction.shipping_charge', array('readonly' => true, 'value' => ''));
 		#echo $this->Form->input('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($myCart['Transaction']['order_charge'])));
@@ -118,18 +118,18 @@
 		$pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); // field is FLOAT, no commas allowed
 		//echo $this->Form->input('Transaction.discount', array('label' => 'Discount', 'readonly' => true));
 		?>
-		<div>Subtotal: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($myCart['Transaction']['order_charge']) ?></span></div>
-		<div>Shipping: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
-		<div>Discount: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
+		<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($myCart['Transaction']['order_charge']) ?></span></div>
+		<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
+		<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
 		<hr/>
 		<div style="margin: 10px 0; font-weight: bold;">Total: <span id="TransactionTotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo $pricifiedOrderTotal ?></span></div>
-		<div><small><a id="enterPromo" href="#">Enter Promo Code</a></small></div>
+		<div><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Enter Promo Code') ?></a></small></div>
 		<?php
 		#echo $this->Form->input('Transaction.total', array('label' => 'Total <small><a id="enterPromo" href="#">Enter Promo Code</a></small>', 'readonly' => true, 'value' => $pricifiedOrderTotal, 'class' =>'uneditable-input',/* 'after' => defined('__USERS_CREDITS_PER_PRICE_UNIT') ? " Or Credits : " . __USERS_CREDITS_PER_PRICE_UNIT * $orderTotal : "Or Credits : " .  $orderTotal */));
 		echo $this->Form->input('TransactionCoupon.code', array('label' => 'Code <small><a id="applyCode" href="#">Apply Code</a></small>'));
 		echo $this->Form->hidden('Transaction.quantity');
 		
-	        echo $this->Form->end('Checkout');
+	        echo $this->Form->end(__d('transactions', 'Checkout'));
 	    ?>
 	    </fieldset>
 	</div>
