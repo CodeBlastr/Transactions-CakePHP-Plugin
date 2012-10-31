@@ -38,7 +38,7 @@ class TransactionItemsController extends TransactionsAppController {
 	public function view($id = null) {
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
-			throw new NotFoundException(__('Invalid transaction item'));
+			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
 		}
 		$this->set('transactionItem', $this->TransactionItem->read(null, $id));
 	}
@@ -65,14 +65,14 @@ class TransactionItemsController extends TransactionsAppController {
 			
 			// It puts the item in the cart.
 			if ($this->TransactionItem->save($this->request->data)) {
-				$this->Session->setFlash(__('The item has been added to your cart.'));
+				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
 				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'myCart'));
 			} else {
-				$this->Session->setFlash(__('The transaction item could not be saved. Please, try again.'));
+				$this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
 				$this->redirect($this->referer());
 			}
 		} else {
-		    throw new NotFoundException(__('Invalid transaction request'));
+		    throw new NotFoundException(__d('transactions', 'Invalid transaction request'));
 		}
 	}
 
@@ -85,14 +85,14 @@ class TransactionItemsController extends TransactionsAppController {
 	public function edit($id = null) {
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
-			throw new NotFoundException(__('Invalid transaction item'));
+			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->TransactionItem->save($this->request->data)) {
-				$this->Session->setFlash(__('The transaction item has been saved'));
+				$this->Session->setFlash(__d('transactions', 'The transaction item has been saved'));
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The transaction item could not be saved. Please, try again.'));
+				$this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
 			}
 		} else {
 			$this->request->data = $this->TransactionItem->read(null, $id);
@@ -121,13 +121,13 @@ class TransactionItemsController extends TransactionsAppController {
 		}
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
-			throw new NotFoundException(__('Invalid transaction item'));
+			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
 		}
 		if ($this->TransactionItem->delete()) {
-			$this->Session->setFlash(__('Transaction item deleted'));
+			$this->Session->setFlash(__d('transactions', 'Transaction item deleted'));
 			$this->redirect(array('action' => 'index'));
 		}
-		$this->Session->setFlash(__('Transaction item was not deleted'));
+		$this->Session->setFlash(__d('transactions', 'Transaction item was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
 }

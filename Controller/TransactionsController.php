@@ -49,7 +49,7 @@ class TransactionsController extends TransactionsAppController {
 		  }
 
 	    } else {
-		  $this->Session->setFlash('Invalid transaction.');
+		  $this->Session->setFlash(__d('transactions', 'Invalid transaction.'));
 		  $this->redirect($this->referer());
 	    }
 	}
@@ -73,25 +73,27 @@ class TransactionsController extends TransactionsAppController {
 	public function view($id = null) {
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
-			throw new NotFoundException(__('Invalid transaction'));
+			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
 		$this->set('transaction', $this->Transaction->read(null, $id));
 	}
 	public function myCart() {
+	  	// gather checkout options like shipping, payments, ssl, etc
+		$options = $this->Transaction->gatherCheckoutOptions();
+		
 	    // ensure that SSL is on if it's supposed to be
-		if (defined('__ORDERS_SSL') && !strpos($_SERVER['HTTP_HOST'], 'localhost')) : $this->Ssl->force(); endif;
+		if ($options['ssl'] !== null && !strpos($_SERVER['HTTP_HOST'], 'localhost')) {
+		  $this->Ssl->force();
+		}
 		
 		// get their cart and process it
 		$myCart = $this->Transaction->processCart($this->Transaction->getCustomersId());
 		
 		if (!$myCart) {
-			throw new NotFoundException(__('Invalid transaction'));
+			throw new NotFoundException(__d('transactions', 'Invalid cart'));
 		}
 		
-		// gather checkout options like shipping, payments, etc
-		$options = $this->Transaction->gatherCheckoutOptions();
-		
-		// display their cart
+		// sent the variables to display in the cart
 		$this->set(compact('myCart', 'options'));
 	}
 
@@ -104,10 +106,10 @@ class TransactionsController extends TransactionsAppController {
 		if ($this->request->is('post')) {
 			$this->Transaction->create();
 			if ($this->Transaction->save($this->request->data)) {
-				$this->Session->setFlash(__('The transaction has been saved'));
+				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The transaction could not be saved. Please, try again.'));
+				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
 			}
 		}
 		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
@@ -128,14 +130,14 @@ class TransactionsController extends TransactionsAppController {
 	public function edit($id = null) {
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
-			throw new NotFoundException(__('Invalid transaction'));
+			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
 		if ( ($this->request->is('post') || $this->request->is('put')) && !empty($this->request->data)) {
 			if ($this->Transaction->save($this->request->data)) {
-				$this->Session->setFlash(__('The transaction has been saved'));
+				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The transaction could not be saved. Please, try again.'));
+				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
 			}
 		} else {
 			$this->request->data = $this->Transaction->read(null, $id);
@@ -161,13 +163,13 @@ class TransactionsController extends TransactionsAppController {
 		}
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
-			throw new NotFoundException(__('Invalid transaction'));
+			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
 		if ($this->Transaction->delete()) {
-			$this->Session->setFlash(__('Transaction deleted'));
+			$this->Session->setFlash(__d('transactions', 'Transaction deleted'));
 			$this->redirect(array('action' => 'index'));
 		}
-		$this->Session->setFlash(__('Transaction was not deleted'));
+		$this->Session->setFlash(__d('transactions', 'Transaction was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
 }

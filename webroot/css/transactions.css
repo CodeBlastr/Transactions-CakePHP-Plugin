@@ -58,3 +58,6 @@ input:-moz-placeholder, textarea:-moz-placeholder {
 }
 #orderTransactionItems {background: rgba(255, 255, 255, 0.1); padding: 5px;}
 #shippingAddress {display: none;}
+
+
+.helpBox { cursor: help; }

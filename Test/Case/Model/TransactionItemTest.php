@@ -46,4 +46,11 @@ class TransactionItemTestCase extends CakeTestCase {
 		parent::tearDown();
 	}
 
+	
+	public function testSetCartId() {
+	  $result = $this->TransactionItem->setCartId(String::uuid());
+//	  debug($result);break;
+	  $this->assertTrue(is_string($result));
+	}
+	
 }

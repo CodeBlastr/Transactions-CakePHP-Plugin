@@ -148,6 +148,8 @@ class Transaction extends TransactionsAppModel {
 	 * This function returns the UUID to use for a User by first checking the Auth Session, then by checking for a Transaction Guest session,
 	 * and finally, creating a Transaction Guest session if necessary.
 	 *  
+	 * @todo This should probably be in the User model in some fashion..
+	 * 
 	 * @return string The UUID of the User
 	 */
 	public function getCustomersId() {
