@@ -94,22 +94,22 @@ class TransactionItem extends TransactionsAppModel {
      * @return string Id of the cart in question
      */
     public function setCartId($userId) {
-	// an item was added, check for a shopping cart.
-	$myCart = $this->Transaction->find('first', array(
-	    'customer_id' => $userId
-		));
-	if (!$myCart) {
-	    // no cart found. give them a new shopping cart.
-	    $this->Transaction->create(array(
-		'customer_id' => $userId
-	    ));
-	    $this->Transaction->save();
-	} else {
-	    // existing shopping cart found.  use it.
-	    $this->Transaction->id = $myCart['Transaction']['id'];
-	}
+	  // an item was added, check for a shopping cart.
+	  $myCart = $this->Transaction->find('first', array(
+		  'conditions' => array('customer_id' => $userId)
+		  ));
+	  if (!$myCart) {
+		  // no cart found. give them a new shopping cart.
+		  $this->Transaction->create(array(
+			'customer_id' => $userId
+		  ));
+		  $this->Transaction->save();
+	  } else {
+		  // existing shopping cart found.  use it.
+		  $this->Transaction->id = $myCart['Transaction']['id'];
+	  }
 
-	return $this->Transaction->id;
+	  return $this->Transaction->id;
     }
     
     
