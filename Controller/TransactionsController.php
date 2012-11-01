@@ -27,23 +27,32 @@ class TransactionsController extends TransactionsAppController {
  */
 	public function checkout() {
 	    if($this->request->data) {
-		  // get their official Transaction
-		  $officalTransaction = $this->Transaction->finalizeTransaction($this->Transaction->getCustomersId(), $this->request->data);
+		  
+		  // get their official Transaction (finalize all data)
+		  $officialTransaction = $this->Transaction->finalizeTransactionData($this->Transaction->getCustomersId(), $this->request->data);
+		  $officialTransaction = $this->Transaction->finalizeUserData($officialTransaction);
 
 		  // process the payment
-		  $response = $this->Payments->pay($officalTransaction);
-		  // if error with payment, return them to /myCart
+		  $response = $this->Payments->pay($officialTransaction);
+		  
 		  if ($response['response_code'] != 1) {
-			  // Transaction failed
-			  // save the billing and shipping details anyway
-			  $this->Transaction->TransactionPayment->save($officalTransaction);
-			  $this->Transaction->TransactionShipment->save($officalTransaction);
-			  $this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
-			  $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
+			// Transaction failed, back to the cart!
+			$officialTransaction['Transaction']['status'] = 'failed';
+			$this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
+			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart');
 		  } else {
 			// else redirect them to success page
-			$this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
+			$officialTransaction['Transaction']['status'] = 'paid';
+			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
 		  }
+		  
+		  // save the transaction stuff
+		  $this->Transaction->saveAll($officialTransaction);
+//		  $this->Transaction->TransactionPayment->save($officialTransaction);
+//		  $this->Transaction->TransactionShipment->save($officialTransaction);
+		  
+		  // do the redirection
+		  $this->redirect($url);
 
 	    } else {
 		  $this->Session->setFlash(__d('transactions', 'Invalid transaction.'));
