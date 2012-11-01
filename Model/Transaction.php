@@ -171,7 +171,8 @@ class Transaction extends TransactionsAppModel {
 	}
 
 	
-//	/**
+//	/** MOVED TO TransactionsAppModel
+//	
 //	 * This function is meant to transfer a cart when a guest shopper logs in.
 //	 * After doing so, it deletes their Transaction._guestId session.
 //	 * 
@@ -271,6 +272,33 @@ class Transaction extends TransactionsAppModel {
 		
 		// return the official transaction
 		return $officialTransaction;
+	}
+	
+	
+	/**
+	 * 
+	 * @param array $transactions Multiple transactions
+	 * @return array A single Transaction
+	 */
+	public function combineTransactions($transactions) {
+
+	  foreach($transactions as $transaction) {
+		foreach($transaction['TransactionItem'] as $transactionItem) {
+		  if( ! isset($finalTransactionItems[$transactionItem['foreign_key']]) ) {
+			$finalTransactionItems[$transactionItem['foreign_key']] = $transactionItem;
+		  } else {
+			$finalTransactionItems[$transactionItem['foreign_key']]['quantity'] += $transactionItem['quantity'];
+		  }
+		}
+	  }
+
+	  // reset the keys back to 0,1,2,3..
+	  $finalTransaction['TransactionItem'] = array_values($finalTransactionItems);
+
+	  // reuse the Transaction data from the 1st Transaction (ideally, the newest Transaction)
+	  $finalTransaction['Transaction'] = $transactions[0]['Transaction'];
+
+	  return $finalTransaction;
 	}
 	
 	

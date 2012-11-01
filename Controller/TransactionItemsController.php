@@ -65,14 +65,8 @@ class TransactionItemsController extends TransactionsAppController {
 			
 			// It puts the item in the cart.
 			if ($this->TransactionItem->save($this->request->data)) {
-//			  // If they have two carts, we are going to ask the customer what to do with them
-//			  $numberOfCarts = $this->TransactionItem->Transaction->find('count', array('conditions' => array('customer_id' => $userId)));
-//			  if($numberOfCarts == 1) {
 				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
 				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'myCart'));
-//			  } else {
-//				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
-//			  }
 			} else {
 			  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
 			  $this->redirect($this->referer());

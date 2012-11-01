@@ -188,7 +188,9 @@ class TransactionsController extends TransactionsAppController {
 	}
 	
 	
-	
+	/**
+	 * 
+	 */
 	public function mergeCarts() {
 	  // find their carts.
 	  // there should only be 2
@@ -197,10 +199,35 @@ class TransactionsController extends TransactionsAppController {
 			  'customer_id' => $this->Session->read('Auth.User.id'),
 			  'status' => 'open'
 			  ),
-		  'order' => array('Transaction.modified' => 'asc')
+		  'contain' => array('TransactionItem'),
+		  'order' => array('Transaction.modified' => 'desc')
 	  ));
 	  
 	  $this->set('transactions', $transactions);
+	  
+	  // they have made a choice.  process it.
+	  // choices are: '1', 'merge', or '2'
+	  if(isset($this->request->params['named']['choice'])) {
+		if(in_array($this->request->params['named']['choice'], array('1', 'merge', '2'))) {
+		  switch ($this->request->params['named']['choice']) {
+			case '1':
+			  $this->Transaction->delete($transactions[1]['Transaction']['id']);
+			  break;
+			case '2':
+			  $this->Transaction->delete($transactions[0]['Transaction']['id']);
+			  break;
+			case 'merge':
+			  $transaction = $this->Transaction->combineTransactions($transactions);
+			  $this->Transaction->delete($transactions[0]['Transaction']['id']);
+			  $this->Transaction->delete($transactions[1]['Transaction']['id']);
+			  $this->Transaction->saveAll($transaction);
+			  break;
+		  }
+		  
+		  $this->redirect(array('action' => 'myCart'));
+		  
+		}
+	  }
 	  
 	}
 	
