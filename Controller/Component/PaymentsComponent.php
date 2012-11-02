@@ -104,4 +104,9 @@ class PaymentsComponent extends Object {
 	return $this->paymentComponent->response;
     }
 
+	
+	public function createAccount($data) {
+	  return $this->paymentComponent->createAccount($data);
+	}
+	
 }

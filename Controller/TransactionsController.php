@@ -27,13 +27,54 @@ class TransactionsController extends TransactionsAppController {
  */
 	public function checkout() {
 	    if($this->request->data) {
-		  
-		  // get their official Transaction (finalize all data)
-		  $officialTransaction = $this->Transaction->finalizeTransactionData($this->Transaction->getCustomersId(), $this->request->data);
-		  $officialTransaction = $this->Transaction->finalizeUserData($officialTransaction);
+		  try {
+			
+			$data = $this->Transaction->finalizeTransactionData($this->request->data);
+			$data = $this->Transaction->finalizeUserData($data);
+			$data = $this->Payments->pay($data);
+			break;
+			$data = $this->Transaction->Customer->add($data);
+	  		// need a valid Customer.id to proceed
+			$data = $this->Transaction->add($data);
+			// need a valid User.id to proceed
+			$data = $this->TransactionPayment->add($data);
+			$data = $this->TransactionShipping->add($data);
+			
+		  } catch (Exception $exc) {
+			debug($exc->getMessage());
+			break;
+		  }
 
-		  // process the payment
-		  $response = $this->Payments->pay($officialTransaction);
+
+//
+//		  // get their official Transaction (finalize all data)
+//		  $officialTransaction = $this->Transaction->finalizeTransactionData($this->Transaction->getCustomersId(), $this->request->data);
+//		  $officialTransaction = $this->Transaction->finalizeUserData($officialTransaction);
+//		  debug($officialTransaction);
+//		  
+//		  // save the transaction stuff & create their 'Customer'
+//		  debug($this->Transaction->saveAssociated($officialTransaction, array('atomic' => false)) );
+//		  //debug($this->Transaction->TransactionPayment->save($officialTransaction['TransactionPayment']));
+//		  debug($this->Transaction->invalidFields());
+//		  break;
+//		  // we should now have a User.id for this person
+//		  // update their 
+//		  
+//		  
+//		  // create their PaySimple 'Customer'
+//		  $createCustomer = $this->Payments->createCustomer($data);
+//		  if($createCustomer) {
+//			$this->Transaction->Customer->Connection->save(array(
+//				'user_id' => $this->Transaction->Customer->id,
+//				'type' => 'paysimple',
+//				'value' => $createCustomer['id']
+//			));
+//		  } else {
+//			$response['response_code'] = 666;
+//		  }
+//		  
+//		  // process the payment
+//		  $response = $this->Payments->pay($officialTransaction);
 		  
 		  if ($response['response_code'] != 1) {
 			// Transaction failed, back to the cart!
@@ -46,7 +87,7 @@ class TransactionsController extends TransactionsAppController {
 			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
 		  }
 		  
-		  // save the transaction stuff
+		  // save the transaction stuff again
 		  $this->Transaction->saveAll($officialTransaction);
 //		  $this->Transaction->TransactionPayment->save($officialTransaction);
 //		  $this->Transaction->TransactionShipment->save($officialTransaction);
@@ -100,12 +141,11 @@ class TransactionsController extends TransactionsAppController {
 		// determine the user's "ID"
 		$userId = $this->Transaction->getCustomersId();
 		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('customer_id' => $userId)));
-		if($numberOfCarts !== 1) {
-		  
+		if($numberOfCarts > 1) {
+
 		  $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
 		  
 		} else {
-		  
 		  // get their cart and process it
 		  $myCart = $this->Transaction->processCart($userId);
 

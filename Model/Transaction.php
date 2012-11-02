@@ -233,7 +233,8 @@ class Transaction extends TransactionsAppModel {
 	 * @param array $data
 	 * @return type
 	 */
-	public function finalizeTransactionData($userId, $submittedTransaction) {
+	public function finalizeTransactionData($submittedTransaction) {
+		$userId = $this->getCustomersId();
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
 		    'conditions' => array('customer_id' => $userId),
@@ -278,16 +279,23 @@ class Transaction extends TransactionsAppModel {
 	
 	public function finalizeUserData($transaction) {
 	  
-	  // ensure their 'Customer' data has values
+	  // ensure their 'Customer' data has values when they are not logged in
 	  if($transaction['Customer']['id'] == NULL) {
-		$transaction['Customer']['id'] = $transaction['Transaction']['customer_id'];
+		//$transaction['Customer']['id'] = $transaction['Transaction']['customer_id'];
 		$transaction['Customer']['first_name'] = $transaction['TransactionPayment']['first_name'];
 		$transaction['Customer']['last_name'] = $transaction['TransactionPayment']['last_name'];
-		$transaction['Customer']['email'] = $transaction['TransactionPayment']['email'];
-		$transaction['Customer']['phone'] = $transaction['TransactionPayment']['phone'];
+		$transaction['Customer']['email'] = $transaction['TransactionPayment']['email']; // required
+		$transaction['Customer']['username'] = $transaction['TransactionPayment']['email']; // required
+		//$transaction['Customer']['phone'] = $transaction['TransactionPayment']['phone'];
+		
+		// generate a temporary password: ANNNN
+		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
+		
+		// set their User Role Id
+		$transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
 	  }
 	  
-	  $transaction['TransactionPayment']['user_id'] = $transaction['Transaction']['customer_id'];
+	  //$transaction['TransactionPayment']['user_id'] = $transaction['Transaction']['customer_id'];
 	  // copy Payment data to Shipment data if neccessary
 	  if($transaction['TransactionPayment']['shipping'] !== 'checked') {
 		$transaction['TransactionShipment']['transaction_id'] = $transaction['TransactionPayment']['transaction_id'];
@@ -300,8 +308,8 @@ class Transaction extends TransactionsAppModel {
 		$transaction['TransactionShipment']['state'] = $transaction['TransactionPayment']['state'];
 		$transaction['TransactionShipment']['zip'] = $transaction['TransactionPayment']['zip'];
 		$transaction['TransactionShipment']['country'] = $transaction['TransactionPayment']['country'];
-		$transaction['TransactionShipment']['phone'] = $transaction['TransactionPayment']['phone'];
-		$transaction['TransactionShipment']['user_id'] = $transaction['TransactionPayment']['user_id'];
+		//$transaction['TransactionShipment']['phone'] = $transaction['TransactionPayment']['phone'];
+		//$transaction['TransactionShipment']['user_id'] = $transaction['TransactionPayment']['user_id'];
 	  }
 	  
 	  return $transaction;

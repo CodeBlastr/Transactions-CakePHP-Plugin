@@ -50,6 +50,7 @@
 			<fieldset id="billingAddress">
 				<legend><?php echo __d('transactions', 'Billing Address'); ?></legend>
 				<?php
+				echo $this->Form->input('TransactionPayment.email', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
 				echo $this->Form->input('TransactionPayment.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
 				echo $this->Form->input('TransactionPayment.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
 				echo $this->Form->input('TransactionPayment.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));
@@ -65,8 +66,6 @@
 				<legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
 				<div id="shipping_error"></div>
 				<?php
-				echo $this->Form->input('TransactionShipment.first_name', array('label' => 'First Name ', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionShipment.last_name', array('label' => 'Last Name ', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
 				echo $this->Form->input('TransactionShipment.street_address_1', array('label' => 'Street', 'size' => '49'));
 				echo $this->Form->input('TransactionShipment.street_address_2', array('label' => 'Street 2', 'size' => '49'));
 				echo $this->Form->input('TransactionShipment.city', array('label' => 'City', 'size' => '29', 'div' => array('style' => 'display:inline-block')));

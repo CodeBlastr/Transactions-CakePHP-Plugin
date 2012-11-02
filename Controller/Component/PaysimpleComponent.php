@@ -1,7 +1,9 @@
 <?php
-
 /**
+ * This still needs a lot of work..  @see PaysimpleComponent::Pay()
+ * 
  * @author Joel Byrnes <joel@razorit.com>
+ * @link https://sandbox-api.paysimple.com/v4/Help/
  */
 App::uses('HttpSocket', 'Network/Http');
 
@@ -26,13 +28,44 @@ class PaysimpleComponent extends Component {
 
 	$this->_httpSocket = new HttpSocket();
   }
-
+  
   /**
-   *
+   * @todo Logged in Users should pass 'Connection' data here
    * @param array $data
    */
   public function Pay($data) {
 debug($data); break;
+
+	if (!$data['Connection']) {
+	  // create a user in their system and save it in our Connections table
+	  try {
+		$this->createCustomer($data);
+		if (!empty($data['Transaction']['ach_account_number'])) {
+		  $this->addAchAccount($data);
+		} else {
+		  $this->addCreditCardAccount($data);
+		}
+		$this->createPayment($data);
+	  } catch (Exception $exc) {
+		debug($exc->getMessage());
+		break;
+	  }
+	} else {
+	  // They have Connection, we must have a PaySimple ID for them.
+	  // Notes:
+	  // ideally we should save their accounts to our database, so we have a reusable ID for them,
+	  // i.e. #1 = My Debit Card, #2 = My Secret Checking Account..
+	  // Currently my code would compare the account they submitted against what PaySimple has saved for them,
+	  // and create it if it's not already there, then set it to default, and use it.
+	  try {
+		$this->createPayment($data);
+	  } catch (Exception $exc) {
+		debug($exc->getMessage());
+		break;
+	  }
+	}
+
+
 	$user = $this->findCustomerByEmail($data['Customer']['email']);
 
 	if ($user) {
@@ -124,23 +157,7 @@ debug($data); break;
 	} else {
 
 	  // user not found by email, create a new customer
-	  $params = array(
-		  'FirstName' => $data['TransactionPayment']['first_name'],
-		  'LastName' => $data['TransactionPayment']['last_name'],
-		  //'Company' => $data['Meta']['company'],
-		  'BillingAddress' => array(
-			  'StreetAddress1' => $data['TransactionPayment']['street_address_1'],
-			  'StreetAddress2' => $data['TransactionPayment']['street_address_2'],
-			  'City' => $data['TransactionPayment']['city'],
-			  'StateCode' => $data['TransactionPayment']['state'],
-			  'ZipCode' => $data['TransactionPayment']['zip'],
-		  ),
-		  'ShippingSameAsBilling' => true, /** @todo **/
-		  'Email' => $data['Customer']['email'],
-		  'Phone' => $data['Customer']['phone'],
-	  );
-
-	  $createSuccess = $this->createCustomer($params);
+	  $createSuccess = $this->createCustomer($data);
 	  //var_dump($createSuccess);
 	  if ($createSuccess) {
 
@@ -216,7 +233,36 @@ debug($data); break;
    * @return boolean|array
    */
   public function createCustomer($data) {
-	return $this->_sendRequest('POST', '/customer', $data);
+	
+	$params = array(
+		'FirstName' => $data['TransactionPayment']['first_name'],
+		'LastName' => $data['TransactionPayment']['last_name'],
+		//'Company' => $data['Meta']['company'],
+		'BillingAddress' => array(
+			'StreetAddress1' => $data['TransactionPayment']['street_address_1'],
+			'StreetAddress2' => $data['TransactionPayment']['street_address_2'],
+			'City' => $data['TransactionPayment']['city'],
+			'StateCode' => $data['TransactionPayment']['state'],
+			'ZipCode' => $data['TransactionPayment']['zip'],
+		),
+		'ShippingSameAsBilling' => true,
+		'Email' => $data['Customer']['email'],
+		'Phone' => $data['Customer']['phone'],
+	);
+
+	if($data['TransactionPayment']['shipping'] == 'checked') {
+	  // their shipping is not the same as their billing
+	  $params['ShippingSameAsBilling'] = false;
+	  $params['BillingAddress'] = array(
+			'StreetAddress1' => $data['TransactionPayment']['street_address_1'],
+			'StreetAddress2' => $data['TransactionPayment']['street_address_2'],
+			'City' => $data['TransactionPayment']['city'],
+			'StateCode' => $data['TransactionPayment']['state'],
+			'ZipCode' => $data['TransactionPayment']['zip'],
+		);
+	}
+	
+	return $this->_sendRequest('POST', '/customer', $params);
   }
 
   /**
@@ -256,7 +302,9 @@ debug($data); break;
   }
 
   /**
-   *
+   * Creates a Payment record when provided with a Payment object.
+   * This is a one-time payment that will be created on the current date for the Customer with the specified Account Id.
+   * 
    * @param array $data
    * @return boolean|array
    */
@@ -264,6 +312,15 @@ debug($data); break;
 	return $this->_sendRequest('POST', '/payment', $data);
   }
 
+  /**
+   * @param integer $customerId
+   * @return boolean|array
+   */
+  public function findCustomerById($customerId) {
+	return $this->_sendRequest('GET', '/customer/'.$customerId);
+  }
+  
+  
   /**
    * try to find their email in the current customer list
    * @param string $email
