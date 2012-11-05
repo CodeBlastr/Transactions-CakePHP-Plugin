@@ -149,7 +149,6 @@ class TransactionsController extends TransactionsAppController {
 		} else {
 		  // get their cart and process it
 		  $this->request->data = $this->Transaction->processCart($userId);
-		  $TransactionPayment = $userId;
 
 		  if (!$this->request->data) {
 			throw new NotFoundException(__d('transactions', 'Cart is empty'));

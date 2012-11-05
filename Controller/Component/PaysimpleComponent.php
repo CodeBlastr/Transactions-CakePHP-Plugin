@@ -36,21 +36,23 @@ class PaysimpleComponent extends Component {
   public function Pay($data) {
 debug($data); break;
 
-	if (!$data['Connection']) {
+	if (!$data['Connection']['Paysimple']['Account']['Id']) {
 	  // create a user in their system and return data for us to save
 	  try {
 		
 		// create their Customer
 		$userData = $this->createCustomer($data);
-		$data['Connection']['Paysimple']['CustomerId'] = $userData['Id'];
+		$data['Connection']['Paysimple']['Customer']['Id'] = $userData['Id'];
 		
 		// add their payment method to their Account List
 		if (!empty($data['Transaction']['ach_account_number'])) {
 		  $accountData = $this->addAchAccount($data);
-		  $data['Connection']['Paysimple']['Ach'][] = $accountData;
+		  $data['Connection']['Paysimple']['Account']['Ach'][] = $accountData;
+		  $data['Connection']['Paysimple']['Account']['Id'] = $accountData['Id'];
 		} else {
 		  $accountData = $this->addCreditCardAccount($data);
-		  $data['Connection']['Paysimple']['CreditCard'][] = $accountData;
+		  $data['Connection']['Paysimple']['Account']['CreditCard'][] = $accountData;
+		  $data['Connection']['Paysimple']['Account']['Id'] = $accountData['Id'];
 		}
 		
 		// charge them using their newly submitted payment method
@@ -72,7 +74,12 @@ debug($data); break;
 	  // Currently my code would compare the account they submitted against what PaySimple has saved for them,
 	  // and create it if it's not already there, then set it to default, and use it.
 	  try {
+		
 		$this->createPayment($data);
+		$data['Transaction']['Payment'] = $paymentData;
+		
+		return $data;
+		
 	  } catch (Exception $exc) {
 		debug($exc->getMessage());
 		break;
@@ -305,7 +312,7 @@ debug($data); break;
 		'Issuer' => $this->getIssuer($data['Transaction']['card_number']),
 		'CreditCardNumber' => $data['Transaction']['card_number'],
 		'ExpirationDate' => $data['Transaction']['card_exp_month'] . '-' . $data['Transaction']['card_exp_year'],
-		'CustomerId' => $data['Connection']['Paysimple']['CustomerId'],
+		'CustomerId' => $data['Connection']['Paysimple']['Customer']['Id'],
 	);
 	
 	return $this->_sendRequest('POST', '/account/creditcard', $params);
@@ -328,7 +335,7 @@ debug($data); break;
 		'RoutingNumber' => $data['Transaction']['ach_routing_number'],
 		'AccountNumber' => $data['Transaction']['ach_account_number'],
 		'BankName' => $data['Transaction']['ach_bank_name'],
-		'CustomerId' => $data['Connection']['Paysimple']['CustomerId']
+		'CustomerId' => $data['Connection']['Paysimple']['Customer']['Id']
 	);
 	
 	return $this->_sendRequest('POST', '/account/ach', $params);
@@ -344,7 +351,22 @@ debug($data); break;
    * @return boolean|array
    */
   public function createPayment($data) {
-	return $this->_sendRequest('POST', '/payment', $data);
+	
+	$params = array(
+		'AccountId' => ($data['Connection']['Paysimple']['Account']),
+		'InvoiceId' => NULL,
+		'Amount' => $data['Transaction']['order_charge'],
+		'IsDebit' => false,
+		'InvoiceNumber' => NULL,
+		'PurchaseOrderNumber' => NULL,
+		'OrderId' => NULL,
+		'Description' => $data['Transaction']['description'],
+		'CVV' => $data['Transaction']['card_sec'],
+		'PaymentSubType' => 'Web',
+		'Id' => 0
+	);
+	
+	return $this->_sendRequest('POST', '/payment', $params);
   }
 
   /**
