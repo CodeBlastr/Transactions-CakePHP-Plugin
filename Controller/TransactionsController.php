@@ -28,7 +28,7 @@ class TransactionsController extends TransactionsAppController {
 	public function checkout() {
 	    if($this->request->data) {
 		  try {
-			
+			//debug($this->request->data);break;
 			$data = $this->Transaction->finalizeTransactionData($this->request->data);
 			$data = $this->Transaction->finalizeUserData($data);
 			$data = $this->Payments->pay($data);
@@ -177,7 +177,7 @@ class TransactionsController extends TransactionsAppController {
 		}
 		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
 		$transactionShipments = $this->Transaction->TransactionShipment->find('list');
-		$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
+		//$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
 		$assignees = $this->Transaction->Assignee->find('list');
@@ -207,7 +207,7 @@ class TransactionsController extends TransactionsAppController {
 		}
 		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
 		$transactionShipments = $this->Transaction->TransactionShipment->find('list');
-		$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
+		//$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
 		$assignees = $this->Transaction->Assignee->find('list');

@@ -246,6 +246,10 @@ class Transaction extends TransactionsAppModel {
 			  )
 		));
 
+		if(!$currentTransaction) {
+			throw new Exception('Transaction missing.');
+		}
+		
 	    // update quantities
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
