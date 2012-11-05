@@ -30,7 +30,7 @@
     ?>
 
   	<?php
-	if($$this->request->data['Customer']['id'] == NULL) {
+	if($this->request->data['Customer']['id'] == NULL) {
 	  // show a login button
 	  echo __d('transactions', 'Returning Customer?') . '&nbsp;';
 	  echo $this->Html->link(__d('transactions', 'Please Login'), array('plugin' => 'users', 'controller' => 'users', 'action' => 'login'), array('class' => 'btn'));
@@ -59,7 +59,7 @@
 				echo $this->Form->input('TransactionPayment.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
 				echo $this->Form->input('TransactionPayment.0.zip', array('label' => 'Zip ', 'class' => 'required', 'size' => '10'));
 				echo $this->Form->hidden('TransactionPayment.0.country', array('label' => 'Country', 'value' => 'US'));
-				echo $this->Form->input('TransactionPayment.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $$this->request->data['TransactionPayment'] != $$this->request->data['TransactionShipment'] ? '' : 'checked'));
+				echo $this->Form->input('TransactionPayment.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $this->request->data['TransactionPayment'] != $this->request->data['TransactionShipment'] ? '' : 'checked'));
 				?>
 			</fieldset>
 			<fieldset id="shippingAddress">
@@ -96,7 +96,7 @@
 
 			<?php
 			//debug($myCart);
-			foreach ($$this->request->data['TransactionItem'] as $i => $transactionItem) {
+			foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
 			?>
 				<div class="transactionItemInCart">
@@ -120,11 +120,11 @@
 			<?php
 			#echo !empty($enableShipping) ? $this->Form->input('Transaction.shipping_charge', array('readonly' => true, 'value' => ZuhaInflector::pricify($options['defaultShippingCharge']))) : $this->Form->hidden('OrderTransaction.shipping_charge', array('readonly' => true, 'value' => ''));
 			#echo $this->Form->input('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($myCart['Transaction']['order_charge'])));
-			$orderTotal = floatval($options['defaultShippingCharge']) + floatval($$this->request->data['Transaction']['order_charge']);
+			$orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['order_charge']);
 			$pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); // field is FLOAT, no commas allowed
 			//echo $this->Form->input('Transaction.discount', array('label' => 'Discount', 'readonly' => true));
 			?>
-			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($$this->request->data['Transaction']['order_charge']) ?></span></div>
+			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></div>
 			<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
 			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
 			<hr/>
@@ -249,7 +249,7 @@
 			ordershipcharge += parseFloat(response['amount']) ;
 			$('#TransactionShippingCharge').val(ordershipcharge);
 
-			$('#TransactionTotal').val(parseFloat(<?php echo $$this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
+			$('#TransactionTotal').val(parseFloat(<?php echo $this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
 			//$('#step3').show();
 		  }
 	  }
@@ -261,7 +261,7 @@
 		  if(response['amount']) {
 			$('#TransactionShippingType').append('<option value="' + option_value + '">'+ option_key +'</option>');
 			$('#TransactionShippingCharge').val(response['amount']);
-			$('#TransactionTotal').val(parseFloat(<?php echo $$this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
+			$('#TransactionTotal').val(parseFloat(<?php echo $this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
 		  }
 	  }
     }
