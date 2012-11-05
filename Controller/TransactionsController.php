@@ -37,6 +37,7 @@ class TransactionsController extends TransactionsAppController {
 	  		// need a valid Customer.id to proceed
 			$data = $this->Transaction->add($data);
 			// need a valid User.id to proceed
+			$data = $this->Transaction->Customer->Connection->add($data);
 			$data = $this->TransactionPayment->add($data);
 			$data = $this->TransactionShipping->add($data);
 			
@@ -147,14 +148,15 @@ class TransactionsController extends TransactionsAppController {
 		  
 		} else {
 		  // get their cart and process it
-		  $myCart = $this->Transaction->processCart($userId);
+		  $this->request->data = $this->Transaction->processCart($userId);
+		  $TransactionPayment = $userId;
 
-		  if (!$myCart) {
+		  if (!$this->request->data) {
 			throw new NotFoundException(__d('transactions', 'Cart is empty'));
 		  }
 
-		  // sent the variables to display in the cart
-		  $this->set(compact('myCart', 'options'));
+		  // set the variables to display in the cart
+		  $this->set(compact('options'));
 		  
 		}
 	}

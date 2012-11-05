@@ -37,19 +37,33 @@ class PaysimpleComponent extends Component {
 debug($data); break;
 
 	if (!$data['Connection']) {
-	  // create a user in their system and save it in our Connections table
+	  // create a user in their system and return data for us to save
 	  try {
-		$this->createCustomer($data);
+		
+		// create their Customer
+		$userData = $this->createCustomer($data);
+		$data['Connection']['Paysimple']['CustomerId'] = $userData['Id'];
+		
+		// add their payment method to their Account List
 		if (!empty($data['Transaction']['ach_account_number'])) {
-		  $this->addAchAccount($data);
+		  $accountData = $this->addAchAccount($data);
+		  $data['Connection']['Paysimple']['Ach'][] = $accountData;
 		} else {
-		  $this->addCreditCardAccount($data);
+		  $accountData = $this->addCreditCardAccount($data);
+		  $data['Connection']['Paysimple']['CreditCard'][] = $accountData;
 		}
-		$this->createPayment($data);
+		
+		// charge them using their newly submitted payment method
+		$paymentData = $this->createPayment($data);
+		$data['Transaction']['Payment'] = $paymentData;
+		
+		return $data;
+		
 	  } catch (Exception $exc) {
 		debug($exc->getMessage());
 		break;
 	  }
+	  
 	} else {
 	  // They have Connection, we must have a PaySimple ID for them.
 	  // Notes:
@@ -228,7 +242,9 @@ debug($data); break;
   }
 
   /**
-   *
+   * Creates a Customer record when provided with a Customer object
+   * @link https://sandbox-api.paysimple.com/v4/Help/Customer#post-customer
+   * 
    * @param array $data
    * @return boolean|array
    */
@@ -275,35 +291,54 @@ debug($data); break;
   }
 
   /**
-   *
+   * Creates a Credit Card Account record when provided with a Credit Card Account object
+   * @link https://sandbox-api.paysimple.com/v4/Help/Account#post-ccaccount
+   * 
    * @param array $data
    * @return boolean|array
    */
   public function addCreditCardAccount($data) {
 
-	$data['Id'] = 0;
-	$data['IsDefault'] = true;
-	$data['Issuer'] = $this->getIssuer($data['CreditCard']['card_number']);
-
-	return $this->_sendRequest('POST', '/account/creditcard', $data);
+	$params = array(
+		'Id' => 0,
+		'IsDefault' => true,
+		'Issuer' => $this->getIssuer($data['Transaction']['card_number']),
+		'CreditCardNumber' => $data['Transaction']['card_number'],
+		'ExpirationDate' => $data['Transaction']['card_exp_month'] . '-' . $data['Transaction']['card_exp_year'],
+		'CustomerId' => $data['Connection']['Paysimple']['CustomerId'],
+	);
+	
+	return $this->_sendRequest('POST', '/account/creditcard', $params);
+	
   }
 
   /**
-   *
+   * Creates an ACH Account record when provided with an ACH Account object
+   * @link https://sandbox-api.paysimple.com/v4/Help/Account#post-achaccount
+   * 
    * @param array $data
    * @return boolean|array
    */
   public function addAchAccount($data) {
 
-	$data['Id'] = 0;
-	$data['IsDefault'] = true;
-
-	return $this->_sendRequest('POST', '/account/ach', $data);
+	$params = array(
+		'Id' => 0,
+		'IsDefault' => true,
+		'IsCheckingAccount' => $data['Transaction']['ach_is_checking_account'],
+		'RoutingNumber' => $data['Transaction']['ach_routing_number'],
+		'AccountNumber' => $data['Transaction']['ach_account_number'],
+		'BankName' => $data['Transaction']['ach_bank_name'],
+		'CustomerId' => $data['Connection']['Paysimple']['CustomerId']
+	);
+	
+	return $this->_sendRequest('POST', '/account/ach', $params);
+	
   }
 
   /**
    * Creates a Payment record when provided with a Payment object.
    * This is a one-time payment that will be created on the current date for the Customer with the specified Account Id.
+   * @link https://sandbox-api.paysimple.com/v4/Help/Payment#post-payment
    * 
    * @param array $data
    * @return boolean|array
@@ -352,6 +387,7 @@ debug($data); break;
 	  $this->response['reason_text'] .= '<li>' . $error . '</li>';
 	}
 	$this->response['response_code'] = 0;
+	new Exception($this->response['reason_text']);
   }
 
   /**
@@ -390,7 +426,7 @@ debug($data); break;
    * @param string $method
    * @param string $action
    * @param array $data
-   * @return boolean|array
+   * @return boolean|array Returns FALSE or the "Response" array
    */
   public function _sendRequest($method, $action, $data = NULL) {
 
@@ -428,14 +464,17 @@ debug($data); break;
 	$badResponseCodes = array(400, 401, 403, 404, 405, 500);
 	if (in_array($responseCode, $badResponseCodes)) {
 	  if (is_string($result)) {
-		$this->errors[] = $result;
+		$this->errors[] = $message = $result;
 	  } elseif (isset($result['Meta']['Errors']['ErrorMessages'])) {
 		foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 		  $this->errors[] = $error['Message'];
+		  $message .= $error['Message'];
 		}
 	  } else {
 		$this->errors[] = $result;
+		$message = $result;
 	  }
+	  new Exception($message);
 	  return FALSE;
 	} else {
 	  return $result['Response'];

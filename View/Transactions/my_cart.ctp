@@ -30,7 +30,7 @@
     ?>
 
   	<?php
-	if($myCart['Customer']['id'] == NULL) {
+	if($$this->request->data['Customer']['id'] == NULL) {
 	  // show a login button
 	  echo __d('transactions', 'Returning Customer?') . '&nbsp;';
 	  echo $this->Html->link(__d('transactions', 'Please Login'), array('plugin' => 'users', 'controller' => 'users', 'action' => 'login'), array('class' => 'btn'));
@@ -50,28 +50,28 @@
 			<fieldset id="billingAddress">
 				<legend><?php echo __d('transactions', 'Billing Address'); ?></legend>
 				<?php
-				echo $this->Form->input('TransactionPayment.email', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
-				echo $this->Form->input('TransactionPayment.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));
-				echo $this->Form->input('TransactionPayment.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-				echo $this->Form->input('TransactionPayment.city', array('label' => 'City ', 'class' => 'required', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.zip', array('label' => 'Zip ', 'class' => 'required', 'size' => '10'));
-				echo $this->Form->hidden('TransactionPayment.country', array('label' => 'Country', 'value' => 'US'));
-				echo $this->Form->input('TransactionPayment.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $myCart['TransactionPayment'] != $myCart['TransactionShipment'] ? '' : 'checked'));
+				echo $this->Form->input('TransactionPayment.0.email', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionPayment.0.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionPayment.0.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
+				echo $this->Form->input('TransactionPayment.0.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));
+				echo $this->Form->input('TransactionPayment.0.street_address_2', array('label' => 'Street 2', 'size' => '49'));
+				echo $this->Form->input('TransactionPayment.0.city', array('label' => 'City ', 'class' => 'required', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionPayment.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionPayment.0.zip', array('label' => 'Zip ', 'class' => 'required', 'size' => '10'));
+				echo $this->Form->hidden('TransactionPayment.0.country', array('label' => 'Country', 'value' => 'US'));
+				echo $this->Form->input('TransactionPayment.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $$this->request->data['TransactionPayment'] != $$this->request->data['TransactionShipment'] ? '' : 'checked'));
 				?>
 			</fieldset>
 			<fieldset id="shippingAddress">
 				<legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
 				<div id="shipping_error"></div>
 				<?php
-				echo $this->Form->input('TransactionShipment.street_address_1', array('label' => 'Street', 'size' => '49'));
-				echo $this->Form->input('TransactionShipment.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-				echo $this->Form->input('TransactionShipment.city', array('label' => 'City', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionShipment.state', array('label' => 'State ', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionShipment.zip', array('label' => 'Zip', 'size' => '10'));
-				echo $this->Form->hidden('TransactionShipment.country', array('label' => 'Country ', 'value' => 'US'));
+				echo $this->Form->input('TransactionShipment.0.street_address_1', array('label' => 'Street', 'size' => '49'));
+				echo $this->Form->input('TransactionShipment.0.street_address_2', array('label' => 'Street 2', 'size' => '49'));
+				echo $this->Form->input('TransactionShipment.0.city', array('label' => 'City', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionShipment.0.state', array('label' => 'State ', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionShipment.0.zip', array('label' => 'Zip', 'size' => '10'));
+				echo $this->Form->hidden('TransactionShipment.0.country', array('label' => 'Country ', 'value' => 'US'));
 				?>
 			</fieldset>
 		  </div><!-- #orderTransactionAddress -->
@@ -96,7 +96,7 @@
 
 			<?php
 			//debug($myCart);
-			foreach ($myCart['TransactionItem'] as $i => $transactionItem) {
+			foreach ($$this->request->data['TransactionItem'] as $i => $transactionItem) {
 				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
 			?>
 				<div class="transactionItemInCart">
@@ -120,11 +120,11 @@
 			<?php
 			#echo !empty($enableShipping) ? $this->Form->input('Transaction.shipping_charge', array('readonly' => true, 'value' => ZuhaInflector::pricify($options['defaultShippingCharge']))) : $this->Form->hidden('OrderTransaction.shipping_charge', array('readonly' => true, 'value' => ''));
 			#echo $this->Form->input('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($myCart['Transaction']['order_charge'])));
-			$orderTotal = floatval($options['defaultShippingCharge']) + floatval($myCart['Transaction']['order_charge']);
+			$orderTotal = floatval($options['defaultShippingCharge']) + floatval($$this->request->data['Transaction']['order_charge']);
 			$pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); // field is FLOAT, no commas allowed
 			//echo $this->Form->input('Transaction.discount', array('label' => 'Discount', 'readonly' => true));
 			?>
-			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($myCart['Transaction']['order_charge']) ?></span></div>
+			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($$this->request->data['Transaction']['order_charge']) ?></span></div>
 			<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
 			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
 			<hr/>
@@ -249,7 +249,7 @@
 			ordershipcharge += parseFloat(response['amount']) ;
 			$('#TransactionShippingCharge').val(ordershipcharge);
 
-			$('#TransactionTotal').val(parseFloat(<?php echo $myCart['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
+			$('#TransactionTotal').val(parseFloat(<?php echo $$this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
 			//$('#step3').show();
 		  }
 	  }
@@ -261,7 +261,7 @@
 		  if(response['amount']) {
 			$('#TransactionShippingType').append('<option value="' + option_value + '">'+ option_key +'</option>');
 			$('#TransactionShippingCharge').val(response['amount']);
-			$('#TransactionTotal').val(parseFloat(<?php echo $myCart['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
+			$('#TransactionTotal').val(parseFloat(<?php echo $$this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
 		  }
 	  }
     }
