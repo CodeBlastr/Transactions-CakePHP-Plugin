@@ -18,8 +18,8 @@ class PaysimpleComponent extends Component {
 	public $errors = false;
 	public $response = array();
 
-	public function __construct($config = array()) {
-		parent::__construct($config);
+	public function __construct(ComponentCollection $collection, $config = array()) {
+		parent::__construct($collection, $config);
 		if (defined('__ORDERS_TRANSACTIONS_PAYSIMPLE')) {
 			$settings = unserialize(__ORDERS_TRANSACTIONS_PAYSIMPLE);
 		}
