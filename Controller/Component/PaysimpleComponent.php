@@ -34,10 +34,8 @@ class PaysimpleComponent extends Component {
  * @param array $data
  */
 	public function Pay($data) {
-//		debug($data);
-//		break;
 
-		if (!$data['Connection']['Paysimple']['Account']['Id']) {
+		if (!isset($data['Connection'])) {
 			// create a user in their system and return data for us to save
 			try {
 
@@ -62,8 +60,7 @@ class PaysimpleComponent extends Component {
 
 				return $data;
 			} catch (Exception $exc) {
-				debug($exc->getMessage());
-				break;
+				throw new Exception($exc->getMessage());
 			}
 		} else {
 			// They have Connection, we must have a PaySimple ID for them.
@@ -79,163 +76,10 @@ class PaysimpleComponent extends Component {
 
 				return $data;
 			} catch (Exception $exc) {
-				debug($exc->getMessage());
-				break;
+				throw new Exception($exc->getMessage());
 			}
 		}
 
-
-//		$user = $this->findCustomerByEmail($data['Customer']['email']);
-//
-//		if ($user) {
-//			// we found this user..
-//			// check if payment method exists
-//			$currentAccounts = $this->getAccounts($user['Id']);
-//			if ($currentAccounts) {
-//				if (!empty($currentAccounts['CreditCardAccounts']) && !empty($data['Transaction']['card_number'])) {
-//					$lastFourDigits = substr($data['Transaction']['card_number'], -4, 4);
-//					$accountExists = false;
-//					foreach ($currentAccounts['CreditCardAccounts'] as $creditCardAccount) {
-//						$ccLastFourDigits = substr($creditCardAccount['CreditCardNumber'], -4, 4);
-//						if ($ccLastFourDigits == $lastFourDigits) {
-//							$accountExists = true;
-//							$accountId = $creditCardAccount['Id'];
-//							break;
-//						}
-//					}
-//				}
-//				if (!empty($currentAccounts['AchAccounts']) && !empty($data['Transaction']['ach_account_number'])) {
-//					$lastFourDigits = substr($data['Transaction']['ach_account_number'], -4, 4);
-//					$accountExists = false;
-//					foreach ($currentAccounts['AchAccounts'] as $achAccount) {
-//						$achLastFourDigits = substr($achAccount['AccountNumber'], -4, 4);
-//						if ($achLastFourDigits == $lastFourDigits) {
-//							$accountExists = true;
-//							$accountId = $achAccount['Id'];
-//							break;
-//						}
-//					}
-//				}
-//			}
-//
-//			if (!isset($accountId)) {
-//				// this is a new payment method by an existing customer
-//				if (isset($data['Transaction']['card_number'])) {
-//					// add their credit card
-//					$params = array(
-//						'CreditCardNumber' => $data['Transaction']['card_number'],
-//						'ExpirationDate' => $data['Transaction']['card_exp_month'] . '-' . $data['Transaction']['card_exp_year'],
-//						'CustomerId' => $user['Id'],
-//					);
-//					$addCreditSuccess = $this->addCreditCardAccount($params);
-//					if ($addCreditSuccess) {
-//						$accountId = $addCreditSuccess['Id'];
-//					}
-//				}
-//				if (isset($data['Transaction']['Ach'])) {
-//					// add their ACH account
-//					$params = array(
-//						'IsCheckingAccount' => $data['Transaction']['ach_is_checking_account'],
-//						'RoutingNumber' => $data['Transaction']['ach_routing_number'],
-//						'AccountNumber' => $data['Transaction']['ach_account_number'],
-//						'BankName' => $data['Transaction']['ach_bank_name'],
-//						'CustomerId' => $user['Id']
-//					);
-//					$addAchSuccess = $this->addAchAccount($params);
-//					if ($addAchSuccess) {
-//						$accountId = $addAchSuccess['Id'];
-//					}
-//				}
-//			}
-//
-//			if (isset($accountId)) {
-//				// proceed with the payment
-//				$params = array(
-//					'AccountId' => $accountId,
-//					'InvoiceId' => NULL,
-//					'Amount' => $data['Transaction']['order_charge'],
-//					'IsDebit' => false,
-//					'InvoiceNumber' => NULL,
-//					'PurchaseOrderNumber' => NULL,
-//					'OrderId' => NULL,
-//					'Description' => $data['Transaction']['description'],
-//					'CVV' => $data['Transaction']['card_sec'],
-//					'PaymentSubType' => 'Web',
-//					'Id' => 0
-//				);
-//				$paymentSuccess = $this->createPayment($params);
-//				if ($paymentSuccess) {
-//					//$this->success = true;
-//					$this->response['response_code'] = 1;
-//				} else {
-//					$this->echoErrors();
-//				}
-//			} else {
-//				$this->echoErrors();
-//			}
-//		} else {
-//
-//			// user not found by email, create a new customer
-//			$createSuccess = $this->createCustomer($data);
-//			//var_dump($createSuccess);
-//			if ($createSuccess) {
-//
-//				if (isset($data['CreditCard'])) {
-//					// add their credit card
-//					$params = array(
-//						'CreditCardNumber' => $data['Transaction']['card_number'],
-//						'ExpirationDate' => $data['Transaction']['card_exp_month'] . '-' . $data['Transaction']['card_exp_year'],
-//						'CustomerId' => $createSuccess['Id'],
-//					);
-//					$addCreditSuccess = $this->addCreditCardAccount($params);
-//					if ($addCreditSuccess) {
-//						$accountId = $addCreditSuccess['Id'];
-//					}
-//				}
-//				if (isset($data['Ach'])) {
-//					// add their ACH account
-//					$params = array(
-//						'IsCheckingAccount' => $data['Transaction']['ach_is_checking_account'],
-//						'RoutingNumber' => $data['Transaction']['ach_routing_number'],
-//						'AccountNumber' => $data['Transaction']['ach_account_number'],
-//						'BankName' => $data['Transaction']['ach_bank_name'],
-//						'CustomerId' => $createSuccess['Id']
-//					);
-//					$addAchSuccess = $this->addAchAccount($params);
-//					if ($addAchSuccess) {
-//						$accountId = $addAchSuccess['Id'];
-//					}
-//				}
-//
-//				// now process the payment
-//				if ($accountId) {
-//					$params = array(
-//						'AccountId' => $accountId,
-//						'InvoiceId' => NULL,
-//						'Amount' => $data['Transaction']['order_charge'],
-//						'IsDebit' => false,
-//						'InvoiceNumber' => NULL,
-//						'PurchaseOrderNumber' => NULL,
-//						'OrderId' => NULL,
-//						'Description' => $data['Transaction']['description'],
-//						'CVV' => $data['Transaction']['card_sec'],
-//						'PaymentSubType' => 'Web',
-//						'Id' => 0
-//					);
-//					$paymentSuccess = $this->createPayment($params);
-//					if ($paymentSuccess) {
-//						//$this->success = true;
-//						$this->response['response_code'] = 1;
-//					} else { //echo '290';
-//						$this->echoErrors();
-//					}
-//				} else { //echo '293';
-//					$this->echoErrors();
-//				}
-//			} else { //echo '296';
-//				$this->echoErrors();
-//			}
-//		}
 	}
 
 /**
@@ -256,30 +100,30 @@ class PaysimpleComponent extends Component {
 	public function createCustomer($data) {
 
 		$params = array(
-			'FirstName' => $data['TransactionPayment']['first_name'],
-			'LastName' => $data['TransactionPayment']['last_name'],
+			'FirstName' => $data['TransactionPayment'][0]['first_name'],
+			'LastName' => $data['TransactionPayment'][0]['last_name'],
 			//'Company' => $data['Meta']['company'],
 			'BillingAddress' => array(
-				'StreetAddress1' => $data['TransactionPayment']['street_address_1'],
-				'StreetAddress2' => $data['TransactionPayment']['street_address_2'],
-				'City' => $data['TransactionPayment']['city'],
-				'StateCode' => $data['TransactionPayment']['state'],
-				'ZipCode' => $data['TransactionPayment']['zip'],
+				'StreetAddress1' => $data['TransactionPayment'][0]['street_address_1'],
+				'StreetAddress2' => $data['TransactionPayment'][0]['street_address_2'],
+				'City' => $data['TransactionPayment'][0]['city'],
+				'StateCode' => $data['TransactionPayment'][0]['state'],
+				'ZipCode' => $data['TransactionPayment'][0]['zip'],
 			),
 			'ShippingSameAsBilling' => true,
 			'Email' => $data['Customer']['email'],
 			'Phone' => $data['Customer']['phone'],
 		);
 
-		if ($data['TransactionPayment']['shipping'] == 'checked') {
+		if ($data['TransactionPayment'][0]['shipping'] == 'checked') {
 			// their shipping is not the same as their billing
 			$params['ShippingSameAsBilling'] = false;
 			$params['BillingAddress'] = array(
-				'StreetAddress1' => $data['TransactionPayment']['street_address_1'],
-				'StreetAddress2' => $data['TransactionPayment']['street_address_2'],
-				'City' => $data['TransactionPayment']['city'],
-				'StateCode' => $data['TransactionPayment']['state'],
-				'ZipCode' => $data['TransactionPayment']['zip'],
+				'StreetAddress1' => $data['TransactionPayment'][0]['street_address_1'],
+				'StreetAddress2' => $data['TransactionPayment'][0]['street_address_2'],
+				'City' => $data['TransactionPayment'][0]['city'],
+				'StateCode' => $data['TransactionPayment'][0]['state'],
+				'ZipCode' => $data['TransactionPayment'][0]['zip'],
 			);
 		}
 
@@ -483,6 +327,7 @@ class PaysimpleComponent extends Component {
 			if (is_string($result)) {
 				$this->errors[] = $message = $result;
 			} elseif (isset($result['Meta']['Errors']['ErrorMessages'])) {
+				$message = '';
 				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
 					$message .= $error['Message'];
@@ -491,8 +336,10 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-			new Exception($message);
+			
+			throw new Exception($message);
 			return FALSE;
+			
 		} else {
 			return $result['Response'];
 		}

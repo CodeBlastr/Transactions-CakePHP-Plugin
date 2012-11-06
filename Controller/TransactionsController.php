@@ -41,44 +41,20 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->TransactionPayment->add($data);
 			$data = $this->TransactionShipping->add($data);
 			
-		  } catch (Exception $exc) {
-			//debug($exc->getMessage());
-			echo($exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
-			while($exc = $e->getPrevious())  
-				echo('Caused by: '.$exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
-			break;
+		  } catch (Exception $e) {
+			  
+			  $this->Session->setFlash(__d('transactions', $e->getMessage()));
+			  $this->redirect($this->referer());
+			  
+//			debug($e);
+//			debug($e->getMessage());
+//			echo($exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
+//			while($exc = $exc->getPrevious()) {
+//				echo('Caused by: '.$exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
+//			}
+//			break;
 		  }
 
-
-//
-//		  // get their official Transaction (finalize all data)
-//		  $officialTransaction = $this->Transaction->finalizeTransactionData($this->Transaction->getCustomersId(), $this->request->data);
-//		  $officialTransaction = $this->Transaction->finalizeUserData($officialTransaction);
-//		  debug($officialTransaction);
-//		  
-//		  // save the transaction stuff & create their 'Customer'
-//		  debug($this->Transaction->saveAssociated($officialTransaction, array('atomic' => false)) );
-//		  //debug($this->Transaction->TransactionPayment->save($officialTransaction['TransactionPayment']));
-//		  debug($this->Transaction->invalidFields());
-//		  break;
-//		  // we should now have a User.id for this person
-//		  // update their 
-//		  
-//		  
-//		  // create their PaySimple 'Customer'
-//		  $createCustomer = $this->Payments->createCustomer($data);
-//		  if($createCustomer) {
-//			$this->Transaction->Customer->Connection->save(array(
-//				'user_id' => $this->Transaction->Customer->id,
-//				'type' => 'paysimple',
-//				'value' => $createCustomer['id']
-//			));
-//		  } else {
-//			$response['response_code'] = 666;
-//		  }
-//		  
-//		  // process the payment
-//		  $response = $this->Payments->pay($officialTransaction);
 		  
 		  if ($response['response_code'] != 1) {
 			// Transaction failed, back to the cart!
