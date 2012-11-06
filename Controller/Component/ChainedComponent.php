@@ -9,9 +9,9 @@ class ChainedComponent extends Object{
 	
 	//initialize paypal settings and chained settings 
 	function initialize(&$controller, $settings=array()) {
-		if(defined('__ORDERS_PAYPAL_ADAPTIVE') && defined('__ORDERS_CHAINED_PAYMENT')) {
-            $this->paysettings = unserialize(__ORDERS_PAYPAL_ADAPTIVE);
-            $this->chainedSettings = unserialize(__ORDERS_CHAINED_PAYMENT);
+		if(defined('__TRANSACTIONS_PAYPAL_ADAPTIVE') && defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
+            $this->paysettings = unserialize(__TRANSACTIONS_PAYPAL_ADAPTIVE);
+            $this->chainedSettings = unserialize(__TRANSACTIONS_CHAINED_PAYMENT);
 		}
 	}
 	

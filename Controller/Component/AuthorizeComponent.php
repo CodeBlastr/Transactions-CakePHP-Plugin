@@ -1,7 +1,7 @@
 <?php
 class AuthorizeComponent extends Object { 
 	
-	public $components = array('Orders.Arb');
+	public $components = array('Transactions.Arb');
 	public $response = array();
 	public $recurring = false;
 	public $x_type = 'AUTH_CAPTURE';
@@ -31,7 +31,7 @@ class AuthorizeComponent extends Object {
  *
  */
 	public function Pay($data) {
-		App::import('Component', 'Orders.Arb');
+		App::import('Component', 'Transactions.Arb');
 		$this->Arb = new ArbComponent();
 		if($this->recurring) {
 			// if existing profile recurring id for arb, update the subscription
@@ -52,7 +52,7 @@ class AuthorizeComponent extends Object {
 	 * $profileId: profile id of buyer
 	 */
 	public function ManageRecurringPaymentsProfileStatus($profileId, $action = 'Suspend'){
-		App::import('Component', 'Orders.Arb');
+		App::import('Component', 'Transactions.Arb');
 		$this->Arb = new ArbComponent();
 		$this->arbPaymentSuspend($profileId);
 	}
@@ -72,14 +72,14 @@ class AuthorizeComponent extends Object {
 		$TESTING		  			  = 1;				# Set the testing flag so that transactions are not live
 		$ERROR_RETRIES				= 2;				# Number of transactions to post if soft errors occur
 	 
-		$auth_net_tran_key = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY') ? 
-										__ORDERS_TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY : '' ;
-		$auth_net_login_id = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ?
-										__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID : '' ;
+		$auth_net_tran_key = defined('__TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY') ? 
+										__TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY : '' ;
+		$auth_net_login_id = defined('__TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ?
+										__TRANSACTIONS_AUTHORIZENET_LOGIN_ID : '' ;
 		//echo $auth_net_tran_key ;
 		### $auth_net_url				= "https://certification.authorize.net/gateway/transact.dll";
 		#  Uncomment the line ABOVE for test accounts or BELOW for live merchant accounts 
-		$auth_net_url				= defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_MODE') ? 'https://test.authorize.net/gateway/transact.dll' : 'https://secure.authorize.net/gateway/transact.dll';
+		$auth_net_url				= defined('__TRANSACTIONS_AUTHORIZENET_MODE') ? 'https://test.authorize.net/gateway/transact.dll' : 'https://secure.authorize.net/gateway/transact.dll';
 		$authnet_values	= array 
 		( 
 			"x_login"				=> $auth_net_login_id, 
@@ -260,10 +260,8 @@ class AuthorizeComponent extends Object {
 	}
 
 	public function arbPaymentUpdate($data) {
-		$login	=  defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ?
-											__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID : '' ; 
-		$transkey = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY') ? 
-											__ORDERS_TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY : '' ;
+		$login	=  defined('__TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ? __TRANSACTIONS_AUTHORIZENET_LOGIN_ID : '' ; 
+		$transkey = defined('__TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY') ? __TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY : '' ;
 		
 		# for test API hardcoded TRUE.
 		$this->Arb->AuthnetARB($login,$transkey, TRUE);
@@ -278,10 +276,8 @@ class AuthorizeComponent extends Object {
 	
 
 	public function arbPaymentSuspend($profileId) {
-		$login	=  defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ?
-										__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID : '' ; 
-		$transkey = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY') ? 
-										__ORDERS_TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY : '' ;
+		$login	=  defined('__TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ? __TRANSACTIONS_AUTHORIZENET_LOGIN_ID : '' ; 
+		$transkey = defined('__TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY') ? __TRANSACTIONS_AUTHORIZENET_TRANSACTION_KEY : '' ;
 		
 		# for test API hardcoded TRUE.
 		$this->Arb->AuthnetARB($login,$transkey, TRUE);

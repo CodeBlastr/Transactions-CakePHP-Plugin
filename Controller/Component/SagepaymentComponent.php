@@ -7,7 +7,7 @@
 class SagepaymentComponent extends Object {
 
   public
-          $components = array('Orders.Arb'),
+          $components = array('Transactions.Arb'),
           $response = '',
           $recurring = false,
           $x_type = '01', // 01 => Sale, 02 => AuthOnly, 03 => Force/PriorAuthSale, 04 => Void, 06 => Credit, 11=>PriorAuthSale by Reference (requires T_reference)
@@ -45,7 +45,7 @@ class SagepaymentComponent extends Object {
     /**
      *  Run the appropriate payment method
      */
-    App::import('Component', 'Orders.Arb');
+    App::import('Component', 'Transactions.Arb');
     $this->Arb = new ArbComponent();
     if ($this->recurring) {
       // if existing profile recurring id for arb, update the subscription
@@ -78,8 +78,8 @@ class SagepaymentComponent extends Object {
 
 
         // merchant account settings
-	    $formatted['m_id'] = defined('__ORDERS_TRANSACTIONS_SAGEPAYMENTS_MERCHANT_ID') ? __ORDERS_TRANSACTIONS_SAGEPAYMENTS_MERCHANT_ID : '';
-	    $formatted['m_key'] = defined('__ORDERS_TRANSACTIONS_SAGEPAYMENTS_MERCHANT_KEY') ? __ORDERS_TRANSACTIONS_SAGEPAYMENTS_MERCHANT_KEY : '';
+	    $formatted['m_id'] = defined('__TRANSACTIONS_SAGEPAYMENTS_MERCHANT_ID') ? __TRANSACTIONS_SAGEPAYMENTS_MERCHANT_ID : '';
+	    $formatted['m_key'] = defined('__TRANSACTIONS_SAGEPAYMENTS_MERCHANT_KEY') ? __TRANSACTIONS_SAGEPAYMENTS_MERCHANT_KEY : '';
 
         // customer data
 	    $formatted['C_name'] = $data['Billing']['first_name'] . ' ' . $data['Billing']['last_name'];

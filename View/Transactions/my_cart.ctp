@@ -89,7 +89,7 @@
 
 	  <div id="transactionCartRight">
 		  <?php
-		  echo $this->Element('trust_logos', array('plugin' => 'orders'));
+		  echo $this->Element('trust_logos', array('plugin' => 'transactions'));
 		  ?>
 		  <fieldset id="orderTransactionItems" class="orderTransactionItems">
 			<legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
@@ -242,12 +242,12 @@
 		  } else if(response['amount']) {
 			$('#shipping_error').html('');
 
-			var ordershipcharge = parseFloat($('#TransactionShippingCharge').val());
-			if(isNaN(ordershipcharge))
-				ordershipcharge = 0;
-			ordershipcharge -= parseFloat(prevShippingAmmount) ;
-			ordershipcharge += parseFloat(response['amount']) ;
-			$('#TransactionShippingCharge').val(ordershipcharge);
+			var transactionShipCharge = parseFloat($('#TransactionShippingCharge').val());
+			if(isNaN(transactionShipCharge))
+				transactionShipCharge = 0;
+                transactionShipCharge -= parseFloat(prevShippingAmmount) ;
+                transactionShipCharge += parseFloat(response['amount']) ;
+                $('#TransactionShippingCharge').val(transactionShipCharge);
 
 			$('#TransactionTotal').val(parseFloat(<?php echo $this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
 			//$('#step3').show();

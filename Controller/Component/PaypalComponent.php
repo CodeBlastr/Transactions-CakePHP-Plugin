@@ -16,8 +16,8 @@ class PaypalComponent extends Object{
 	}
 
 	function initialize(&$controller, $settings=array()) {
-		if(defined('__ORDERS_PAYPAL')) {
-            $this->paysettings = unserialize(__ORDERS_PAYPAL);
+		if(defined('__TRANSACTIONS_PAYPAL')) {
+            $this->paysettings = unserialize(__TRANSACTIONS_PAYPAL);
 		}
 	}
 
@@ -27,8 +27,8 @@ class PaypalComponent extends Object{
 	* it returns the response text if its successfull
 	*/
 	function chainedPayment($data , $amount ) {
-		if(defined('__ORDERS_CHAINED_PAYMENT')) {
-            	App::import('Component', 'Orders.Chained');
+		if(defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
+            	App::import('Component', 'Transactions.Chained');
 	        	$component = new ChainedComponent();
 	        	if (method_exists($component, 'initialize')) {
 	            	$component->initialize($this->Controller);
@@ -94,7 +94,7 @@ class PaypalComponent extends Object{
 			switch($parsedResponse['ACK']) {
 				case 'Success' :
 					$parsedResponse['reason_text'] = 'Successful Payment';
-					if(defined('__ORDERS_CHAINED_PAYMENT')) {
+					if(defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
 						$parsedResponse['reason_text'] .= $this->chainedPayment($this->payInfo, $parsedResponse['AMT']) ;
 					}
 					$parsedResponse['response_code'] = 1;

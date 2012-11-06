@@ -23,7 +23,7 @@ class ArbComponent extends Object{
     $this->login = $login;
     $this->transkey = $transkey;
 
-    $subdomain = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_MODE')  ? 'apitest' : 'api';
+    $subdomain = defined('__TRANSACTIONS_AUTHORIZENET_MODE')  ? 'apitest' : 'api';
     $this->url = "https://" . $subdomain . ".authorize.net/xml/v1/request.api";
   }
 

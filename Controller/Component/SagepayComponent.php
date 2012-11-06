@@ -6,7 +6,7 @@
 class SagepayComponent extends Object {
 
   public
-          $components = array('Orders.Arb'),
+          $components = array('Transactions.Arb'),
           $response = array(),
           $recurring = false,
           $x_type = 'PAYMENT',
@@ -48,14 +48,14 @@ class SagepayComponent extends Object {
     /**
      *  config DEV / LIVE
      */
-    $sagePayMode = defined('__ORDERS_TRANSACTIONS_SAGEPAY_MODE') ? __ORDERS_TRANSACTIONS_SAGEPAY_MODE : 'SIMULATOR';
+    $sagePayMode = defined('__TRANSACTIONS_SAGEPAY_MODE') ? __TRANSACTIONS_SAGEPAY_MODE : 'SIMULATOR';
     $this->env = $sagePayMode;
     $this->setUrls();
 
     /**
      *  Run the appropriate payment method
      */
-    App::import('Component', 'Orders.Arb');
+    App::import('Component', 'Transactions.Arb');
     $this->Arb = new ArbComponent();
     if ($this->recurring) {
       // if existing profile recurring id for arb, update the subscription
@@ -73,7 +73,7 @@ class SagepayComponent extends Object {
 	protected function formatRawData($data) {
 	    $formatted['VPSProtocol'] = '2.23';
 	    $formatted['TxType'] = $this->x_type;
-	    $formatted['Vendor'] = defined('__ORDERS_TRANSACTIONS_SAGEPAY_VENDOR') ? __ORDERS_TRANSACTIONS_SAGEPAY_VENDOR : 'razorit';
+	    $formatted['Vendor'] = defined('__TRANSACTIONS_SAGEPAY_VENDOR') ? __TRANSACTIONS_SAGEPAY_VENDOR : 'razorit';
 
     	$formatted['VendorTxCode'] = 'sage_' . time() . rand(0, 9999); /** @todo ideally an internal transaction code */
 
@@ -126,7 +126,7 @@ class SagepayComponent extends Object {
 	    $formatted['DeliveryPhone'] =  '';
 
 	    $formatted['Amount'] = $data['Order']['theTotal'];
-	    $formatted['Currency'] = defined('__ORDERS_TRANSACTIONS_SAGEPAY_CURRENCY') ? __ORDERS_TRANSACTIONS_SAGEPAY_CURRENCY : 'usd';
+	    $formatted['Currency'] = defined('__TRANSACTIONS_SAGEPAY_CURRENCY') ? __TRANSACTIONS_SAGEPAY_CURRENCY : 'usd';
 
 
     	return $formatted;

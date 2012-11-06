@@ -20,8 +20,8 @@ class PaysimpleComponent extends Component {
 
 	public function __construct(ComponentCollection $collection, $config = array()) {
 		parent::__construct($collection, $config);
-		if (defined('__ORDERS_TRANSACTIONS_PAYSIMPLE')) {
-			$settings = unserialize(__ORDERS_TRANSACTIONS_PAYSIMPLE);
+		if (defined('__TRANSACTIONS_PAYSIMPLE')) {
+			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
 		}
 
 		$this->config = Set::merge($this->config, $config, $settings);

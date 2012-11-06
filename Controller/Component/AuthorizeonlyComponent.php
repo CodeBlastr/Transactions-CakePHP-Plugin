@@ -18,9 +18,8 @@ class AuthorizeonlyComponent extends Object {
 	public function startup(&$controller) { 
         // This method takes a reference to the controller which is loading it. 
         // Perform controller initialization here. 
-		$this->login = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ? __ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID : null;
-		$this->transkey = defined('__ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ? __ORDERS_TRANSACTIONS_AUTHORIZENET_LOGIN_ID : null;
-		
+		$this->login = defined('__TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ? __TRANSACTIONS_AUTHORIZENET_LOGIN_ID : null;
+		$this->transkey = defined('__TRANSACTIONS_AUTHORIZENET_LOGIN_ID') ? __TRANSACTIONS_AUTHORIZENET_LOGIN_ID : null;		
     }
 
 /**

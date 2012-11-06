@@ -130,14 +130,14 @@ class Transaction extends TransactionsAppModel {
 	 * @return array
 	 */
 	public function gatherCheckoutOptions() {
-	    $options['ssl'] = defined('__ORDERS_SSL') ? unserialize(__ORDERS_SSL) : null;
+	    $options['ssl'] = defined('__TRANSACTIONS_SSL') ? unserialize(__TRANSACTIONS_SSL) : null;
 	    $options['trustLogos'] = !empty($ssl['trustLogos']) ? $ssl['trustLogos'] : null;
-	    $options['enableShipping'] = defined('__ORDERS_ENABLE_SHIPPING') ? __ORDERS_ENABLE_SHIPPING : false;
-	    $options['fedexSettings'] = defined('__ORDERS_FEDEX') ? unserialize(__ORDERS_FEDEX) : null;
-	    $options['paymentMode'] = defined('__ORDERS_DEFAULT_PAYMENT') ? __ORDERS_DEFAULT_PAYMENT : null;
-	    $options['paymentOptions'] = defined('__ORDERS_ENABLE_PAYMENT_OPTIONS') ? unserialize(__ORDERS_ENABLE_PAYMENT_OPTIONS) : null;
+	    $options['enableShipping'] = defined('__TRANSACTIONS_ENABLE_SHIPPING') ? __TRANSACTIONS_ENABLE_SHIPPING : false;
+	    $options['fedexSettings'] = defined('__TRANSACTIONS_FEDEX') ? unserialize(__TRANSACTIONS_FEDEX) : null;
+	    $options['paymentMode'] = defined('__TRANSACTIONS_DEFAULT_PAYMENT') ? __TRANSACTIONS_DEFAULT_PAYMENT : null;
+	    $options['paymentOptions'] = defined('__TRANSACTIONS_ENABLE_PAYMENT_OPTIONS') ? unserialize(__TRANSACTIONS_ENABLE_PAYMENT_OPTIONS) : null;
 
-	    if (defined('__ORDERS_ENABLE_SINGLE_PAYMENT_TYPE')) {
+	    if (defined('__TRANSACTIONS_ENABLE_SINGLE_PAYMENT_TYPE')) {
 		  $options['singlePaymentKeys'] = $this->Session->read('OrderPaymentType');
 		  if (!empty($options['singlePaymentKeys'])) {
 			  $options['singlePaymentKeys'] = array_flip($options['singlePaymentKeys']);
@@ -145,7 +145,7 @@ class Transaction extends TransactionsAppModel {
 		  }
 		}
 
-	    $options['defaultShippingCharge'] = defined('__ORDERS_FLAT_SHIPPING_RATE') ? __ORDERS_FLAT_SHIPPING_RATE : 0;
+	    $options['defaultShippingCharge'] = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : 0;
 	    
 	    return $options;
 	}
