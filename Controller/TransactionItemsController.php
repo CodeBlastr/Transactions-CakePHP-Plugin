@@ -97,7 +97,7 @@ class TransactionItemsController extends TransactionsAppController {
 		} else {
 			$this->request->data = $this->TransactionItem->read(null, $id);
 		}
-		$catalogItems = $this->TransactionItem->CatalogItem->find('list');
+		$products = $this->TransactionItem->Product->find('list');
 		$transactionPayments = $this->TransactionItem->TransactionPayment->find('list');
 		$transactionShipments = $this->TransactionItem->TransactionShipment->find('list');
 		$transactions = $this->TransactionItem->Transaction->find('list');
@@ -106,7 +106,7 @@ class TransactionItemsController extends TransactionsAppController {
 		$assignees = $this->TransactionItem->Assignee->find('list');
 		$creators = $this->TransactionItem->Creator->find('list');
 		$modifiers = $this->TransactionItem->Modifier->find('list');
-		$this->set(compact('catalogItems', 'transactionPayments', 'transactionShipments', 'transactions', 'customers', 'contacts', 'assignees', 'creators', 'modifiers'));
+		$this->set(compact('products', 'transactionPayments', 'transactionShipments', 'transactions', 'customers', 'contacts', 'assignees', 'creators', 'modifiers'));
 	}
 
 

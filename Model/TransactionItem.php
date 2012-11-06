@@ -5,7 +5,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
 /**
  * TransactionItem Model
  *
- * @property CatalogItem $CatalogItem
+ * @property Product $Product
  * @property TransactionPayment $TransactionPayment
  * @property TransactionShipment $TransactionShipment
  * @property Transaction $Transaction

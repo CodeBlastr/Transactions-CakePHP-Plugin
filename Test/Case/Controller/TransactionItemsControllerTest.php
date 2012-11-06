@@ -125,7 +125,7 @@ class TransactionItemsControllerTestCase extends ControllerTestCase  {
 	
 	public function testGoodAdd() {
 	    $data = array(
-		'model' => 'CatalogItem',
+		'model' => 'Product',
 		'name' => 'Test Product',
 		'quantity' => 1,
 		'price' => 100.25
