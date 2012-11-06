@@ -32,7 +32,7 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->Transaction->finalizeTransactionData($this->request->data);
 			$data = $this->Transaction->finalizeUserData($data);
 			$data = $this->Payments->pay($data);
-			break;
+			
 			$data = $this->Transaction->Customer->add($data);
 	  		// need a valid Customer.id to proceed
 			$data = $this->Transaction->add($data);
@@ -42,7 +42,10 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->TransactionShipping->add($data);
 			
 		  } catch (Exception $exc) {
-			debug($exc->getMessage());
+			//debug($exc->getMessage());
+			echo($exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
+			while($exc = $e->getPrevious())  
+				echo('Caused by: '.$exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
 			break;
 		  }
 
