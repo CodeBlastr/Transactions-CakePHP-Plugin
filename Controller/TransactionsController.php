@@ -28,12 +28,13 @@ class TransactionsController extends TransactionsAppController {
 	public function checkout() {
 	    if($this->request->data) {
 		  try {
-			//debug($this->request->data);break;
+			  
 			$data = $this->Transaction->finalizeTransactionData($this->request->data);
 			$data = $this->Transaction->finalizeUserData($data);
+			
 			$data = $this->Payments->pay($data);
 			
-			$data = $this->Transaction->Customer->add($data);
+			$data = $this->Transaction->Customer->add($data); // we're here in UnitTesting!
 	  		// need a valid Customer.id to proceed
 			$data = $this->Transaction->add($data);
 			// need a valid User.id to proceed
@@ -41,10 +42,17 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->TransactionPayment->add($data);
 			$data = $this->TransactionShipping->add($data);
 			
+			$data['Transaction']['status'] = 'paid';
+			$this->Transaction->save($data);
+			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
+			
 		  } catch (Exception $e) {
 			  
 			  $this->Session->setFlash(__d('transactions', $e->getMessage()));
-			  $this->redirect($this->referer());
+			  $data['Transaction']['status'] = 'failed';
+			  $this->Transaction->save($data);
+			  
+			  return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
 			  
 //			debug($e);
 //			debug($e->getMessage());
@@ -56,28 +64,29 @@ class TransactionsController extends TransactionsAppController {
 		  }
 
 		  
-		  if ($response['response_code'] != 1) {
-			// Transaction failed, back to the cart!
-			$officialTransaction['Transaction']['status'] = 'failed';
-			$this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
-			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart');
-		  } else {
-			// else redirect them to success page
-			$officialTransaction['Transaction']['status'] = 'paid';
-			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
-		  }
-		  
-		  // save the transaction stuff again
-		  $this->Transaction->saveAll($officialTransaction);
-//		  $this->Transaction->TransactionPayment->save($officialTransaction);
-//		  $this->Transaction->TransactionShipment->save($officialTransaction);
-		  
-		  // do the redirection
-		  $this->redirect($url);
+//		  
+//		  if ($response['response_code'] != 1) {
+//			// Transaction failed, back to the cart!
+//			$officialTransaction['Transaction']['status'] = 'failed';
+//			$this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
+//			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart');
+//		  } else {
+//			// else redirect them to success page
+//			$officialTransaction['Transaction']['status'] = 'paid';
+//			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
+//		  }
+//		  
+//		  // save the transaction stuff again
+//		  $this->Transaction->saveAll($officialTransaction);
+////		  $this->Transaction->TransactionPayment->save($officialTransaction);
+////		  $this->Transaction->TransactionShipment->save($officialTransaction);
+//		  
+//		  // do the redirection
+//		  $this->redirect($url);
 
 	    } else {
 		  $this->Session->setFlash(__d('transactions', 'Invalid transaction.'));
-		  $this->redirect($this->referer());
+		  return $this->redirect($this->referer());
 	    }
 	}
 	
@@ -123,7 +132,7 @@ class TransactionsController extends TransactionsAppController {
 		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('customer_id' => $userId)));
 		if($numberOfCarts > 1) {
 
-		  $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
+		  return $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
 		  
 		} else {
 		  // get their cart and process it
@@ -149,7 +158,7 @@ class TransactionsController extends TransactionsAppController {
 			$this->Transaction->create();
 			if ($this->Transaction->save($this->request->data)) {
 				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
-				$this->redirect(array('action' => 'index'));
+				return $this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
 			}
@@ -177,7 +186,7 @@ class TransactionsController extends TransactionsAppController {
 		if ( ($this->request->is('post') || $this->request->is('put')) && !empty($this->request->data)) {
 			if ($this->Transaction->save($this->request->data)) {
 				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
-				$this->redirect(array('action' => 'index'));
+				return $this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
 			}
@@ -210,10 +219,10 @@ class TransactionsController extends TransactionsAppController {
 		}
 		if ($this->Transaction->delete()) {
 			$this->Session->setFlash(__d('transactions', 'Transaction deleted'));
-			$this->redirect(array('action' => 'index'));
+			return $this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(__d('transactions', 'Transaction was not deleted'));
-		$this->redirect(array('action' => 'index'));
+		return $this->redirect(array('action' => 'index'));
 	}
 	
 	

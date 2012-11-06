@@ -48,10 +48,12 @@ class PaysimpleComponent extends Component {
 					$accountData = $this->addAchAccount($data);
 					$data['Connection']['Paysimple']['Account']['Ach'][] = $accountData;
 					$data['Connection']['Paysimple']['Account']['Id'] = $accountData['Id'];
+					$data['Transaction']['paymentSubType'] = 'Web';
 				} else {
 					$accountData = $this->addCreditCardAccount($data);
 					$data['Connection']['Paysimple']['Account']['CreditCard'][] = $accountData;
 					$data['Connection']['Paysimple']['Account']['Id'] = $accountData['Id'];
+					$data['Transaction']['paymentSubType'] = 'Moto';
 				}
 
 				// charge them using their newly submitted payment method
@@ -71,6 +73,12 @@ class PaysimpleComponent extends Component {
 			// and create it if it's not already there, then set it to default, and use it.
 			try {
 
+				if (!empty($data['Transaction']['ach_account_number'])) {
+					$data['Transaction']['paymentSubType'] = 'Web';
+				} else {
+					$data['Transaction']['paymentSubType'] = 'Moto';
+				}
+				
 				$this->createPayment($data);
 				$data['Transaction']['Payment'] = $paymentData;
 
@@ -119,11 +127,11 @@ class PaysimpleComponent extends Component {
 			// their shipping is not the same as their billing
 			$params['ShippingSameAsBilling'] = false;
 			$params['BillingAddress'] = array(
-				'StreetAddress1' => $data['TransactionPayment'][0]['street_address_1'],
-				'StreetAddress2' => $data['TransactionPayment'][0]['street_address_2'],
-				'City' => $data['TransactionPayment'][0]['city'],
-				'StateCode' => $data['TransactionPayment'][0]['state'],
-				'ZipCode' => $data['TransactionPayment'][0]['zip'],
+				'StreetAddress1' => $data['TransactionShipment'][0]['street_address_1'],
+				'StreetAddress2' => $data['TransactionShipment'][0]['street_address_2'],
+				'City' => $data['TransactionShipment'][0]['city'],
+				'StateCode' => $data['TransactionShipment'][0]['state'],
+				'ZipCode' => $data['TransactionShipment'][0]['zip'],
 			);
 		}
 
@@ -148,12 +156,15 @@ class PaysimpleComponent extends Component {
  */
 	public function addCreditCardAccount($data) {
 
+		// ensure that the month is in 2-digit form || last ditch validation
+		$data['Transaction']['card_exp_month'] = str_pad($data['Transaction']['card_exp_month'], 2, '0', STR_PAD_LEFT);
+		
 		$params = array(
 			'Id' => 0,
 			'IsDefault' => true,
 			'Issuer' => $this->getIssuer($data['Transaction']['card_number']),
 			'CreditCardNumber' => $data['Transaction']['card_number'],
-			'ExpirationDate' => $data['Transaction']['card_exp_month'] . '-' . $data['Transaction']['card_exp_year'],
+			'ExpirationDate' => $data['Transaction']['card_exp_month'] . '/' . $data['Transaction']['card_exp_year'],
 			'CustomerId' => $data['Connection']['Paysimple']['Customer']['Id'],
 		);
 
@@ -200,9 +211,9 @@ class PaysimpleComponent extends Component {
 			'InvoiceNumber' => NULL,
 			'PurchaseOrderNumber' => NULL,
 			'OrderId' => NULL,
-			'Description' => $data['Transaction']['description'],
+			'Description' => __SYSTEM_SITE_NAME, //$data['Transaction']['description'],
 			'CVV' => $data['Transaction']['card_sec'],
-			'PaymentSubType' => 'Web',
+			'PaymentSubType' => $data['Transaction']['paymentSubType'],
 			'Id' => 0
 		);
 
@@ -279,7 +290,7 @@ class PaysimpleComponent extends Component {
 			'Amex' => 14,
 		);
 
-		return $paySimpleCodes[$CreditCardType];
+		return $paySimpleCodes[$cardType];
 	}
 
 /**

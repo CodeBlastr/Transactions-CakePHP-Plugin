@@ -59,6 +59,7 @@
 				echo $this->Form->input('TransactionPayment.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
 				echo $this->Form->input('TransactionPayment.0.zip', array('label' => 'Zip ', 'class' => 'required', 'size' => '10'));
 				echo $this->Form->hidden('TransactionPayment.0.country', array('label' => 'Country', 'value' => 'US'));
+				echo $this->Form->hidden('TransactionPayment.0.phone', array('label' => 'Country', 'value' => 'US'));
 				echo $this->Form->input('TransactionPayment.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $this->request->data['TransactionPayment'] != $this->request->data['TransactionShipment'] ? '' : 'checked'));
 				?>
 			</fieldset>

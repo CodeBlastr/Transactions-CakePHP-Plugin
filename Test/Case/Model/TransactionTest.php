@@ -16,7 +16,7 @@ class TransactionTestCase extends CakeTestCase {
 	public $fixtures = array(
 		'plugin.transactions.transaction',
 		'plugin.transactions.transaction_payment',
-//	    'plugin.users.user',
+	    'plugin.users.user',
 		'plugin.transactions.transaction_item',
 //	    'plugin.transactions.transaction_shipment',
 //	    'plugin.users.customer',
@@ -46,6 +46,7 @@ class TransactionTestCase extends CakeTestCase {
 	 */
 	public function tearDown() {
 		unset($this->Transaction);
+		ClassRegistry::flush();
 
 		parent::tearDown();
 	}
@@ -138,7 +139,7 @@ class TransactionTestCase extends CakeTestCase {
 			),
 			'TransactionItem' => array(
 				array(
-					'id' => '50773d75-cab4-40dd-b34c-187800000000',
+					'id' => '50773d75-cab4-40dd-b34c-187800000001',
 					'quantity' => '2' // different qty than what was originally in the cart
 				)
 			),
@@ -198,7 +199,7 @@ class TransactionTestCase extends CakeTestCase {
 			),
 			'TransactionItem' => array(
 				array(
-					'id' => '50773d75-cab4-40dd-b34c-187800000000',
+					'id' => '50773d75-cab4-40dd-b34c-187800000001',
 					'quantity' => '2'
 				)
 			),
