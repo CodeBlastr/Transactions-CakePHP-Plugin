@@ -17,20 +17,20 @@ class Transaction extends TransactionsAppModel {
  public $name = 'Transaction';
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
-	/**
+/**
  * hasOne associations
  *
  * @var array
  */
-	public $hasOne = array(
-		'TransactionShipment' => array(
-			'className' => 'Transactions.TransactionShipment',
-			'foreignKey' => 'transaction_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
-		)
-	);
+//	public $hasOne = array(
+//		'TransactionShipment' => array(
+//			'className' => 'Transactions.TransactionShipment',
+//			'foreignKey' => 'transaction_id',
+//			'conditions' => '',
+//			'fields' => '',
+//			'order' => ''
+//		)
+//	);
 
 /**
  * belongsTo associations
@@ -38,13 +38,13 @@ class Transaction extends TransactionsAppModel {
  * @var array
  */
 	public $belongsTo = array(
-		'TransactionPayment' => array(
-			'className' => 'Transactions.TransactionPayment',
-			'foreignKey' => 'transaction_payment_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
-		),
+//		'TransactionPayment' => array(
+//			'className' => 'Transactions.TransactionPayment',
+//			'foreignKey' => 'transaction_payment_id',
+//			'conditions' => '',
+//			'fields' => '',
+//			'order' => ''
+//		),
 //		'TransactionShipment' => array(
 //			'className' => 'Transactions.TransactionShipment',
 //			'foreignKey' => 'transaction_shipment_id',
@@ -113,6 +113,13 @@ class Transaction extends TransactionsAppModel {
 			'exclusive' => '',
 			'finderQuery' => '',
 			'counterQuery' => ''
+		),
+		'TransactionShipment' => array(
+			'className' => 'Transactions.TransactionShipment',
+			'foreignKey' => 'transaction_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
 		)
 	);
 
@@ -246,6 +253,10 @@ class Transaction extends TransactionsAppModel {
 			  )
 		));
 
+		if(!$currentTransaction) {
+			throw new Exception('Transaction missing.');
+		}
+		
 	    // update quantities
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
@@ -278,14 +289,14 @@ class Transaction extends TransactionsAppModel {
 	
 	
 	public function finalizeUserData($transaction) {
-	  
+
 	  // ensure their 'Customer' data has values when they are not logged in
 	  if($transaction['Customer']['id'] == NULL) {
 		//$transaction['Customer']['id'] = $transaction['Transaction']['customer_id'];
-		$transaction['Customer']['first_name'] = $transaction['TransactionPayment']['first_name'];
-		$transaction['Customer']['last_name'] = $transaction['TransactionPayment']['last_name'];
-		$transaction['Customer']['email'] = $transaction['TransactionPayment']['email']; // required
-		$transaction['Customer']['username'] = $transaction['TransactionPayment']['email']; // required
+		$transaction['Customer']['first_name'] = $transaction['TransactionPayment'][0]['first_name'];
+		$transaction['Customer']['last_name'] = $transaction['TransactionPayment'][0]['last_name'];
+		$transaction['Customer']['email'] = $transaction['TransactionPayment'][0]['email']; // required
+		$transaction['Customer']['username'] = $transaction['TransactionPayment'][0]['email']; // required
 		//$transaction['Customer']['phone'] = $transaction['TransactionPayment']['phone'];
 		
 		// generate a temporary password: ANNNN
@@ -297,17 +308,17 @@ class Transaction extends TransactionsAppModel {
 	  
 	  //$transaction['TransactionPayment']['user_id'] = $transaction['Transaction']['customer_id'];
 	  // copy Payment data to Shipment data if neccessary
-	  if($transaction['TransactionPayment']['shipping'] !== 'checked') {
-		$transaction['TransactionShipment']['transaction_id'] = $transaction['TransactionPayment']['transaction_id'];
-		$transaction['TransactionShipment']['first_name'] = $transaction['TransactionPayment']['first_name'];
-		$transaction['TransactionShipment']['last_name'] = $transaction['TransactionPayment']['last_name'];
-		$transaction['TransactionShipment']['email'] = $transaction['TransactionPayment']['email'];
-		$transaction['TransactionShipment']['street_address_1'] = $transaction['TransactionPayment']['street_address_1'];
-		$transaction['TransactionShipment']['street_address_2'] = $transaction['TransactionPayment']['street_address_2'];
-		$transaction['TransactionShipment']['city'] = $transaction['TransactionPayment']['city'];
-		$transaction['TransactionShipment']['state'] = $transaction['TransactionPayment']['state'];
-		$transaction['TransactionShipment']['zip'] = $transaction['TransactionPayment']['zip'];
-		$transaction['TransactionShipment']['country'] = $transaction['TransactionPayment']['country'];
+	  if($transaction['TransactionPayment'][0]['shipping'] == '0') {
+		$transaction['TransactionShipment'][0]['transaction_id'] = $transaction['Transaction']['id'];
+		$transaction['TransactionShipment'][0]['first_name'] = $transaction['TransactionPayment'][0]['first_name'];
+		$transaction['TransactionShipment'][0]['last_name'] = $transaction['TransactionPayment'][0]['last_name'];
+		$transaction['TransactionShipment'][0]['email'] = $transaction['TransactionPayment'][0]['email'];
+		$transaction['TransactionShipment'][0]['street_address_1'] = $transaction['TransactionPayment'][0]['street_address_1'];
+		$transaction['TransactionShipment'][0]['street_address_2'] = $transaction['TransactionPayment'][0]['street_address_2'];
+		$transaction['TransactionShipment'][0]['city'] = $transaction['TransactionPayment'][0]['city'];
+		$transaction['TransactionShipment'][0]['state'] = $transaction['TransactionPayment'][0]['state'];
+		$transaction['TransactionShipment'][0]['zip'] = $transaction['TransactionPayment'][0]['zip'];
+		$transaction['TransactionShipment'][0]['country'] = $transaction['TransactionPayment'][0]['country'];
 		//$transaction['TransactionShipment']['phone'] = $transaction['TransactionPayment']['phone'];
 		//$transaction['TransactionShipment']['user_id'] = $transaction['TransactionPayment']['user_id'];
 	  }
