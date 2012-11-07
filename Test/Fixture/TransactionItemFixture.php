@@ -52,18 +52,11 @@ class TransactionItemFixture extends CakeTestFixture {
 	public $records = array(
 		// two items for the Customer.id 5738299d-9040-43c9-85b1-22d400000000
 		array(
-			'id' => '50773d75-cab4-40dd-b34c-187800000000',
-			'name' => 'Lorem ipsum dolor sit amet',
-			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
-			'transaction_shipment_id' => 'Lorem ipsum dolor sit amet',
-			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000000',
-// not sure which in this conflict should stay
-//			'id' => '50773d75-cab4-40dd-b34c-187800000001',
-//			'name' => 'Test Item #1',
-//			'transaction_payment_id' => '',
-//			'transaction_shipment_id' => '',
-//			'transaction_id' => '5077241d-9040-43c9-85b1-22d400000000',
-// end conflict
+			'id' => '50773d75-cab4-40dd-b34c-187800000001',
+			'name' => 'Test Item #1',
+			'transaction_payment_id' => '',
+			'transaction_shipment_id' => '',
+			'transaction_id' => '5077241d-9040-43c9-85b1-22d400000000',
 			'quantity' => 1,
 			'price' => 1,
 			'weight' => 1,
@@ -91,18 +84,11 @@ class TransactionItemFixture extends CakeTestFixture {
 		),
 		// this one might acutally be simulating if one was added to the cart during checkout? not having a Transaction.id ?
 		array(
-			'id' => '50773d75-cab4-40dd-b34c-187800000001',
-			'name' => 'Lorem ipsum dolor sit amet',
-			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
-			'transaction_shipment_id' => 'Lorem ipsum dolor sit amet',
-			'transaction_id' => 'Lorem ipsum dolor sit amet',
-// not sure which in this conflict should stay
-//			'id' => '50773d75-cab4-40dd-b34c-187800000002',
-//			'name' => 'Test Item #2',
-//			'transaction_payment_id' => '',
-//			'transaction_shipment_id' => '',
-//			'transaction_id' => '',
-// end conflict
+			'id' => '50773d75-cab4-40dd-b34c-187800000002',
+			'name' => 'Test Item #2',
+			'transaction_payment_id' => '',
+			'transaction_shipment_id' => '',
+			'transaction_id' => '',
 			'quantity' => 1,
 			'price' => 1,
 			'weight' => 1,

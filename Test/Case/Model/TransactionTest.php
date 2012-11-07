@@ -15,10 +15,9 @@ class TransactionTestCase extends CakeTestCase {
 	 */
 	public $fixtures = array(
 		'plugin.transactions.transaction',
-		'plugin.transactions.transaction_payment',
+		'plugin.transactions.transaction_address',
 	    'plugin.users.user',
 		'plugin.transactions.transaction_item',
-//	    'plugin.transactions.transaction_shipment',
 //	    'plugin.users.customer',
 //	    'plugin.contacts.contact',
 //	    'plugin.users.assignee',
@@ -101,7 +100,7 @@ class TransactionTestCase extends CakeTestCase {
 	public function testFinalizeTransactionData_asGuest() {
 		
 		$submittedTransaction = array(
-			'TransactionPayment' => array(
+			'TransactionAddress' => array(
 				array(
 					'email' => 'joel@razorit.com',
 					'first_name' => 'Joel',
@@ -112,17 +111,18 @@ class TransactionTestCase extends CakeTestCase {
 					'state' => 'NY',
 					'zip' => '13212',
 					'country' => 'US',
-					'shipping' => '0'
-				)
-			),
-			'TransactionShipment' => array(
+					'shipping' => '0',
+					'phone' => '1234567890',
+					'type' => 'billing'
+				),
 				array(
 					'street_address_1' => '',
 					'street_address_2' => '',
 					'city' => '',
 					'state' => '',
 					'zip' => '',
-					'country' => 'US'
+					'country' => 'US',
+					'type' => 'shipping'
 				)
 			),
 			'Transaction' => array(
@@ -172,7 +172,8 @@ class TransactionTestCase extends CakeTestCase {
 					'state' => 'NY',
 					'zip' => '13212',
 					'country' => 'US',
-					'shipping' => '0'
+					'shipping' => '0',
+					'phone' => '1234567890'
 				)
 			),
 			'TransactionShipment' => array(

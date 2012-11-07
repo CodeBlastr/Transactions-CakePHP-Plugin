@@ -20,79 +20,50 @@ class TransactionItem extends TransactionsAppModel {
     public $name = 'TransactionItem';
 
     public $validate = array(
-	'price' => 'notEmpty'
+		'price' => 'notEmpty'
     );
     
-    /**
-     * Display field
-     *
-     * @var string
-     */
+/**
+ * Display field
+ *
+ * @var string
+ */
     public $displayField = 'name';
     //The Associations below have been created with all possible keys, those that are not needed can be removed
 
 
     public $hasOne = 'Transaction';
 
-    /**
-     * belongsTo associations
-     *
-     * @var array
-     */
+/**
+ * belongsTo associations
+ *
+ * @var array
+ */
     public $belongsTo = array(
-	'TransactionPayment' => array(
-	    'className' => 'Transactions.TransactionPayment',
-	    'foreignKey' => 'transaction_payment_id',
-	    'conditions' => '',
-	    'fields' => '',
-	    'order' => ''
-	),
-	'TransactionShipment' => array(
-	    'className' => 'Transactions.TransactionShipment',
-	    'foreignKey' => 'transaction_shipment_id',
-	    'conditions' => '',
-	    'fields' => '',
-	    'order' => ''
-	),
-	'Transaction' => array(
-	    'className' => 'Transactions.Transaction',
-	    'foreignKey' => 'transaction_id',
-	    'conditions' => '',
-	    'fields' => '',
-	    'order' => ''
-	),
-	'Customer' => array(
-	    //'className' => 'Users.Customer',
-	    'className' => 'Users.User',
-	    'foreignKey' => 'customer_id',
-	    'conditions' => '',
-	    'fields' => '',
-	    'order' => ''
-	),
-	'Contact' => array(
-	    'className' => 'Contacts.Contact',
-	    'foreignKey' => 'contact_id',
-	    'conditions' => '',
-	    'fields' => '',
-	    'order' => ''
-	),
-	'Assignee' => array(
-	    //'className' => 'Users.Assignee',
-	    'className' => 'Users.User',
-	    'foreignKey' => 'assignee_id',
-	    'conditions' => '',
-	    'fields' => '',
-	    'order' => ''
-	),
+		'Transaction' => array(
+			'className' => 'Transactions.Transaction',
+			'foreignKey' => 'transaction_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
+		'Assignee' => array(
+			//'className' => 'Users.Assignee',
+			'className' => 'Users.User',
+			'foreignKey' => 'assignee_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
     );
 
 
-    /**
-     * Creates a new cart or returns the id of the existing cart for a user, based on their user id
-	 * 
-	 * @param integer $userId The UUID of a current or future User, who is currently using a Transaction cart.
-     * @return string Id of the cart in question
-     */
+/**
+ * Creates a new cart or returns the id of the existing cart for a user, based on their user id
+ * 
+ * @param integer $userId The UUID of a current or future User, who is currently using a Transaction cart.
+ * @return string Id of the cart in question
+ */
     public function setCartId($userId) {
 	  // an item was added, check for a shopping cart.
 	  $myCart = $this->Transaction->find('first', array(
@@ -114,44 +85,37 @@ class TransactionItem extends TransactionsAppModel {
     }
     
     
-    /**
-     * This function ensures that a TransactionItem has it's fields filled out correctly
-     * by calling upon the Model that the Item belongs to.
-     * @param array $data
-     * @return array
-     */
+/**
+ * This function ensures that a TransactionItem has it's fields filled out correctly
+ * by calling upon the Model that the Item belongs to.
+ * @param array $data
+ * @return array
+ */
     public function mapItemData($data) {
 
-	if(empty($data['TransactionItem']['model'])) {
-	    throw new InternalErrorException(__('Invalid transaction item'));
+		if (empty($data['TransactionItem']['model'])) {
+			throw new InternalErrorException(__('Invalid transaction item'));
+		}
+
+		App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
+		$Model = new $data['TransactionItem']['model'];
+
+		$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
+
+		$itemData = Set::merge(
+				$itemData,
+				$data,
+				array('TransactionItem' => array('transaction_id' => $this->Transaction->id))
+				);
+
+		return $itemData;
 	}
-	
-	App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
-	$Model = new $data['TransactionItem']['model'];
-
-	$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
-
-	$itemData = Set::merge(
-		$itemData,
-		$data,
-		array(
-		    'TransactionItem' => array(
-			'transaction_id' => $this->Transaction->id,
-			'customer_id' => $this->Transaction->getCustomersId()
-		    )
-		)
-	);
-	
-	return $itemData;
-	
-	
-    }
     
     
-    /**
-     * @todo check stock and cart max
-     * @param array $data
-     */
+/**
+ * @todo check stock and cart max
+ * @param array $data
+ */
     public function verifyItemRequest($data) {
 //	App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
 //	$Model = new $data['TransactionItem']['model'];

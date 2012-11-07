@@ -50,29 +50,31 @@
 			<fieldset id="billingAddress">
 				<legend><?php echo __d('transactions', 'Billing Address'); ?></legend>
 				<?php
-				echo $this->Form->input('TransactionPayment.0.email', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.0.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.0.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
-				echo $this->Form->input('TransactionPayment.0.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));
-				echo $this->Form->input('TransactionPayment.0.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-				echo $this->Form->input('TransactionPayment.0.city', array('label' => 'City ', 'class' => 'required', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionPayment.0.zip', array('label' => 'Zip ', 'class' => 'required', 'size' => '10'));
-				echo $this->Form->hidden('TransactionPayment.0.country', array('label' => 'Country', 'value' => 'US'));
-				echo $this->Form->hidden('TransactionPayment.0.phone', array('label' => 'Country', 'value' => 'US'));
-				echo $this->Form->input('TransactionPayment.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $this->request->data['TransactionPayment'] != $this->request->data['TransactionShipment'] ? '' : 'checked'));
+				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
+				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));
+				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2', 'size' => '49'));
+				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength'=>'10', 'size' => '10'));
+				echo $this->Form->hidden('TransactionAddress.0.country', array('label' => 'Country', 'value' => 'US'));
+				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'maxlength'=>'10'));
+				echo $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $this->request->data['TransactionAddress'][0] != $this->request->data['TransactionAddress'][1] ? '' : 'checked'));
+				echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
 				?>
 			</fieldset>
 			<fieldset id="shippingAddress">
 				<legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
 				<div id="shipping_error"></div>
 				<?php
-				echo $this->Form->input('TransactionShipment.0.street_address_1', array('label' => 'Street', 'size' => '49'));
-				echo $this->Form->input('TransactionShipment.0.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-				echo $this->Form->input('TransactionShipment.0.city', array('label' => 'City', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionShipment.0.state', array('label' => 'State ', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionShipment.0.zip', array('label' => 'Zip', 'size' => '10'));
-				echo $this->Form->hidden('TransactionShipment.0.country', array('label' => 'Country ', 'value' => 'US'));
+				echo $this->Form->input('TransactionAddress.1.street_address_1', array('label' => 'Street', 'size' => '49'));
+				echo $this->Form->input('TransactionAddress.1.street_address_2', array('label' => 'Street 2', 'size' => '49'));
+				echo $this->Form->input('TransactionAddress.1.city', array('label' => 'City', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.1.state', array('label' => 'State ', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.1.zip', array('label' => 'Zip', 'maxlength'=>'10', 'size' => '10'));
+				echo $this->Form->hidden('TransactionAddress.1.country', array('label' => 'Country ', 'value' => 'US'));
+				echo $this->Form->hidden('TransactionAddress.1.type', array('value' => 'shipping'));
 				?>
 			</fieldset>
 		  </div><!-- #orderTransactionAddress -->
@@ -96,7 +98,7 @@
 			<legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
 
 			<?php
-			//debug($myCart);
+			//debug($this->request->data['TransactionItem']);
 			foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
 			?>

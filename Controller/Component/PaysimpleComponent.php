@@ -1,7 +1,6 @@
 <?php
 
 /**
- * This still needs a lot of work..  @see PaysimpleComponent::Pay()
  * 
  * @author Joel Byrnes <joel@razorit.com>
  * @link https://sandbox-api.paysimple.com/v4/Help/
@@ -29,9 +28,13 @@ class PaysimpleComponent extends Component {
 		$this->_httpSocket = new HttpSocket();
 	}
 
+
 /**
  * @todo Logged in Users should pass 'Connection' data here
+ * 
  * @param array $data
+ * @return type
+ * @throws Exception
  */
 	public function Pay($data) {
 
@@ -61,6 +64,7 @@ class PaysimpleComponent extends Component {
 				$data['Transaction']['Payment'] = $paymentData;
 
 				return $data;
+
 			} catch (Exception $exc) {
 				throw new Exception($exc->getMessage());
 			}
@@ -108,30 +112,30 @@ class PaysimpleComponent extends Component {
 	public function createCustomer($data) {
 
 		$params = array(
-			'FirstName' => $data['TransactionPayment'][0]['first_name'],
-			'LastName' => $data['TransactionPayment'][0]['last_name'],
+			'FirstName' => $data['TransactionAddress'][0]['first_name'],
+			'LastName' => $data['TransactionAddress'][0]['last_name'],
 			//'Company' => $data['Meta']['company'],
 			'BillingAddress' => array(
-				'StreetAddress1' => $data['TransactionPayment'][0]['street_address_1'],
-				'StreetAddress2' => $data['TransactionPayment'][0]['street_address_2'],
-				'City' => $data['TransactionPayment'][0]['city'],
-				'StateCode' => $data['TransactionPayment'][0]['state'],
-				'ZipCode' => $data['TransactionPayment'][0]['zip'],
+				'StreetAddress1' => $data['TransactionAddress'][0]['street_address_1'],
+				'StreetAddress2' => $data['TransactionAddress'][0]['street_address_2'],
+				'City' => $data['TransactionAddress'][0]['city'],
+				'StateCode' => $data['TransactionAddress'][0]['state'],
+				'ZipCode' => $data['TransactionAddress'][0]['zip'],
 			),
 			'ShippingSameAsBilling' => true,
 			'Email' => $data['Customer']['email'],
 			'Phone' => $data['Customer']['phone'],
 		);
 
-		if ($data['TransactionPayment'][0]['shipping'] == 'checked') {
+		if ($data['TransactionAddress'][0]['shipping'] == 'checked') {
 			// their shipping is not the same as their billing
 			$params['ShippingSameAsBilling'] = false;
 			$params['BillingAddress'] = array(
-				'StreetAddress1' => $data['TransactionShipment'][0]['street_address_1'],
-				'StreetAddress2' => $data['TransactionShipment'][0]['street_address_2'],
-				'City' => $data['TransactionShipment'][0]['city'],
-				'StateCode' => $data['TransactionShipment'][0]['state'],
-				'ZipCode' => $data['TransactionShipment'][0]['zip'],
+				'StreetAddress1' => $data['TransactionAddress'][1]['street_address_1'],
+				'StreetAddress2' => $data['TransactionAddress'][1]['street_address_2'],
+				'City' => $data['TransactionAddress'][1]['city'],
+				'StateCode' => $data['TransactionAddress'][1]['state'],
+				'ZipCode' => $data['TransactionAddress'][1]['zip'],
 			);
 		}
 
@@ -207,10 +211,10 @@ class PaysimpleComponent extends Component {
 			'AccountId' => ($data['Connection']['Paysimple']['Account']['Id']),
 			'InvoiceId' => NULL,
 			'Amount' => $data['Transaction']['order_charge'],
-			'IsDebit' => false,
+			'IsDebit' => false, // IsDebit indicates whether this Payment is a refund.
 			'InvoiceNumber' => NULL,
 			'PurchaseOrderNumber' => NULL,
-			'OrderId' => NULL,
+			'OrderId' => $data['Transaction']['id'],
 			'Description' => __SYSTEM_SITE_NAME, //$data['Transaction']['description'],
 			'CVV' => $data['Transaction']['card_sec'],
 			'PaymentSubType' => $data['Transaction']['paymentSubType'],
@@ -254,7 +258,7 @@ class PaysimpleComponent extends Component {
  * This function executes upon failure
  */
 	public function echoErrors() {
-		debug($this->errors);
+		//debug($this->errors);
 		foreach ($this->errors as $error) {
 			$this->response['reason_text'] .= '<li>' . $error . '</li>';
 		}

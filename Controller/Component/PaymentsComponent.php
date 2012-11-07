@@ -68,11 +68,14 @@ class PaymentsComponent extends Object {
 	}
 
 /**
- * Payment by chargin CC based on Authorize.net
- *
- * data is the combination of CC information, shipping and billing
- * Returns the response. If response_code is 1 then the transaction was successful
- * All the details in reason_text and description.
+ * The Pay Function.
+ * This function takes $data to process a payment with the merchant account defined by Transaction.mode
+ * If there are any problems processing the payment, an exception should be raised with it's details for the user.
+ * If the payment is successful, the $data array, with any necessary additions, should be returned.
+ * 
+ * @param array $data
+ * @return array
+ * @throws Exception
  */
 	function Pay($data = null) {
 		try {
@@ -83,14 +86,18 @@ class PaymentsComponent extends Object {
 			$this->loadComponent($paymentProcessor);
 			if ($this->recurring) {
 				$this->paymentComponent->recurring(true);
-				$this->paymentComponent->Pay($data);
+				
+				return $this->paymentComponent->Pay($data);
+				
 			} else {
-				$this->paymentComponent->Pay($data);
+				
+				return $this->paymentComponent->Pay($data);
+				
 			}
 
-			return $this->paymentComponent->response;	
+			//return $this->paymentComponent->response;
+
 		} catch (Exception $e) {
-			//throw $exc;
 			throw new Exception($e->getMessage());
 		}
 	}

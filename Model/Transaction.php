@@ -101,21 +101,8 @@ class Transaction extends TransactionsAppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		),
-		'TransactionPayment' => array(
-			'className' => 'Transactions.TransactionPayment',
-			'foreignKey' => 'transaction_id',
-			'dependent' => false,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'exclusive' => '',
-			'finderQuery' => '',
-			'counterQuery' => ''
-		),
-		'TransactionShipment' => array(
-			'className' => 'Transactions.TransactionShipment',
+		'TransactionAddress' => array(
+			'className' => 'Transactions.TransactionAddress',
 			'foreignKey' => 'transaction_id',
 			'conditions' => '',
 			'fields' => '',
@@ -210,8 +197,7 @@ class Transaction extends TransactionsAppModel {
 		  'conditions' => array('customer_id' => $userId),
 		  'contain' => array(
 			  'TransactionItem',
-			  'TransactionShipment',  // saved shipping addresses
-			  'TransactionPayment',   // saved billing addresses
+			  'TransactionAddress',  // saved addresses
 			  'Customer'			  // customer's user data
 			  )
 		));
@@ -227,7 +213,7 @@ class Transaction extends TransactionsAppModel {
 	    }
 	    
 	    $theCart['Transaction']['order_charge'] = $subTotal;
-	    
+
 	    return $theCart;
 	}
 	
@@ -247,8 +233,7 @@ class Transaction extends TransactionsAppModel {
 		    'conditions' => array('customer_id' => $userId),
 		    'contain' => array(
 			  'TransactionItem',
-			  'TransactionShipment',  // saved shipping addresses
-			  'TransactionPayment',	  // saved billing addresses
+			  'TransactionAddress',  // saved addresses
 			  'Customer'			  // customer's user data
 			  )
 		));
@@ -299,11 +284,11 @@ class Transaction extends TransactionsAppModel {
 	  // ensure their 'Customer' data has values when they are not logged in
 	  if(empty($transaction['Customer']['id']) || !isset($transaction['Customer'])) {
 		//$transaction['Customer']['id'] = $transaction['Transaction']['customer_id'];
-		$transaction['Customer']['first_name'] = $transaction['TransactionPayment'][0]['first_name'];
-		$transaction['Customer']['last_name'] = $transaction['TransactionPayment'][0]['last_name'];
-		$transaction['Customer']['email'] = $transaction['TransactionPayment'][0]['email']; // required
-		$transaction['Customer']['username'] = $transaction['TransactionPayment'][0]['email']; // required
-		$transaction['Customer']['phone'] = $transaction['TransactionPayment'][0]['phone'];
+		$transaction['Customer']['first_name'] = $transaction['TransactionAddress'][0]['first_name'];
+		$transaction['Customer']['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
+		$transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
+		$transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
+		$transaction['Customer']['phone'] = $transaction['TransactionAddress'][0]['phone'];
 		
 		// generate a temporary password: ANNNN
 		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
@@ -314,18 +299,17 @@ class Transaction extends TransactionsAppModel {
 
 	  //$transaction['TransactionPayment']['user_id'] = $transaction['Transaction']['customer_id'];
 	  // copy Payment data to Shipment data if neccessary
-	  if($transaction['TransactionPayment'][0]['shipping'] == '0') {
+	  if($transaction['TransactionAddress'][0]['shipping'] == '0') {
 		//$transaction['TransactionShipment'][0]['transaction_id'] = $transaction['Transaction']['id'];
-		$transaction['TransactionShipment'][0]['first_name'] = $transaction['TransactionPayment'][0]['first_name'];
-		$transaction['TransactionShipment'][0]['last_name'] = $transaction['TransactionPayment'][0]['last_name'];
-		$transaction['TransactionShipment'][0]['email'] = $transaction['TransactionPayment'][0]['email'];
-		$transaction['TransactionShipment'][0]['street_address_1'] = $transaction['TransactionPayment'][0]['street_address_1'];
-		$transaction['TransactionShipment'][0]['street_address_2'] = $transaction['TransactionPayment'][0]['street_address_2'];
-		$transaction['TransactionShipment'][0]['city'] = $transaction['TransactionPayment'][0]['city'];
-		$transaction['TransactionShipment'][0]['state'] = $transaction['TransactionPayment'][0]['state'];
-		$transaction['TransactionShipment'][0]['zip'] = $transaction['TransactionPayment'][0]['zip'];
-		$transaction['TransactionShipment'][0]['country'] = $transaction['TransactionPayment'][0]['country'];
-		//$transaction['TransactionShipment'][0]['phone'] = $transaction['TransactionPayment'][0]['phone'];
+		$transaction['TransactionAddress'][1]['first_name'] = $transaction['TransactionAddress'][0]['first_name'];
+		$transaction['TransactionAddress'][1]['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
+		$transaction['TransactionAddress'][1]['email'] = $transaction['TransactionAddress'][0]['email'];
+		$transaction['TransactionAddress'][1]['street_address_1'] = $transaction['TransactionAddress'][0]['street_address_1'];
+		$transaction['TransactionAddress'][1]['street_address_2'] = $transaction['TransactionAddress'][0]['street_address_2'];
+		$transaction['TransactionAddress'][1]['city'] = $transaction['TransactionAddress'][0]['city'];
+		$transaction['TransactionAddress'][1]['state'] = $transaction['TransactionAddress'][0]['state'];
+		$transaction['TransactionAddress'][1]['zip'] = $transaction['TransactionAddress'][0]['zip'];
+		$transaction['TransactionAddress'][1]['country'] = $transaction['TransactionAddress'][0]['country'];
 		//$transaction['TransactionShipment']['user_id'] = $transaction['TransactionPayment']['user_id'];
 	  }
 	  

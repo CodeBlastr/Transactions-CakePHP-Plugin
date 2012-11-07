@@ -33,17 +33,30 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->Transaction->finalizeUserData($data);
 			
 			$data = $this->Payments->pay($data);
-			
-			$data = $this->Transaction->Customer->add($data); // we're here in UnitTesting!
-	  		// need a valid Customer.id to proceed
-			$data = $this->Transaction->add($data);
-			// need a valid User.id to proceed
-			$data = $this->Transaction->Customer->Connection->add($data);
-			$data = $this->TransactionPayment->add($data);
-			$data = $this->TransactionShipping->add($data);
-			
+			debug($data);break;
+
 			$data['Transaction']['status'] = 'paid';
+			
+			if(!$this->Auth->loggedIn()) {
+				$this->Transaction->Customer->add($data);
+				// Refactor their $data with their new Customer.id
+				$data['Transaction']['customer_id'] = $this->Transaction->Customer->id;
+				$data['Customer']['id'] = $this->Transaction->Customer->id;
+				foreach($data['TransactionAddress'] as &$transactionAddress) {
+					$transactionAddress['user_id'] = $this->Transaction->Customer->id;
+				}
+			}
+
+	  		// need a valid Customer.id to proceed
 			$this->Transaction->save($data);
+			$this->TransactionAddress->save($data);
+			if($data['Connection']) {
+				$connection['Connection']['user_id'] = $data['Customer']['id'];
+				$connection['Connection']['type'] = $data['Transaction']['mode'];
+				$connection['Connection']['value'] = $data['Connection'];
+				$this->Transaction->Customer->Connection->save($connection);
+			}
+
 			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
 			
 		  } catch (Exception $e) {
@@ -120,7 +133,7 @@ class TransactionsController extends TransactionsAppController {
 	public function myCart() {
 	  	// gather checkout options like shipping, payments, ssl, etc
 		$options = $this->Transaction->gatherCheckoutOptions();
-		
+
 	    // ensure that SSL is on if it's supposed to be
 		if ($options['ssl'] !== null && !strpos($_SERVER['HTTP_HOST'], 'localhost')) {
 		  $this->Ssl->force();
@@ -193,13 +206,12 @@ class TransactionsController extends TransactionsAppController {
 		} else {
 			$this->request->data = $this->Transaction->read(null, $id);
 		}
-		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
-		$transactionShipments = $this->Transaction->TransactionShipment->find('list');
-		//$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
+		$transactionAddresses = $this->Transaction->TransactionAddress->find('list');
+		$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
 		$assignees = $this->Transaction->Assignee->find('list');
-		$this->set(compact('transactionPayments', 'transactionShipments', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
+		$this->set(compact('transactionAddresses', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
 	}
 
 
