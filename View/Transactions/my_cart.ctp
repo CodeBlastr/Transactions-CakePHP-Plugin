@@ -60,7 +60,7 @@
 				echo $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength'=>'10', 'size' => '10'));
 				echo $this->Form->hidden('TransactionAddress.0.country', array('label' => 'Country', 'value' => 'US'));
 				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'maxlength'=>'10'));
-				echo $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.', 'checked' => $this->request->data['TransactionAddress'][0] != $this->request->data['TransactionAddress'][1] ? '' : 'checked'));
+				echo $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.'));
 				echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
 				?>
 			</fieldset>
@@ -190,19 +190,19 @@
         $("#TransactionShipping").parent().hide();
 <?php endif; ?>
 
-    $('#TransactionShipping').change(function(e){
-	  if ( $('#TransactionShipping').attr("checked") == undefined) {
-		  $('#TransactionShipmentFirstName').val($('#TransactionPaymentFirstName').val());
-		  $('#TransactionShipmentLastName').val($('#TransactionPaymentLastName').val());
-		  $('#TransactionShipmentStreetAddress1').val($('#TransactionPaymentStreetAddress1').val());
-		  $('#TransactionShipmentStreetAddress2').val($('#TransactionPaymentStreetAddress2').val());
-		  $('#TransactionShipmentCity').val($('#TransactionPaymentCity').val());
-		  $('#TransactionShipmentState').val($('#TransactionPaymentState').val());
-		  $('#TransactionShipmentZip').val($('#TransactionPaymentZip').val());
-		  $('#TransactionShipmentCountry').val($('#TransactionPaymentCountry').val());
+    $('#TransactionAddress0Shipping').change(function(e){
+	  if ( $('#TransactionAddress0Shipping').attr("checked") == undefined) {
+		  $('#TransactionAddress1FirstName').val($('#TransactionAddress0FirstName').val());
+		  $('#TransactionAddress1LastName').val($('#TransactionAddress0LastName').val());
+		  $('#TransactionAddress1StreetAddress1').val($('#TransactionAddress0StreetAddress1').val());
+		  $('#TransactionAddress1StreetAddress2').val($('#TransactionAddress0StreetAddress2').val());
+		  $('#TransactionAddress1City').val($('#TransactionAddress0City').val());
+		  $('#TransactionAddress1State').val($('#TransactionAddress0State').val());
+		  $('#TransactionAddress1Zip').val($('#TransactionAddress0Zip').val());
+		  $('#TransactionAddress1Country').val($('#TransactionAddress0Country').val());
 		  $('#shippingAddress').hide('slow');
 	  }
-	  if ( $('#TransactionShipping').attr("checked") == 'checked') {
+	  if ( $('#TransactionAddress0Shipping').attr("checked") == 'checked') {
 		  $('#shippingAddress').show('slow');
 	  }
     });

@@ -33,7 +33,6 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->Transaction->finalizeUserData($data);
 			
 			$data = $this->Payments->pay($data);
-			debug($data);break;
 
 			$data['Transaction']['status'] = 'paid';
 			
@@ -45,11 +44,14 @@ class TransactionsController extends TransactionsAppController {
 				foreach($data['TransactionAddress'] as &$transactionAddress) {
 					$transactionAddress['user_id'] = $this->Transaction->Customer->id;
 				}
+			} else {
+				$data['Transaction']['customer_id'] = $this->Session->read('Auth.user.id');
+				$data['Customer']['id'] = $this->Session->read('Auth.user.id');
 			}
 
 	  		// need a valid Customer.id to proceed
 			$this->Transaction->save($data);
-			$this->TransactionAddress->save($data);
+			$this->Transaction->TransactionAddress->save($data);
 			if($data['Connection']) {
 				$connection['Connection']['user_id'] = $data['Customer']['id'];
 				$connection['Connection']['type'] = $data['Transaction']['mode'];
