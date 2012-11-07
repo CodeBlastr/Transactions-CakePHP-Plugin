@@ -13,7 +13,6 @@ class TransactionItemFixture extends CakeTestFixture {
 	public $fields = array(
 		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary', 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
 		'name' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 512, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		//'catalog_item_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
 		'transaction_payment_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
 		'transaction_shipment_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
 		'transaction_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
@@ -54,7 +53,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000000',
 			'name' => 'Lorem ipsum dolor sit amet',
-			//'catalog_item_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_shipment_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000000',
@@ -86,7 +84,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000001',
 			'name' => 'Lorem ipsum dolor sit amet',
-			//'catalog_item_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_shipment_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_id' => 'Lorem ipsum dolor sit amet',
