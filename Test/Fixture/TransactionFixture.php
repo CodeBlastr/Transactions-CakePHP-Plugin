@@ -19,6 +19,7 @@ class TransactionFixture extends CakeTestFixture {
  * @var array
  */
 	public $records = array(
+		// transaction for User.id = 1
 		array(
 			'id' => '5077241d-9040-43c9-85b1-22d400000000',
 			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
@@ -40,6 +41,7 @@ class TransactionFixture extends CakeTestFixture {
 			'created' => '2012-10-11 19:55:09',
 			'modified' => '2012-10-11 19:55:09'
 		),
+		// transaction for guest Customer.id = 5738299d-9040-43c9-85b1-22d400000000
 		array(
 			'id' => '5043572d-9040-43c9-85b1-22d400000000',
 			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',

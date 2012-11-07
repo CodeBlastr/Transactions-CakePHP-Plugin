@@ -75,19 +75,24 @@ class PaymentsComponent extends Object {
  * All the details in reason_text and description.
  */
 	function Pay($data = null) {
-		$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
-		$paymentProcessor = explode('.', $paymentProcessor);
-		$paymentProcessor = $paymentProcessor[0];
+		try {
+			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
+			$paymentProcessor = explode('.', $paymentProcessor);
+			$paymentProcessor = $paymentProcessor[0];
 
-		$this->loadComponent($paymentProcessor);
-		if ($this->recurring) {
-			$this->paymentComponent->recurring(true);
-			$this->paymentComponent->Pay($data);
-		} else {
-			$this->paymentComponent->Pay($data);
+			$this->loadComponent($paymentProcessor);
+			if ($this->recurring) {
+				$this->paymentComponent->recurring(true);
+				$this->paymentComponent->Pay($data);
+			} else {
+				$this->paymentComponent->Pay($data);
+			}
+
+			return $this->paymentComponent->response;	
+		} catch (Exception $e) {
+			//throw $exc;
+			throw new Exception($e->getMessage());
 		}
-
-		return $this->paymentComponent->response;
 	}
 
 /*

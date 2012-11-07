@@ -124,11 +124,11 @@ class Transaction extends TransactionsAppModel {
 	);
 
 	
-	/**
-	 * The checkout page has options.
-	 * This function's job is to get those options.
-	 * @return array
-	 */
+/**
+ * The checkout page has options.
+ * This function's job is to get those options.
+ * @return array
+ */
 	public function gatherCheckoutOptions() {
 	    $options['ssl'] = defined('__TRANSACTIONS_SSL') ? unserialize(__TRANSACTIONS_SSL) : null;
 	    $options['trustLogos'] = !empty($ssl['trustLogos']) ? $ssl['trustLogos'] : null;
@@ -151,14 +151,14 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
-	/**
-	 * This function returns the UUID to use for a User by first checking the Auth Session, then by checking for a Transaction Guest session,
-	 * and finally, creating a Transaction Guest session if necessary.
-	 *  
-	 * @todo This should probably be in the User model in some fashion..
-	 * 
-	 * @return string The UUID of the User
-	 */
+/**
+ * This function returns the UUID to use for a User by first checking the Auth Session, then by checking for a Transaction Guest session,
+ * and finally, creating a Transaction Guest session if necessary.
+ *  
+ * @todo This should probably be in the User model in some fashion..
+ * 
+ * @return string The UUID of the User
+ */
 	public function getCustomersId() {
 	  $authUserId = CakeSession::read('Auth.User.id');
 	  $transactionGuestId = CakeSession::read('Transaction._guestId');
@@ -232,14 +232,14 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
-	/**
-	 * Combine the pre-checkout and post-checkout Transactions.
-	 * 
-	 * @todo Handle being passed empty carts
-	 * @param integer $userId
-	 * @param array $data
-	 * @return type
-	 */
+/**
+ * Combine the pre-checkout and post-checkout Transactions.
+ * 
+ * @todo Handle being passed empty carts
+ * @param integer $userId
+ * @param array $data
+ * @return type
+ */
 	public function finalizeTransactionData($submittedTransaction) {
 		$userId = $this->getCustomersId();
 		// get their current transaction (pre checkout page)
@@ -257,7 +257,7 @@ class Transaction extends TransactionsAppModel {
 			throw new Exception('Transaction missing.');
 		}
 		
-	    // update quantities
+		// update quantities
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
 			  foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
@@ -287,17 +287,23 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
-	
+/**
+ * - Ensures that the necessary data is present to create a Customer
+ * - Fills out the TransactionShipment fields when shipping info is same as billing info
+ * 
+ * @param array $transaction Transaction data that was posted by the checkout/cart form
+ * @return array Same array with neccessary and completed fields
+ */
 	public function finalizeUserData($transaction) {
 
 	  // ensure their 'Customer' data has values when they are not logged in
-	  if($transaction['Customer']['id'] == NULL) {
+	  if(empty($transaction['Customer']['id']) || !isset($transaction['Customer'])) {
 		//$transaction['Customer']['id'] = $transaction['Transaction']['customer_id'];
 		$transaction['Customer']['first_name'] = $transaction['TransactionPayment'][0]['first_name'];
 		$transaction['Customer']['last_name'] = $transaction['TransactionPayment'][0]['last_name'];
 		$transaction['Customer']['email'] = $transaction['TransactionPayment'][0]['email']; // required
 		$transaction['Customer']['username'] = $transaction['TransactionPayment'][0]['email']; // required
-		//$transaction['Customer']['phone'] = $transaction['TransactionPayment']['phone'];
+		$transaction['Customer']['phone'] = $transaction['TransactionPayment'][0]['phone'];
 		
 		// generate a temporary password: ANNNN
 		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
@@ -305,11 +311,11 @@ class Transaction extends TransactionsAppModel {
 		// set their User Role Id
 		$transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
 	  }
-	  
+
 	  //$transaction['TransactionPayment']['user_id'] = $transaction['Transaction']['customer_id'];
 	  // copy Payment data to Shipment data if neccessary
 	  if($transaction['TransactionPayment'][0]['shipping'] == '0') {
-		$transaction['TransactionShipment'][0]['transaction_id'] = $transaction['Transaction']['id'];
+		//$transaction['TransactionShipment'][0]['transaction_id'] = $transaction['Transaction']['id'];
 		$transaction['TransactionShipment'][0]['first_name'] = $transaction['TransactionPayment'][0]['first_name'];
 		$transaction['TransactionShipment'][0]['last_name'] = $transaction['TransactionPayment'][0]['last_name'];
 		$transaction['TransactionShipment'][0]['email'] = $transaction['TransactionPayment'][0]['email'];
@@ -319,7 +325,7 @@ class Transaction extends TransactionsAppModel {
 		$transaction['TransactionShipment'][0]['state'] = $transaction['TransactionPayment'][0]['state'];
 		$transaction['TransactionShipment'][0]['zip'] = $transaction['TransactionPayment'][0]['zip'];
 		$transaction['TransactionShipment'][0]['country'] = $transaction['TransactionPayment'][0]['country'];
-		//$transaction['TransactionShipment']['phone'] = $transaction['TransactionPayment']['phone'];
+		//$transaction['TransactionShipment'][0]['phone'] = $transaction['TransactionPayment'][0]['phone'];
 		//$transaction['TransactionShipment']['user_id'] = $transaction['TransactionPayment']['user_id'];
 	  }
 	  
@@ -327,11 +333,11 @@ class Transaction extends TransactionsAppModel {
 	}
 
 	
-	/**
-	 * 
-	 * @param array $transactions Multiple transactions
-	 * @return array A single Transaction
-	 */
+/**
+ * 
+ * @param array $transactions Multiple transactions
+ * @return array A single Transaction
+ */
 	public function combineTransactions($transactions) {
 
 	  foreach($transactions as $transaction) {
@@ -354,10 +360,10 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
-	/**
-	 * An array of options for select inputs
-	 *
-	 */
+/**
+ * An array of options for select inputs
+ *
+ */
 	public function statuses() {
 	    $statuses = array();
 	    foreach (Zuha::enum('ORDER_TRANSACTION_STATUS') as $status) {
