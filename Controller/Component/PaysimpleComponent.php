@@ -208,7 +208,7 @@ class PaysimpleComponent extends Component {
 	public function createPayment($data) {
 
 		$params = array(
-			'AccountId' => ($data['Connection']['Paysimple']['Account']['Id']),
+			'AccountId' => $data['Connection']['Paysimple']['Account']['Id'],
 			'InvoiceId' => NULL,
 			'Amount' => $data['Transaction']['order_charge'],
 			'IsDebit' => false, // IsDebit indicates whether this Payment is a refund.

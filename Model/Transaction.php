@@ -208,7 +208,7 @@ class Transaction extends TransactionsAppModel {
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
-		
+
 		// update quantities
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
@@ -229,10 +229,12 @@ class Transaction extends TransactionsAppModel {
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
 		
 		// figure out the subTotal
-		$officialTransaction['Transaction']['order_charge'] = 0;
+		$subTotal = 0;
 		foreach($officialTransaction['TransactionItem'] as $txnItem) {
-		    $officialTransaction['Transaction']['order_charge'] += $txnItem['price'] * $txnItem['quantity'];
+		    $subTotal += $txnItem['price'] * $txnItem['quantity'];
 		}
+		$subTotal = number_format($subTotal, 2, '.', FALSE);
+		$officialTransaction['Transaction']['order_charge'] = $officialTransaction['Transaction']['total'] = $subTotal;
 				
 		// return the official transaction
 		return $officialTransaction;
@@ -309,6 +311,61 @@ class Transaction extends TransactionsAppModel {
 
 	  return $finalTransaction;
 	}
+	
+	
+	public function completeUserAndTransactionData($isLoggedIn, $data) {
+		$data['Transaction']['status'] = 'paid';
+
+		if( ! $isLoggedIn ) {
+			$this->Customer->save($data);
+			// Refactor their $data with their new Customer.id
+			$data['Transaction']['customer_id'] = $this->Customer->id;
+			$data['Customer']['id'] = $this->Customer->id;
+			foreach($data['TransactionAddress'] as &$transactionAddress) {
+				$transactionAddress['user_id'] = $this->Customer->id;
+			}
+		} else {
+			$data['Transaction']['customer_id'] = CakeSession::read('Auth.User.id');
+			$data['Customer']['id'] = CakeSession::read('Auth.User.id');
+		}
+		foreach($data['TransactionItem'] as &$transactionItem) {
+			$transactionItem['status'] = 'paid';
+		}
+		
+		return $data;
+		
+	}
+	
+	
+	public function _beforeSuccessfulPayment($data) {
+		try {
+			$data = $this->finalizeTransactionData($data);
+			$data = $this->finalizeUserData($data);
+
+			return $data;
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
+		}
+	}
+	
+	public function _afterSuccessfulPayment($isLoggedIn, $data) {
+		try {
+			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
+
+			$this->save($data);
+			$this->TransactionItem->save($data);
+			$this->TransactionAddress->save($data);
+			if($data['Connection']) {
+				$connection['Connection']['user_id'] = $data['Customer']['id'];
+				$connection['Connection']['type'] = $data['Transaction']['mode'];
+				$connection['Connection']['value'] = serialize($data['Connection']);
+				$this->Customer->Connection->save($connection);
+			}
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
+		}
+	}
+	
 	
 	
 /**

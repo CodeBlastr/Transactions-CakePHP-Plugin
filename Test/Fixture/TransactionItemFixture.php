@@ -56,7 +56,7 @@ class TransactionItemFixture extends CakeTestFixture {
 			'name' => 'Test Item #1',
 			'transaction_payment_id' => '',
 			'transaction_shipment_id' => '',
-			'transaction_id' => '5077241d-9040-43c9-85b1-22d400000000',
+			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000000',
 			'quantity' => 1,
 			'price' => 1,
 			'weight' => 1,

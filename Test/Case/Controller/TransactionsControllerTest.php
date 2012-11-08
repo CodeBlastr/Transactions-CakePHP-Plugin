@@ -53,10 +53,10 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 		'plugin.transactions.transaction_item',
 		'plugin.transactions.transaction_address',
 		'plugin.users.customer',
-		'plugin.users.contact',
-		'plugin.users.assignee',
+		'plugin.contacts.contact',
+		'plugin.users.used',
 		'plugin.transactions.transaction_coupon',
-		//'plugin.conditions.condition'
+		'plugin.connections.connection'
 		);
 
 /**

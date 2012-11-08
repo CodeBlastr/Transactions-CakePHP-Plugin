@@ -28,82 +28,38 @@ class TransactionsController extends TransactionsAppController {
 	public function checkout() {
 	    if($this->request->data) {
 		  try {
-			  
-			$data = $this->Transaction->finalizeTransactionData($this->request->data);
-			$data = $this->Transaction->finalizeUserData($data);
+			
+			$data = $this->Transaction->_beforeSuccessfulPayment($this->request->data);
 			
 			$data = $this->Payments->pay($data);
 
-			$data['Transaction']['status'] = 'paid';
-			
-			if(!$this->Auth->loggedIn()) {
-				$this->Transaction->Customer->add($data);
-				// Refactor their $data with their new Customer.id
-				$data['Transaction']['customer_id'] = $this->Transaction->Customer->id;
-				$data['Customer']['id'] = $this->Transaction->Customer->id;
-				foreach($data['TransactionAddress'] as &$transactionAddress) {
-					$transactionAddress['user_id'] = $this->Transaction->Customer->id;
-				}
-			} else {
-				$data['Transaction']['customer_id'] = $this->Session->read('Auth.user.id');
-				$data['Customer']['id'] = $this->Session->read('Auth.user.id');
-			}
-
-	  		// need a valid Customer.id to proceed
-			$this->Transaction->save($data);
-			$this->Transaction->TransactionAddress->save($data);
-			if($data['Connection']) {
-				$connection['Connection']['user_id'] = $data['Customer']['id'];
-				$connection['Connection']['type'] = $data['Transaction']['mode'];
-				$connection['Connection']['value'] = $data['Connection'];
-				$this->Transaction->Customer->Connection->save($connection);
-			}
+			$data = $this->Transaction->_afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 
 			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
-			
+
 		  } catch (Exception $e) {
-			  
+
 			  $this->Session->setFlash(__d('transactions', $e->getMessage()));
+			  
 			  $data['Transaction']['status'] = 'failed';
 			  $this->Transaction->save($data);
 			  
 			  return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
-			  
-//			debug($e);
-//			debug($e->getMessage());
-//			echo($exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
-//			while($exc = $exc->getPrevious()) {
-//				echo('Caused by: '.$exc->getMessage().'<pre>'.$exc->getTraceAsString().'</pre>');  
-//			}
-//			break;
+
 		  }
 
-		  
-//		  
-//		  if ($response['response_code'] != 1) {
-//			// Transaction failed, back to the cart!
-//			$officialTransaction['Transaction']['status'] = 'failed';
-//			$this->Session->setFlash($response['reason_text'] . ' ' . $response['description']);
-//			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart');
-//		  } else {
-//			// else redirect them to success page
-//			$officialTransaction['Transaction']['status'] = 'paid';
-//			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
-//		  }
-//		  
-//		  // save the transaction stuff again
-//		  $this->Transaction->saveAll($officialTransaction);
-////		  $this->Transaction->TransactionPayment->save($officialTransaction);
-////		  $this->Transaction->TransactionShipment->save($officialTransaction);
-//		  
-//		  // do the redirection
-//		  $this->redirect($url);
 
 	    } else {
 		  $this->Session->setFlash(__d('transactions', 'Invalid transaction.'));
 		  return $this->redirect($this->referer());
 	    }
 	}
+	
+	
+	public function success() {
+		
+	}
+	
 	
 /**
  * index method

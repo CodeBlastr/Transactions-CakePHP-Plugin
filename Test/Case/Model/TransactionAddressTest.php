@@ -16,8 +16,6 @@ class TransactionAddressTestCase extends CakeTestCase {
 		'app.transaction',
 		'app.user',
 		'app.transaction_item',
-		'app.catalog_item',
-		'app.transaction_shipment',
 		'app.customer', 
 		'app.contact',
 		'app.assignee',
