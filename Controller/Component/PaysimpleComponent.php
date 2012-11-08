@@ -68,6 +68,7 @@ class PaysimpleComponent extends Component {
 			} catch (Exception $exc) {
 				throw new Exception($exc->getMessage());
 			}
+			
 		} else {
 			// They have Connection, we must have a PaySimple ID for them.
 			// Notes:
@@ -87,6 +88,7 @@ class PaysimpleComponent extends Component {
 				$data['Transaction']['Payment'] = $paymentData;
 
 				return $data;
+				
 			} catch (Exception $exc) {
 				throw new Exception($exc->getMessage());
 			}

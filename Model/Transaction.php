@@ -99,7 +99,7 @@ class Transaction extends TransactionsAppModel {
 		  }
 		}
 
-	    $options['defaultShippingCharge'] = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : 0;
+	    $options['defaultShippingCharge'] = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : false;
 	    
 	    return $options;
 	}
@@ -109,7 +109,7 @@ class Transaction extends TransactionsAppModel {
  * This function returns the UUID to use for a User by first checking the Auth Session, then by checking for a Transaction Guest session,
  * and finally, creating a Transaction Guest session if necessary.
  *  
- * @todo This should probably be in the User model in some fashion..
+ * @todo This should probably be in the User model in some fashion..?
  * 
  * @return string The UUID of the User
  */
@@ -154,6 +154,37 @@ class Transaction extends TransactionsAppModel {
 	
 
 /**
+ * figure out the subTotal and shippingCharge
+ * 
+ * @param array $data
+ * @return array
+ */
+	public function calculateSubtotalAndShipping($data) {
+	
+	    $subTotal = 0;
+	    $shippingCharge = 0;
+		
+	    foreach($data['TransactionItem'] as $txnItem) {
+		  $subTotal += $txnItem['price'] * $txnItem['quantity'];
+		  //$shippingCharge += $txnItem['shipping_charge'];
+	    }
+	    
+	    $data['Transaction']['order_charge'] = number_format($subTotal, 2, '.', false);
+	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
+		$data['Transaction']['total'] = number_format($subTotal + $shippingCharge, 2, '.', false);
+		
+		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
+		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
+		if($defaultShippingCharge !== FALSE) {
+			$data['Transaction']['shipping_charge'] = number_format($defaultShippingCharge, 2, '.', false);
+		}
+		
+		return $data;
+		
+	}
+	
+
+/**
  * We could do all sorts of processing in here
  * @param string $userId
  * @return boolean|array
@@ -173,13 +204,7 @@ class Transaction extends TransactionsAppModel {
 		  return FALSE;
 	    }
 	    
-	    // figure out the subTotal
-	    $subTotal = 0;
-	    foreach($theCart['TransactionItem'] as $txnItem) {
-		  $subTotal += $txnItem['price'] * $txnItem['quantity'];
-	    }
-	    
-	    $theCart['Transaction']['order_charge'] = $subTotal;
+	    $theCart = $this->calculateSubtotalAndShipping($theCart);
 
 	    return $theCart;
 	}
@@ -228,13 +253,7 @@ class Transaction extends TransactionsAppModel {
 		$officialTransaction = Set::merge($currentTransaction, $submittedTransaction);
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
 		
-		// figure out the subTotal
-		$subTotal = 0;
-		foreach($officialTransaction['TransactionItem'] as $txnItem) {
-		    $subTotal += $txnItem['price'] * $txnItem['quantity'];
-		}
-		$subTotal = number_format($subTotal, 2, '.', FALSE);
-		$officialTransaction['Transaction']['order_charge'] = $officialTransaction['Transaction']['total'] = $subTotal;
+		$officialTransaction = $this->calculateSubtotalAndShipping($officialTransaction);
 				
 		// return the official transaction
 		return $officialTransaction;
@@ -266,22 +285,12 @@ class Transaction extends TransactionsAppModel {
 		$transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
 	  }
 
-	  //$transaction['TransactionPayment']['user_id'] = $transaction['Transaction']['customer_id'];
 	  // copy Payment data to Shipment data if neccessary
 	  if($transaction['TransactionAddress'][0]['shipping'] == '0') {
-		//$transaction['TransactionShipment'][0]['transaction_id'] = $transaction['Transaction']['id'];
-		$transaction['TransactionAddress'][1]['first_name'] = $transaction['TransactionAddress'][0]['first_name'];
-		$transaction['TransactionAddress'][1]['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
-		$transaction['TransactionAddress'][1]['email'] = $transaction['TransactionAddress'][0]['email'];
-		$transaction['TransactionAddress'][1]['street_address_1'] = $transaction['TransactionAddress'][0]['street_address_1'];
-		$transaction['TransactionAddress'][1]['street_address_2'] = $transaction['TransactionAddress'][0]['street_address_2'];
-		$transaction['TransactionAddress'][1]['city'] = $transaction['TransactionAddress'][0]['city'];
-		$transaction['TransactionAddress'][1]['state'] = $transaction['TransactionAddress'][0]['state'];
-		$transaction['TransactionAddress'][1]['zip'] = $transaction['TransactionAddress'][0]['zip'];
-		$transaction['TransactionAddress'][1]['country'] = $transaction['TransactionAddress'][0]['country'];
-		//$transaction['TransactionShipment']['user_id'] = $transaction['TransactionPayment']['user_id'];
+		  $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
+		  $transaction['TransactionAddress'][1]['type'] = 'shipping';
 	  }
-	  
+
 	  return $transaction;
 	}
 
@@ -313,31 +322,51 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
+/**
+ * 
+ * @todo make this better
+ * 
+ * @param boolean $isLoggedIn
+ * @param array $data
+ * @return array
+ */
 	public function completeUserAndTransactionData($isLoggedIn, $data) {
-		$data['Transaction']['status'] = 'paid';
+		try {
+			$data['Transaction']['status'] = 'paid';
 
-		if( ! $isLoggedIn ) {
-			$this->Customer->save($data);
-			// Refactor their $data with their new Customer.id
-			$data['Transaction']['customer_id'] = $this->Customer->id;
-			$data['Customer']['id'] = $this->Customer->id;
-			foreach($data['TransactionAddress'] as &$transactionAddress) {
-				$transactionAddress['user_id'] = $this->Customer->id;
+			if (!$isLoggedIn) {
+				$this->Customer->save($data);
+				//break;
+				// Refactor their $data with their new Customer.id
+				$data['Transaction']['customer_id'] = $this->Customer->id;
+				$data['Customer']['id'] = $this->Customer->id;
+				foreach ($data['TransactionAddress'] as &$transactionAddress) {
+					$transactionAddress['transaction_id'] = $this->id;
+					$transactionAddress['user_id'] = $this->Customer->id;
+				}
+			} else {
+				$data['Transaction']['customer_id'] = CakeSession::read('Auth.User.id');
+				$data['Customer']['id'] = CakeSession::read('Auth.User.id');
 			}
-		} else {
-			$data['Transaction']['customer_id'] = CakeSession::read('Auth.User.id');
-			$data['Customer']['id'] = CakeSession::read('Auth.User.id');
+			foreach ($data['TransactionItem'] as &$transactionItem) {
+				$transactionItem['status'] = 'paid';
+			}
+
+			return $data;
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
 		}
-		foreach($data['TransactionItem'] as &$transactionItem) {
-			$transactionItem['status'] = 'paid';
-		}
-		
-		return $data;
-		
 	}
+
 	
 	
-	public function _beforeSuccessfulPayment($data) {
+/**
+ * 
+ * @param array $data
+ * @return array
+ * @throws Exception
+ */
+	public function beforePayment($data) {
 		try {
 			$data = $this->finalizeTransactionData($data);
 			$data = $this->finalizeUserData($data);
@@ -348,13 +377,31 @@ class Transaction extends TransactionsAppModel {
 		}
 	}
 	
-	public function _afterSuccessfulPayment($isLoggedIn, $data) {
+	
+/**
+ * 
+ * @param boolean $isLoggedIn
+ * @param array $data
+ * @throws Exception
+ */
+	public function afterSuccessfulPayment($isLoggedIn, $data) {
 		try {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
 
 			$this->save($data);
-			$this->TransactionItem->save($data);
-			$this->TransactionAddress->save($data);
+			
+			// run again with the Transaction.id
+			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
+
+			foreach($data['TransactionItem'] as $txnItem) {
+				$this->TransactionItem->create();
+				$this->TransactionItem->save($txnItem);
+			}
+			foreach($data['TransactionAddress'] as $txnAddr) {
+				$this->TransactionAddress->create();
+				$this->TransactionAddress->save($txnAddr);
+			}
+
 			if($data['Connection']) {
 				$connection['Connection']['user_id'] = $data['Customer']['id'];
 				$connection['Connection']['type'] = $data['Transaction']['mode'];

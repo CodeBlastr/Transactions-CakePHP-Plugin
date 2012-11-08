@@ -22,8 +22,6 @@ class TransactionFixture extends CakeTestFixture {
 		// transaction for User.id = 1
 		array(
 			'id' => '5077241d-9040-43c9-85b1-22d400000000',
-			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
-			'transaction_shipment_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_coupon_id' => 'Lorem ipsum dolor sit amet',
 			'processor_response' => 'Lorem ipsum dolor sit amet',
 			'introduction' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',
@@ -44,8 +42,6 @@ class TransactionFixture extends CakeTestFixture {
 		// transaction for guest Customer.id = 5738299d-9040-43c9-85b1-22d400000000
 		array(
 			'id' => '5043572d-9040-43c9-85b1-22d400000000',
-			'transaction_payment_id' => 'Lorem ipsum dolor sit amet',
-			'transaction_shipment_id' => 'Lorem ipsum dolor sit amet',
 			'transaction_coupon_id' => 'Lorem ipsum dolor sit amet',
 			'processor_response' => 'Lorem ipsum dolor sit amet',
 			'introduction' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',

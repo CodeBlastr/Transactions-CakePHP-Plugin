@@ -16,13 +16,12 @@ class TransactionTestCase extends CakeTestCase {
 	public $fixtures = array(
 		'plugin.transactions.transaction',
 		'plugin.transactions.transaction_address',
+		'plugin.transactions.transaction_coupon',
 	    'plugin.users.user',
 		'plugin.transactions.transaction_item',
 //	    'plugin.users.customer',
-//	    'plugin.contacts.contact',
+	    'plugin.contacts.contact',
 //	    'plugin.users.assignee',
-//	    'plugin.users.creator',
-//	    'plugin.users.modifier',
 //	    'plugin.transactions.transaction_coupon'
 	);
 
@@ -82,7 +81,7 @@ class TransactionTestCase extends CakeTestCase {
 	public function testSubtotalCalculation() {
 		$userId = 1;
 		$result = $this->Transaction->processCart($userId);
-		$this->assertInternalType('integer', $result['Transaction']['order_charge']);
+		$this->assertInternalType('float', $result['Transaction']['order_charge']);
 	}
 
 	public function testReassignGuestCart() {
@@ -161,7 +160,7 @@ class TransactionTestCase extends CakeTestCase {
 	public function testFinalizeUserData_asGuest() {
 	
 		$submittedTransaction = array(
-			'TransactionPayment' => array(
+			'TransactionAddress' => array(
 				array(
 					'email' => 'joel@razorit.com',
 					'first_name' => 'Joel',
@@ -174,9 +173,7 @@ class TransactionTestCase extends CakeTestCase {
 					'country' => 'US',
 					'shipping' => '0',
 					'phone' => '1234567890'
-				)
-			),
-			'TransactionShipment' => array(
+				),
 				array(
 					'street_address_1' => '',
 					'street_address_2' => '',
@@ -217,6 +214,13 @@ class TransactionTestCase extends CakeTestCase {
 		$result = $this->Transaction->finalizeUserData($submittedTransaction);
 		#debug($result);break;
 		
+	}
+	
+	public function testShippingChargeCalculatedFromSetting() {
+		define('__TRANSACTIONS_FLAT_SHIPPING_RATE', 5);
+		$result = $this->Transaction->processCart(1);
+		$result = $result['Transaction']['shipping_charge'];
+		$this->assertEqual($result, '5');
 	}
 	
 }

@@ -29,11 +29,11 @@ class TransactionsController extends TransactionsAppController {
 	    if($this->request->data) {
 		  try {
 			
-			$data = $this->Transaction->_beforeSuccessfulPayment($this->request->data);
-			
+			$data = $this->Transaction->beforePayment($this->request->data);
+
 			$data = $this->Payments->pay($data);
 
-			$data = $this->Transaction->_afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+			$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 
 			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
 
