@@ -3,34 +3,15 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
 /**
  * Transaction Model
  *
- * @property TransactionShipment $TransactionShipment
- * @property TransactionPayment $TransactionPayment
- * @property TransactionShipment $TransactionShipment
  * @property TransactionCoupon $TransactionCoupon
  * @property Customer $Customer
  * @property Contact $Contact
  * @property Assignee $Assignee
  * @property TransactionItem $TransactionItem
- * @property TransactionPayment $TransactionPayment
+ * @property TransactionAddress $TransactionAddress
  */
 class Transaction extends TransactionsAppModel {
  public $name = 'Transaction';
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
-
-/**
- * hasOne associations
- *
- * @var array
- */
-//	public $hasOne = array(
-//		'TransactionShipment' => array(
-//			'className' => 'Transactions.TransactionShipment',
-//			'foreignKey' => 'transaction_id',
-//			'conditions' => '',
-//			'fields' => '',
-//			'order' => ''
-//		)
-//	);
 
 /**
  * belongsTo associations
@@ -38,27 +19,13 @@ class Transaction extends TransactionsAppModel {
  * @var array
  */
 	public $belongsTo = array(
-//		'TransactionPayment' => array(
-//			'className' => 'Transactions.TransactionPayment',
-//			'foreignKey' => 'transaction_payment_id',
-//			'conditions' => '',
-//			'fields' => '',
-//			'order' => ''
-//		),
-//		'TransactionShipment' => array(
-//			'className' => 'Transactions.TransactionShipment',
-//			'foreignKey' => 'transaction_shipment_id',
-//			'conditions' => '',
-//			'fields' => '',
-//			'order' => ''
-//		),
-//		'TransactionCoupon' => array(
-//			'className' => 'Transactions.TransactionCoupon',
-//			'foreignKey' => 'transaction_coupon_id',
-//			'conditions' => '',
-//			'fields' => '',
-//			'order' => ''
-//		),
+		'TransactionCoupon' => array(
+			'className' => 'Transactions.TransactionCoupon',
+			'foreignKey' => 'transaction_coupon_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
 		'Customer' => array(
 			'className' => 'Users.User',
 			'foreignKey' => 'customer_id',

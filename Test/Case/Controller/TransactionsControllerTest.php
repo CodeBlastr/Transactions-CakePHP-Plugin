@@ -50,9 +50,8 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 	public $fixtures = array(
 		'plugin.transactions.transaction',
 		'plugin.users.user',
-		'plugin.transactions.transaction_payment',
 		'plugin.transactions.transaction_item',
-		'plugin.transactions.transaction_shipment',
+		'plugin.transactions.transaction_address',
 		'plugin.users.customer',
 		'plugin.users.contact',
 		'plugin.users.assignee',
