@@ -6,8 +6,6 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * TransactionItem Model
  *
  * @property Product $Product
- * @property TransactionPayment $TransactionPayment
- * @property TransactionShipment $TransactionShipment
  * @property Transaction $Transaction
  * @property Customer $Customer
  * @property Contact $Contact
@@ -18,19 +16,12 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
 class TransactionItem extends TransactionsAppModel {
 
     public $name = 'TransactionItem';
+    public $displayField = 'name';
 
     public $validate = array(
 		'price' => 'notEmpty'
     );
     
-/**
- * Display field
- *
- * @var string
- */
-    public $displayField = 'name';
-    //The Associations below have been created with all possible keys, those that are not needed can be removed
-
 
     public $hasOne = 'Transaction';
 
@@ -65,9 +56,9 @@ class TransactionItem extends TransactionsAppModel {
  * @return string Id of the cart in question
  */
     public function setCartId($userId) {
-	  // an item was added, check for a shopping cart.
+	  // an item was added, check for an open shopping cart.
 	  $myCart = $this->Transaction->find('first', array(
-		  'conditions' => array('customer_id' => $userId)
+		  'conditions' => array('customer_id' => $userId, 'status' => 'open')
 		  ));
 	  if (!$myCart) {
 		  // no cart found. give them a new shopping cart.
@@ -77,7 +68,7 @@ class TransactionItem extends TransactionsAppModel {
 		  ));
 		  $this->Transaction->save();
 	  } else {
-		  // existing shopping cart(s) found..  use it.
+		  // existing shopping cart found..  use it.
 		  $this->Transaction->id = $myCart['Transaction']['id'];
 	  }
 

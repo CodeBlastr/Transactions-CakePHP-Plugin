@@ -19,7 +19,7 @@
  * @since         Zuha(tm) v 0.0.1
  * @license       GPL v3 License (http://www.gnu.org/licenses/gpl.html) and Future Versions
  */
-//debug($myCart['Customer']['id']);
+//debug($this->request->data);
 ?>
 
 <div id="transactionsCheckout" class="transactions checkout form">
@@ -50,7 +50,7 @@
 			<fieldset id="billingAddress">
 				<legend><?php echo __d('transactions', 'Billing Address'); ?></legend>
 				<?php
-				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required'));
 				echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
 				echo $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
 				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));

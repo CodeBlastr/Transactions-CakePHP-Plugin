@@ -186,17 +186,29 @@ class Transaction extends TransactionsAppModel {
 
 /**
  * We could do all sorts of processing in here
+ * 
+ * @todo How to get saved addresses for returning users??
+ * 
  * @param string $userId
  * @return boolean|array
  */
 	public function processCart($userId) {
 	    
+		$options = $this->gatherCheckoutOptions();
+		
 	    $theCart = $this->find('first', array(
-		  'conditions' => array('customer_id' => $userId),
+		  'conditions' => array(
+			  'Transaction.customer_id' => $userId,
+			  'Transaction.status' => 'open'
+			  ),
 		  'contain' => array(
 			  'TransactionItem',
-			  'TransactionAddress',  // saved addresses
-			  'Customer'			  // customer's user data
+			  'TransactionAddress',
+			  'Customer' => array(
+				  'Connection' => array(
+					'conditions' => array('Connection.type' => $options['paymentMode'])  
+					)
+				  )
 			  )
 		));
 	    
@@ -214,19 +226,28 @@ class Transaction extends TransactionsAppModel {
  * Combine the pre-checkout and post-checkout Transactions.
  * 
  * @todo Handle being passed empty carts
+ * 
  * @param integer $userId
  * @param array $data
  * @return type
  */
 	public function finalizeTransactionData($submittedTransaction) {
 		$userId = $this->getCustomersId();
+		$options = $this->gatherCheckoutOptions();
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
-		    'conditions' => array('customer_id' => $userId),
+		    'conditions' => array(
+				'Transaction.customer_id' => $userId,
+				'Transaction.status' => 'open'
+				),
 		    'contain' => array(
 			  'TransactionItem',
-			  'TransactionAddress',  // saved addresses
-			  'Customer'			  // customer's user data
+			  'TransactionAddress',
+			  'Customer' => array(
+				  'Connection' => array(
+					'conditions' => array('Connection.type' => $options['paymentMode'])  
+					)
+				  )
 			  )
 		));
 
@@ -389,23 +410,24 @@ class Transaction extends TransactionsAppModel {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
 
 			$this->save($data);
-			
-			// run again with the Transaction.id
-			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
 
 			foreach($data['TransactionItem'] as $txnItem) {
+				$txnItem['transaction_id'] = $this->id;
 				$this->TransactionItem->create();
 				$this->TransactionItem->save($txnItem);
 			}
 			foreach($data['TransactionAddress'] as $txnAddr) {
+				$txnAddr['transaction_id'] = $this->id;
 				$this->TransactionAddress->create();
 				$this->TransactionAddress->save($txnAddr);
 			}
-
-			if($data['Connection']) {
+			
+			if($data['Customer']['Connection']) {
+				//debug($data['Customer']['Connection']);break;
+				$options = $this->gatherCheckoutOptions();
 				$connection['Connection']['user_id'] = $data['Customer']['id'];
-				$connection['Connection']['type'] = $data['Transaction']['mode'];
-				$connection['Connection']['value'] = serialize($data['Connection']);
+				$connection['Connection']['type'] = $options['paymentMode'];
+				$connection['Connection']['value'] = serialize($data['Customer']['Connection']);
 				$this->Customer->Connection->save($connection);
 			}
 		} catch (Exception $e) {

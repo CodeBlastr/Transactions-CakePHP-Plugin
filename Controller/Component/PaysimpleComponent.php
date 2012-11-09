@@ -9,6 +9,7 @@ App::uses('HttpSocket', 'Network/Http');
 
 class PaysimpleComponent extends Component {
 
+	public $name = 'Paysimple';
 	public $config = array(
 		'environment' => 'sandbox',
 		'apiUsername' => '',
@@ -38,24 +39,24 @@ class PaysimpleComponent extends Component {
  */
 	public function Pay($data) {
 
-		if (!isset($data['Connection'])) {
+		if (!isset($data['Customer']['Connection'])) {
 			// create a user in their system and return data for us to save
 			try {
 
 				// create their Customer
 				$userData = $this->createCustomer($data);
-				$data['Connection']['Paysimple']['Customer']['Id'] = $userData['Id'];
+				$data['Customer']['Connection']['Customer']['Id'] = $userData['Id'];
 
 				// add their payment method to their Account List
 				if (!empty($data['Transaction']['ach_account_number'])) {
 					$accountData = $this->addAchAccount($data);
-					$data['Connection']['Paysimple']['Account']['Ach'][] = $accountData;
-					$data['Connection']['Paysimple']['Account']['Id'] = $accountData['Id'];
+					$data['Customer']['Connection']['Account']['Ach'][] = $accountData;
+					$data['Customer']['Connection']['Account']['Id'] = $accountData['Id'];
 					$data['Transaction']['paymentSubType'] = 'Web';
 				} else {
 					$accountData = $this->addCreditCardAccount($data);
-					$data['Connection']['Paysimple']['Account']['CreditCard'][] = $accountData;
-					$data['Connection']['Paysimple']['Account']['Id'] = $accountData['Id'];
+					$data['Customer']['Connection']['Account']['CreditCard'][] = $accountData;
+					$data['Customer']['Connection']['Account']['Id'] = $accountData['Id'];
 					$data['Transaction']['paymentSubType'] = 'Moto';
 				}
 
@@ -71,17 +72,15 @@ class PaysimpleComponent extends Component {
 			
 		} else {
 			// They have Connection, we must have a PaySimple ID for them.
-			// Notes:
-			// ideally we should save their accounts to our database, so we have a reusable ID for them,
-			// i.e. #1 = My Debit Card, #2 = My Secret Checking Account..
-			// Currently my code would compare the account they submitted against what PaySimple has saved for them,
-			// and create it if it's not already there, then set it to default, and use it.
 			try {
 
 				if (!empty($data['Transaction']['ach_account_number'])) {
 					$data['Transaction']['paymentSubType'] = 'Web';
-				} else {
+				} elseif (!empty($data['Transaction']['ach_account_number'])) {
 					$data['Transaction']['paymentSubType'] = 'Moto';
+				} else {
+					// they are using a saved payment method; defined by an Id
+					$data['Customer']['Connection']['Account']['Id'] = $data['Transaction']['paysimple_account'];
 				}
 				
 				$this->createPayment($data);
@@ -171,7 +170,7 @@ class PaysimpleComponent extends Component {
 			'Issuer' => $this->getIssuer($data['Transaction']['card_number']),
 			'CreditCardNumber' => $data['Transaction']['card_number'],
 			'ExpirationDate' => $data['Transaction']['card_exp_month'] . '/' . $data['Transaction']['card_exp_year'],
-			'CustomerId' => $data['Connection']['Paysimple']['Customer']['Id'],
+			'CustomerId' => $data['Customer']['Connection']['Customer']['Id'],
 		);
 
 		return $this->_sendRequest('POST', '/account/creditcard', $params);
@@ -193,7 +192,7 @@ class PaysimpleComponent extends Component {
 			'RoutingNumber' => $data['Transaction']['ach_routing_number'],
 			'AccountNumber' => $data['Transaction']['ach_account_number'],
 			'BankName' => $data['Transaction']['ach_bank_name'],
-			'CustomerId' => $data['Connection']['Paysimple']['Customer']['Id']
+			'CustomerId' => $data['Customer']['Connection']['Customer']['Id']
 		);
 
 		return $this->_sendRequest('POST', '/account/ach', $params);
@@ -210,7 +209,7 @@ class PaysimpleComponent extends Component {
 	public function createPayment($data) {
 
 		$params = array(
-			'AccountId' => $data['Connection']['Paysimple']['Account']['Id'],
+			'AccountId' => $data['Customer']['Connection']['Account']['Id'],
 			'InvoiceId' => NULL,
 			'Amount' => $data['Transaction']['order_charge'],
 			'IsDebit' => false, // IsDebit indicates whether this Payment is a refund.

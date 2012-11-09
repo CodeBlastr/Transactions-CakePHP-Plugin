@@ -100,7 +100,10 @@ class TransactionsController extends TransactionsAppController {
 		// If they have two carts, we are going to ask the customer what to do with them
 		// determine the user's "ID"
 		$userId = $this->Transaction->getCustomersId();
-		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('customer_id' => $userId)));
+		$numberOfCarts = $this->Transaction->find('count', array(
+			'conditions' => array('customer_id' => $userId, 'status' => 'open')
+			));
+		
 		if($numberOfCarts > 1) {
 
 		  return $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
@@ -231,8 +234,8 @@ class TransactionsController extends TransactionsAppController {
 			  $this->Transaction->saveAll($transaction);
 			  break;
 		  }
-		  
-		  $this->redirect(array('action' => 'myCart'));
+
+		  $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action' => 'myCart'));
 		  
 		}
 	  }
