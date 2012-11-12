@@ -208,6 +208,103 @@ class PaysimpleComponent extends Component {
 
 		return $this->_sendRequest('POST', '/payment', $params);
 	}
+	
+	
+	/**
+	 * Creates a Payment Schedule record when provided with a Payment Schedule object
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#post-recurringpayment
+	 * 
+	 * @param array $data
+	 * @return boolean|array
+	 */
+	public function createRecurringPayment($data) {
+		
+		$params = array(
+			'PaymentAmount' => '', // required
+			'FirstPaymentAmount' => '',
+			'FirstPaymentDate' => '',
+			'AccountId' => '', // required
+			'InvoiceNumber' => '',
+			'OrderId' => '',
+			'PaymentSubType' => '', // required
+			'StartDate' => '', // required
+			'EndDate' => '',
+			'ScheduleStatus' => '', // required
+			'ExecutionFrequencyType' => '', // required
+			'ExecutionFrequencyParameter' => '',
+			'Description' => '',
+			'Id' => 0
+		);
+		
+		return $this->_sendRequest('POST', '/recurringpayment', $params);
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment
+	 * 
+	 * @param array $data
+	 * @return boolean|array
+	 */
+	public function updateRecurringPayment($data) {
+		
+		$params = array(
+			'CustomerId' => '',
+			'NextScheduleDate' => '',
+			'PauseUntilDate' => '',
+			'FirstPaymentDone' => '',
+			'DateOfLastPaymentMade' => '',
+			'TotalAmountPaid' => '',
+			'NumberOfPaymentsMade' => '',
+			'EndDate' => '', // updatable
+			'PaymentAmount' => '', // updatable
+			'PaymentSubType' => '', // updatable
+			'AccountId' => '', // updatable
+			'InvoiceNumber' => '',
+			'OrderId' => '',
+			'FirstPaymentAmount' => '', // updatable (if it hasn't started yet)
+			'FirstPaymentDate' => '', // updatable (if it hasn't started yet)
+			'StartDate' => '', // updatable (if it hasn't started yet)
+			'ScheduleStatus' => '',
+			'ExecutionFrequencyType' => '', // updatable
+			'ExecutionFrequencyParameter' => '', // updatable
+			'Description' => '',
+			'Id' => ''
+		);
+		
+		return $this->_sendRequest('PUT', '/recurringpayment', $params);
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-pause-until-enddate
+	 * 
+	 * @param type $data
+	 * @return boolean
+	 */
+	public function pauseRecurringPayment($data) {
+		return $this->_sendRequest('PUT', '/recurringpayment/'.$data['scheduleId'].'/pause?endDate='.$data['endDate']);
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-suspend
+	 * 
+	 * @param type $scheduleId
+	 * @return boolean
+	 */
+	public function suspendRecurringPayment($scheduleId) {
+		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/suspend');
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-resume
+	 * 
+	 * @param type $data
+	 * @return boolean
+	 */
+	public function resumeRecurringPayment($data) {
+		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/resume');
+	}
+	
+	
 
 /**
  * @param integer $customerId
