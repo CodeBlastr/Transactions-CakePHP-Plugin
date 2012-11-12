@@ -24,7 +24,7 @@
 
 <div id="transactionsCheckout" class="transactions checkout form">
     <?php
-    echo $this->Html->script('system/jquery.validate.min', array('inline' => false));
+    //echo $this->Html->script('system/jquery.validate.min', array('inline' => false));
     echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
     echo $this->Form->create('Transaction', array('action' => 'checkout'));
     ?>
@@ -102,15 +102,15 @@
 			foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
 			?>
-				<div class="transactionItemInCart">
-				<?php
-				echo $this->element('Transactions/cart_item', array(
-					'transactionItem' => $transactionItem,
-					'i' => $i
-					),
-					array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))
-				);
-				?>
+				<div class="transactionItemInCart" id="TransactionItem<?php echo $i ?>">
+					<?php
+					echo $this->element('Transactions/cart_item', array(
+						'transactionItem' => $transactionItem,
+						'i' => $i
+						),
+						array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))
+					);
+					?>
 				</div>
 
 			<?php
@@ -127,11 +127,11 @@
 			$pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); // field is FLOAT, no commas allowed
 			//echo $this->Form->input('Transaction.discount', array('label' => 'Discount', 'readonly' => true));
 			?>
-			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></div>
-			<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></div>
-			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<?php echo ZuhaInflector::pricify($options['defaultShippingCharge']) ?></span></div>
+			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></span></div>
+			<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></span></div>
+			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<span class="floatPrice"><?php echo ZuhaInflector::pricify($discount) ?></span></span></div>
 			<hr/>
-			<div style="margin: 10px 0; font-weight: bold;">Total: <span id="TransactionTotal" class="total" style="float:right; font-weight: bold; font-size: 120%">$<?php echo $pricifiedOrderTotal ?></span></div>
+			<div style="margin: 10px 0; font-weight: bold;">Total: <span id="TransactionTotal" class="total" style="float:right; font-weight: bold; font-size: 120%">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></span></div>
 			<div><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Enter Promo Code') ?></a></small></div>
 			<?php
 			//echo $this->Form->input('Transaction.total', array('label' => 'Total <small><a id="enterPromo" href="#">Enter Promo Code</a></small>', 'readonly' => true, 'value' => $pricifiedOrderTotal, 'class' =>'uneditable-input',/* 'after' => defined('__USERS_CREDITS_PER_PRICE_UNIT') ? " Or Credits : " . __USERS_CREDITS_PER_PRICE_UNIT * $orderTotal : "Or Credits : " .  $orderTotal */));
@@ -168,8 +168,8 @@
 		  url: "/transactions/transaction_coupons/verify.json" ,
 		  dataType: "json",
 		  success:function(data){
-			var discount = $("#TransactionOrderCharge").val() - data['data']['Transaction']['order_charge'];
-			$('#TransactionTotal').val(data['data']['Transaction']['order_charge']);
+			var discount = $("#TransactionOrderCharge").text() - data['data']['Transaction']['order_charge'];
+			$('#TransactionTotal').text(data['data']['Transaction']['order_charge']);
 			$("#TransactionDiscount").val(discount.toFixed(2));
 			$("#TransactionDiscount").parent().show();
 			//total();
@@ -190,6 +190,9 @@
         $("#TransactionShipping").parent().hide();
 <?php endif; ?>
 
+	/**
+	 * shipping same as billing toggle
+	 */
     $('#TransactionAddress0Shipping').change(function(e){
 	  if ( $('#TransactionAddress0Shipping').attr("checked") == undefined) {
 		  $('#TransactionAddress1FirstName').val($('#TransactionAddress0FirstName').val());
@@ -269,19 +272,65 @@
 	  }
     }
     $().ready(function() {
-	  $("#TransactionCheckoutForm").validate();
+	  //$("#TransactionCheckoutForm").validate();
     });
     
-    var $scrollingDiv = $("#orderTransactionItems");
+	/**
+	 * experimental fancy scrolling Shopping Cart
+	 */
+//    var $scrollingDiv = $("#orderTransactionItems");
+//
+//    $(window).scroll(function(){
+//	  if($(window).scrollTop() + $("#orderTransactionItems").innerHeight() >= $("#transactionCartLeft")[0].scrollHeight) {
+//		  $scrollingDiv.stop();
+//	  } else {
+//	  $scrollingDiv
+//		  .stop()
+//		  .animate({"marginTop": ($(window).scrollTop() + 30) + "px"}, "slow" );
+//	  }
+//    });
+	
+	
+	
+	/**
+	 * dynamic totals
+	 */
+	$('.TransactionItemCartQty').bind("change keyup", function(e){
+		updateItemTotals($(this));
+		updateSubtotal();
+		updateOrderTotal();
+	});
+	
+	function updateItemTotals(itemQty) {
+		var transactionItemX = itemQty.attr('id').replace('Quantity', '');
+		if($.isNumeric(itemQty.val()) === false) itemQty.val('0');
+		// calculate the item total
+		var itemTotal = $('#' + transactionItemX + ' .priceOfOne').text() * itemQty.val();
+		// update the item total
+		$('#' + transactionItemX + ' .floatPrice').text(itemTotal.toFixed(2));	
+	}
+	
+	function updateSubtotal() {
+		var subtotal = 0;
+		$('#orderTransactionItems .floatPrice').each(function(e) {
+			subtotal += parseFloat($(this).text());
+		});
+		$('#TransactionSubtotal .floatPrice').text(subtotal.toFixed(2));		
+	}
 
-    $(window).scroll(function(){
-	  if($(window).scrollTop() + $("#orderTransactionItems").innerHeight() >= $("#transactionCartLeft")[0].scrollHeight) {
-		  $scrollingDiv.stop();
-	  } else {
-	  $scrollingDiv
-		  .stop()
-		  .animate({"marginTop": ($(window).scrollTop() + 30) + "px"}, "slow" );
-	  }
-    });
-    
+	function updateShippingTotal() {
+		
+	}
+
+	function updateOrderTotal() {
+		var subtotal = parseFloat($('#TransactionSubtotal .floatPrice').text());
+		var shippingTotal = parseFloat($('#TransactionShipping .floatPrice').text());
+		var discountTotal = parseFloat($('#TransactionDiscount .floatPrice').text());
+		if($.isNumeric(discountTotal) === false) discountTotal = 0;
+		
+		var orderTotal = subtotal + shippingTotal - discountTotal;
+		
+		$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
+		
+	}
 </script>
