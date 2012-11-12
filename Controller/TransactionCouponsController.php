@@ -7,7 +7,9 @@ App::uses('TransactionsAppController', 'Transactions.Controller');
  */
 class TransactionCouponsController extends TransactionsAppController {
 
-
+	public $name = 'TransactionCoupons';
+	public $uses = 'Transactions.TransactionCoupon';
+	
 /**
  * index method
  *
@@ -47,6 +49,7 @@ class TransactionCouponsController extends TransactionsAppController {
 				$this->Session->setFlash(__('The transaction coupon could not be saved. Please, try again.'));
 			}
 		}
+		$this->set('discountTypes', $this->TransactionCoupon->types());
 	}
 
 /**
@@ -93,4 +96,12 @@ class TransactionCouponsController extends TransactionsAppController {
 		$this->Session->setFlash(__('Transaction coupon was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
+	
+	
+	public function verify() {
+		// currently used at transactions/transactions/myCart only
+		$this->request->data = $this->TransactionCoupon->verify($this->request->data);
+		$this->set('data', $this->request->data);
+	}
+	
 }

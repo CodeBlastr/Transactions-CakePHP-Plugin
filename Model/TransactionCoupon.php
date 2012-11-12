@@ -28,6 +28,16 @@ class TransactionCoupon extends TransactionsAppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
+		'is_active' => array(
+			'boolean' => array(
+				'rule' => array('boolean'),
+				//'message' => 'Your custom message here',
+				//'allowEmpty' => false,
+				//'required' => false,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
+		),
 	);
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
@@ -52,5 +62,66 @@ class TransactionCoupon extends TransactionsAppModel {
 			'counterQuery' => ''
 		)
 	);
+
+	
+	public function verify($data, $conditions = null) {
+		# similar to apply but don't mark as used
+		if (!empty($data['TransactionCoupon']['code'])) {
+			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
+			$coupon = $this->find('first', array('conditions' => $condtions));
+			
+			if (empty($coupon)) {
+				throw new Exception('Code out of date or does not apply.');
+			} else {
+				$data = $this->_applyPriceChange(
+					$coupon['TransactionCoupon']['discount_type'], 
+					$coupon['TransactionCoupon']['discount'], 
+					$data);
+				$data['TransactionCoupon'] = $coupon['TransactionCoupon'];
+				return $data;
+			}
+		} else {
+			throw new Exception('Coupon code was empty.');
+		}
+	}
+	
+	private function _applyPriceChange($type = 'fixed', $discount = 0, $data = null) {
+		if ($type == 'percent') {
+			# for now it does the total 
+			$data['Transaction']['order_charge'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['order_charge']);
+		} else {
+			# do fixed coupon price change 
+			$data['Transaction']['order_charge'] = ZuhaInflector::pricify($data['Transaction']['order_charge'] - $discount);
+		}
+		
+		return $data;		
+	}
+	
+	public function apply($data) {
+		# find the coupon (make sure it can be applied)
+		try {
+			$data = $this->verify($data);
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
+		}		
+		
+		# make the coupon as used 
+		$coupon['TransactionCoupon']['id'] = $data['TransactionCoupon']['id'];
+		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
+		$this->validate = false;
+		if ($this->save($coupon)) {
+			return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['order_charge'];
+		} else {
+			throw new Exception('Code apply failed.');
+		}
+	}
+	
+	
+	public function types() {
+		return array(
+			'fixed' => 'Fixed discount for cart total.',
+			'percent' => 'Percent discount for cart total.',
+			);
+	}
 
 }

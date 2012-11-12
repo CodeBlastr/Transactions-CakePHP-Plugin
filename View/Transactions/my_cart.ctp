@@ -129,7 +129,7 @@
 			?>
 			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></span></div>
 			<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></span></div>
-			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<span class="floatPrice"><?php echo ZuhaInflector::pricify($discount) ?></span></span></div>
+			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['discount']) ?></span></span></div>
 			<hr/>
 			<div style="margin: 10px 0; font-weight: bold;">Total: <span id="TransactionTotal" class="total" style="float:right; font-weight: bold; font-size: 120%">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></span></div>
 			<div><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Enter Promo Code') ?></a></small></div>
