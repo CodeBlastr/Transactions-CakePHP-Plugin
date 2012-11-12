@@ -14,7 +14,7 @@ if(isset($this->request->data['Customer']['Connection'])) {
 		echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;'));
 	}
 	if(isset($connectionData['Account']['Ach'])) {
-		echo '<h5>>Use a saved ACH Account</h5>';
+		echo '<h5>Use a saved ACH Account</h5>';
 		foreach($connectionData['Account']['Ach'] as $savedAch) {
 			$achAccounts[$savedAch['Id']] = $savedAch['BankName'] . $savedAch['AccountNumber'];
 			if($savedAch['IsDefault'] == true) $defaultAccount = $savedAch['Id'];

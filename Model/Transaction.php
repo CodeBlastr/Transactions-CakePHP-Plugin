@@ -422,12 +422,16 @@ class Transaction extends TransactionsAppModel {
 				$this->TransactionAddress->save($txnAddr);
 			}
 			
+			// Create OR Update their payment processor data
 			if($data['Customer']['Connection']) {
-				//debug($data['Customer']['Connection']);break;
 				$options = $this->gatherCheckoutOptions();
-				$connection['Connection']['user_id'] = $data['Customer']['id'];
-				$connection['Connection']['type'] = $options['paymentMode'];
-				$connection['Connection']['value'] = serialize($data['Customer']['Connection']);
+				// connection[id] should be pre-filled or empty
+				$connection['id'] = (!empty($data['Customer']['Connection'][0]['id'])) ? $data['Customer']['Connection'][0]['id'] : null;
+				$connection['user_id'] = $data['Customer']['id'];
+				$connection['type'] = $options['paymentMode'];
+				// connection[value] should be directly from the payment processor
+				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
+
 				$this->Customer->Connection->save($connection);
 			}
 		} catch (Exception $e) {
