@@ -256,6 +256,7 @@ class Transaction extends TransactionsAppModel {
 		}
 
 		// update quantities
+		$allHaveZeroQty = true;
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
 			  foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
@@ -264,9 +265,14 @@ class Transaction extends TransactionsAppModel {
 					$finalTxnItems[] = $currentTxnItem;
 				  }
 			  }
+			  $allHaveZeroQty = false;
 		    }
 		}
 			
+		if($allHaveZeroQty) {
+			throw new Exception('Cart is empty');
+		}
+		
 		// unset the submitted TransactionItem's. They will be replaced after the merge.
 		unset($submittedTransaction['TransactionItem']);
 		
