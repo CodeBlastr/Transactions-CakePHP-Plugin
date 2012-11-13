@@ -39,8 +39,8 @@ class PaysimpleComponent extends Component {
 	public function Pay($data) {
 		
 		try {
-
-			if (!isset($data['Customer']['Connection'])) {
+//debug($data);
+			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
 				$userData = $this->createCustomer($data);
 				$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData['Id'];
@@ -107,7 +107,8 @@ class PaysimpleComponent extends Component {
 			),
 			'ShippingSameAsBilling' => true,
 			'Email' => $data['Customer']['email'],
-			'Phone' => $data['Customer']['phone'],
+			//'Phone' => $data['Customer']['phone'],
+			'Phone' => $data['TransactionAddress'][0]['phone'],
 		);
 
 		if ($data['TransactionAddress'][0]['shipping'] == 'checked') {
@@ -430,10 +431,10 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-//			debug($request);
-//			debug($responseCode);
-//			debug($result);
-//			break;
+			debug($request);
+			debug($responseCode);
+			debug($result);
+			break;
 			throw new Exception($message);
 			return FALSE;
 			

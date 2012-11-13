@@ -303,8 +303,8 @@ class Transaction extends TransactionsAppModel {
 		$transaction['Customer']['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
 		$transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
 		$transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
-		$transaction['Customer']['phone'] = $transaction['TransactionAddress'][0]['phone'];
-		
+		//$transaction['Customer']['phone'] = $transaction['TransactionAddress'][0]['phone']; // required
+		debug($transaction);
 		// generate a temporary password: ANNNN
 		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
 		

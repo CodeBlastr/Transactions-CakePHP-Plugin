@@ -132,13 +132,12 @@
 			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['discount']) ?></span></span></div>
 			<hr/>
 			<div style="margin: 10px 0; font-weight: bold;">Total: <span id="TransactionTotal" class="total" style="float:right; font-weight: bold; font-size: 120%">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></span></div>
-			<div><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Enter Promo Code') ?></a></small></div>
+			<div><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Have a Promo Code?') ?></a></small></div>
 			<?php
 			//echo $this->Form->input('Transaction.total', array('label' => 'Total <small><a id="enterPromo" href="#">Enter Promo Code</a></small>', 'readonly' => true, 'value' => $pricifiedOrderTotal, 'class' =>'uneditable-input',/* 'after' => defined('__USERS_CREDITS_PER_PRICE_UNIT') ? " Or Credits : " . __USERS_CREDITS_PER_PRICE_UNIT * $orderTotal : "Or Credits : " .  $orderTotal */));
-			echo $this->Form->input('TransactionCoupon.code', array('label' => 'Code <small><a id="applyCode" href="#">Apply Code</a></small>'));
-			//echo $this->Form->hidden('Transaction.quantity');
+			echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => '<a id="applyCode" href="#" class="btn">Apply Code</a>'));
 
-				echo $this->Form->end(__d('transactions', 'Checkout'));
+			echo $this->Form->end(__d('transactions', 'Checkout'));
 			?>
 		  </fieldset>
 	  </div>

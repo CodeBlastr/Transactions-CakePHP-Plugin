@@ -32,7 +32,7 @@ class TransactionsController extends TransactionsAppController {
 			$data = $this->Transaction->beforePayment($this->request->data);
 
 			$data = $this->Payments->pay($data);
-
+//debug($data); break;
 			$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 
 			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
@@ -43,6 +43,7 @@ class TransactionsController extends TransactionsAppController {
 			  
 			  $data['Transaction']['status'] = 'failed';
 			  $this->Transaction->save($data);
+			  /** @todo set TransactionItem.status=frozen on failure? **/
 			  
 			  return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
 
@@ -57,7 +58,7 @@ class TransactionsController extends TransactionsAppController {
 	
 	
 	public function success() {
-		
+		$this->set('userId', $this->Session->read('Auth.User.id'));
 	}
 	
 	
@@ -137,13 +138,12 @@ class TransactionsController extends TransactionsAppController {
 				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
 			}
 		}
-		$transactionPayments = $this->Transaction->TransactionPayment->find('list');
-		$transactionShipments = $this->Transaction->TransactionShipment->find('list');
+
 		//$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
 		$assignees = $this->Transaction->Assignee->find('list');
-		$this->set(compact('transactionPayments', 'transactionShipments', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
+		$this->set(compact('customers', 'contacts', 'assignees'));
 	}
 
 

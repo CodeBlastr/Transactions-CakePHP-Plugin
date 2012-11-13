@@ -1,7 +1,7 @@
 <!-- PaySimple -->
 <?php
 
-if(isset($this->request->data['Customer']['Connection'])) {
+if(isset($this->request->data['Customer']['Connection'][0])) {
 	//debug($this->request->data);
 	$connectionData = unserialize($this->request->data['Customer']['Connection'][0]['value']);
 	

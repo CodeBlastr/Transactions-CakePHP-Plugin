@@ -23,7 +23,6 @@ class TransactionItem extends TransactionsAppModel {
     );
     
 
-    public $hasOne = 'Transaction';
 
 /**
  * belongsTo associations
