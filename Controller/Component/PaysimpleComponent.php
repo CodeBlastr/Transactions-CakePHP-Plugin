@@ -31,66 +31,48 @@ class PaysimpleComponent extends Component {
 
 
 /**
- * @todo Logged in Users should pass 'Connection' data here
  * 
  * @param array $data
  * @return type
  * @throws Exception
  */
 	public function Pay($data) {
+		
+		try {
 
-		if (!isset($data['Customer']['Connection'])) {
-			// create a user in their system and return data for us to save
-			try {
-
+			if (!isset($data['Customer']['Connection'])) {
 				// create their Customer
 				$userData = $this->createCustomer($data);
-				$data['Customer']['Connection']['Customer']['Id'] = $userData['Id'];
-
-				// add their payment method to their Account List
-				if (!empty($data['Transaction']['ach_account_number'])) {
-					$accountData = $this->addAchAccount($data);
-					$data['Customer']['Connection']['Account']['Ach'][] = $accountData;
-					$data['Customer']['Connection']['Account']['Id'] = $accountData['Id'];
-					$data['Transaction']['paymentSubType'] = 'Web';
-				} else {
-					$accountData = $this->addCreditCardAccount($data);
-					$data['Customer']['Connection']['Account']['CreditCard'][] = $accountData;
-					$data['Customer']['Connection']['Account']['Id'] = $accountData['Id'];
-					$data['Transaction']['paymentSubType'] = 'Moto';
-				}
-
-				// charge them using their newly submitted payment method
-				$paymentData = $this->createPayment($data);
-				$data['Transaction']['Payment'] = $paymentData;
-
-				return $data;
-
-			} catch (Exception $exc) {
-				throw new Exception($exc->getMessage());
+				$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData['Id'];
+			} else {
+				// we have their customer, unserialize the data
+				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
 			}
-			
-		} else {
-			// They have Connection, we must have a PaySimple ID for them.
-			try {
 
-				if (!empty($data['Transaction']['ach_account_number'])) {
-					$data['Transaction']['paymentSubType'] = 'Web';
-				} elseif (!empty($data['Transaction']['ach_account_number'])) {
-					$data['Transaction']['paymentSubType'] = 'Moto';
-				} else {
-					// they are using a saved payment method; defined by an Id
-					$data['Customer']['Connection']['Account']['Id'] = $data['Transaction']['paysimple_account'];
-				}
-				
-				$this->createPayment($data);
-				$data['Transaction']['Payment'] = $paymentData;
-
-				return $data;
-				
-			} catch (Exception $exc) {
-				throw new Exception($exc->getMessage());
+			if (!empty($data['Transaction']['ach_account_number'])) {
+				// ACH Account
+				$accountData = $this->addAchAccount($data);
+				$data['Customer']['Connection'][0]['value']['Account']['Ach'][] = $accountData;
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
+				$data['Transaction']['paymentSubType'] = 'Web';
+			} elseif (!empty($data['Transaction']['card_number'])) {
+				// Credit Card Account
+				$accountData = $this->addCreditCardAccount($data);
+				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $accountData;
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
+				$data['Transaction']['paymentSubType'] = 'Moto';
+			} else {
+				// they are using a Saved Payment Method; defined by an Id
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
 			}
+
+			$paymentData = $this->createPayment($data);
+			$data['Transaction']['Payment'] = $paymentData;
+
+			return $data;
+
+		} catch (Exception $exc) {
+			throw new Exception($exc->getMessage());
 		}
 
 	}
@@ -170,7 +152,7 @@ class PaysimpleComponent extends Component {
 			'Issuer' => $this->getIssuer($data['Transaction']['card_number']),
 			'CreditCardNumber' => $data['Transaction']['card_number'],
 			'ExpirationDate' => $data['Transaction']['card_exp_month'] . '/' . $data['Transaction']['card_exp_year'],
-			'CustomerId' => $data['Customer']['Connection']['Customer']['Id'],
+			'CustomerId' => $data['Customer']['Connection'][0]['value']['Customer']['Id'],
 		);
 
 		return $this->_sendRequest('POST', '/account/creditcard', $params);
@@ -185,6 +167,8 @@ class PaysimpleComponent extends Component {
  */
 	public function addAchAccount($data) {
 
+		if(empty($data['Transaction']['ach_is_checking_account'])) $data['Transaction']['ach_is_checking_account'] = false;
+		
 		$params = array(
 			'Id' => 0,
 			'IsDefault' => true,
@@ -192,7 +176,7 @@ class PaysimpleComponent extends Component {
 			'RoutingNumber' => $data['Transaction']['ach_routing_number'],
 			'AccountNumber' => $data['Transaction']['ach_account_number'],
 			'BankName' => $data['Transaction']['ach_bank_name'],
-			'CustomerId' => $data['Customer']['Connection']['Customer']['Id']
+			'CustomerId' => $data['Customer']['Connection'][0]['value']['Customer']['Id']
 		);
 
 		return $this->_sendRequest('POST', '/account/ach', $params);
@@ -209,7 +193,7 @@ class PaysimpleComponent extends Component {
 	public function createPayment($data) {
 
 		$params = array(
-			'AccountId' => $data['Customer']['Connection']['Account']['Id'],
+			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
 			'Amount' => $data['Transaction']['order_charge'],
 			'IsDebit' => false, // IsDebit indicates whether this Payment is a refund.
@@ -224,6 +208,103 @@ class PaysimpleComponent extends Component {
 
 		return $this->_sendRequest('POST', '/payment', $params);
 	}
+	
+	
+	/**
+	 * Creates a Payment Schedule record when provided with a Payment Schedule object
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#post-recurringpayment
+	 * 
+	 * @param array $data
+	 * @return boolean|array
+	 */
+	public function createRecurringPayment($data) {
+		
+		$params = array(
+			'PaymentAmount' => '', // required
+			'FirstPaymentAmount' => '',
+			'FirstPaymentDate' => '',
+			'AccountId' => '', // required
+			'InvoiceNumber' => '',
+			'OrderId' => '',
+			'PaymentSubType' => '', // required
+			'StartDate' => '', // required
+			'EndDate' => '',
+			'ScheduleStatus' => '', // required
+			'ExecutionFrequencyType' => '', // required
+			'ExecutionFrequencyParameter' => '',
+			'Description' => '',
+			'Id' => 0
+		);
+		
+		return $this->_sendRequest('POST', '/recurringpayment', $params);
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment
+	 * 
+	 * @param array $data
+	 * @return boolean|array
+	 */
+	public function updateRecurringPayment($data) {
+		
+		$params = array(
+			'CustomerId' => '',
+			'NextScheduleDate' => '',
+			'PauseUntilDate' => '',
+			'FirstPaymentDone' => '',
+			'DateOfLastPaymentMade' => '',
+			'TotalAmountPaid' => '',
+			'NumberOfPaymentsMade' => '',
+			'EndDate' => '', // updatable
+			'PaymentAmount' => '', // updatable
+			'PaymentSubType' => '', // updatable
+			'AccountId' => '', // updatable
+			'InvoiceNumber' => '',
+			'OrderId' => '',
+			'FirstPaymentAmount' => '', // updatable (if it hasn't started yet)
+			'FirstPaymentDate' => '', // updatable (if it hasn't started yet)
+			'StartDate' => '', // updatable (if it hasn't started yet)
+			'ScheduleStatus' => '',
+			'ExecutionFrequencyType' => '', // updatable
+			'ExecutionFrequencyParameter' => '', // updatable
+			'Description' => '',
+			'Id' => ''
+		);
+		
+		return $this->_sendRequest('PUT', '/recurringpayment', $params);
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-pause-until-enddate
+	 * 
+	 * @param type $data
+	 * @return boolean
+	 */
+	public function pauseRecurringPayment($data) {
+		return $this->_sendRequest('PUT', '/recurringpayment/'.$data['scheduleId'].'/pause?endDate='.$data['endDate']);
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-suspend
+	 * 
+	 * @param type $scheduleId
+	 * @return boolean
+	 */
+	public function suspendRecurringPayment($scheduleId) {
+		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/suspend');
+	}
+	
+	/**
+	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-resume
+	 * 
+	 * @param type $data
+	 * @return boolean
+	 */
+	public function resumeRecurringPayment($data) {
+		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/resume');
+	}
+	
+	
 
 /**
  * @param integer $customerId
@@ -332,12 +413,9 @@ class PaysimpleComponent extends Component {
 		}
 
 		$result = $this->_httpSocket->request($request);
-//	debug($result);
 		$responseCode = $result->code;
 		$result = json_decode($result->body, TRUE);
-//debug($request);
-//debug($responseCode);
-//break;
+
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
 		if (in_array($responseCode, $badResponseCodes)) {
 			if (is_string($result)) {
@@ -352,7 +430,10 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-			
+//			debug($request);
+//			debug($responseCode);
+//			debug($result);
+//			break;
 			throw new Exception($message);
 			return FALSE;
 			
