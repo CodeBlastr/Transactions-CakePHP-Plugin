@@ -113,7 +113,7 @@ class TransactionsController extends TransactionsAppController {
 		  $this->request->data = $this->Transaction->processCart($userId);
 
 		  if (!$this->request->data) {
-			throw new NotFoundException(__d('transactions', 'Cart is empty'));
+			$this->Session->setFlash(__d('transactions', 'Cart is empty.'));
 		  }
 
 		  // set the variables to display in the cart
