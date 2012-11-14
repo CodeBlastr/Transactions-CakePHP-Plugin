@@ -87,8 +87,9 @@ class TransactionItem extends TransactionsAppModel {
 			throw new InternalErrorException(__('Invalid transaction item'));
 		}
 
-		App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
-		$Model = new $data['TransactionItem']['model'];
+		$model = Inflector::classify($data['TransactionItem']['model']);
+		App::uses($model, ZuhaInflector::pluginize($model) . '.Model');
+		$Model = new $model;
 
 		$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
 
