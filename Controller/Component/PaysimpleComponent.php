@@ -431,10 +431,10 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-			debug($request);
-			debug($responseCode);
-			debug($result);
-			break;
+//			debug($request);
+//			debug($responseCode);
+//			debug($result);
+//			break;
 			throw new Exception($message);
 			return FALSE;
 			
