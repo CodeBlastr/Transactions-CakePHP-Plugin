@@ -46,6 +46,8 @@ class TransactionItemsController extends TransactionsAppController {
 /**
  * add method
  *
+ * @todo merge identical items
+ * 
  * @return void
  */
 	public function add() {

@@ -114,7 +114,7 @@ class TransactionItem extends TransactionsAppModel {
 	return true;
     }
 
-    
+	
     public function statuses() {
         $statuses = array();
         foreach (Zuha::enum('ORDER_ITEM_STATUS') as $status) {
