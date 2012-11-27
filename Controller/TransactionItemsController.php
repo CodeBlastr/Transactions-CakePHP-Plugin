@@ -61,16 +61,21 @@ class TransactionItemsController extends TransactionsAppController {
 			/** @todo check stock and cart max **/
 			$isAddable = $this->TransactionItem->verifyItemRequest($this->request->data);
 			
-			// create the item internally
-			$itemData = $this->TransactionItem->mapItemData($this->request->data);
-			$this->TransactionItem->create($itemData);
-			
-			// It puts the item in the cart.
-			if ($this->TransactionItem->save($this->request->data)) {
-				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
-				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'myCart'));
+			if($isAddable) {
+				// create the item internally
+				$itemData = $this->TransactionItem->mapItemData($this->request->data);
+				$this->TransactionItem->create($itemData);
+
+				// It puts the item in the cart.
+				if ($this->TransactionItem->save($this->request->data)) {
+					$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
+					$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'myCart'));
+				} else {
+				  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
+				  $this->redirect($this->referer());
+				}
 			} else {
-			  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
+			  $this->Session->setFlash(__d('transactions', 'This item cannot be added to your cart.  Please checkout or remove your current items first.'));
 			  $this->redirect($this->referer());
 			}
 		} else {

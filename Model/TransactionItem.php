@@ -104,14 +104,29 @@ class TransactionItem extends TransactionsAppModel {
     
     
 /**
- * @todo check stock and cart max
+ * @todo check stock and cart max and ARB
  * @param array $data
  */
     public function verifyItemRequest($data) {
-//	App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
-//	$Model = new $data['TransactionItem']['model'];
+		
+		$isArb = false;
+		$transaction = $this->Transaction->findById($this->Transaction->id);
+		foreach ($transaction['TransactionItem'] as $transactionItem) {
+			App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
+			$Model = new $data['TransactionItem']['model'];
+			$product = $Model->findById($transactionItem['foreign_key']);
+			if(!empty($product['arb_settings'])) {
+				$isArb = true;
+			}
+		}
+		
+		if($isArb && count($transaction['TransactionItem']) > 1) {
+			// you can only have one item in your cart if one of the items is using ARB
+			return false;
+		} else {
+			return true;
+		}
 
-	return true;
     }
 
 	
