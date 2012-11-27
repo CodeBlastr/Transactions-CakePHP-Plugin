@@ -37,9 +37,11 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
+		//debug($data);
 		
 		try {
-//debug($data);
+
+			// Do we need to save a New Customer or are we using an Existing Customer
 			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
 				$userData = $this->createCustomer($data);
@@ -49,6 +51,7 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
 			}
 
+			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
 			if (!empty($data['Transaction']['ach_account_number'])) {
 				// ACH Account
 				$accountData = $this->addAchAccount($data);
@@ -66,6 +69,7 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
 			}
 
+			// make the actual payment
 			$paymentData = $this->createPayment($data);
 			$data['Transaction']['Payment'] = $paymentData;
 
