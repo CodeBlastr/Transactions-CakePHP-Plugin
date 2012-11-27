@@ -224,9 +224,7 @@ class Transaction extends TransactionsAppModel {
 	
 /**
  * Combine the pre-checkout and post-checkout Transactions.
- * 
- * @todo Handle being passed empty carts
- * 
+ *  
  * @param integer $userId
  * @param array $data
  * @return type
@@ -304,7 +302,7 @@ class Transaction extends TransactionsAppModel {
 		$transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
 		$transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
 		//$transaction['Customer']['phone'] = $transaction['TransactionAddress'][0]['phone']; // required
-		debug($transaction);
+		//debug($transaction);
 		// generate a temporary password: ANNNN
 		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
 		
