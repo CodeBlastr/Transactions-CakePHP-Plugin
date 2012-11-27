@@ -70,7 +70,13 @@ class PaysimpleComponent extends Component {
 			}
 
 			// make the actual payment
-			$paymentData = $this->createPayment($data);
+			if($data['Transaction']['is_arb']) {
+				$paymentData = $this->createRecurringPayment($data);
+				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
+			} else {
+				$paymentData = $this->createPayment($data);
+			}
+			
 			$data['Transaction']['Payment'] = $paymentData;
 
 			return $data;
@@ -224,20 +230,22 @@ class PaysimpleComponent extends Component {
 	 */
 	public function createRecurringPayment($data) {
 		
+		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
+		
 		$params = array(
-			'PaymentAmount' => '', // required
-			'FirstPaymentAmount' => '',
-			'FirstPaymentDate' => '',
-			'AccountId' => '', // required
-			'InvoiceNumber' => '',
-			'OrderId' => '',
-			'PaymentSubType' => '', // required
-			'StartDate' => '', // required
-			'EndDate' => '',
-			'ScheduleStatus' => '', // required
-			'ExecutionFrequencyType' => '', // required
-			'ExecutionFrequencyParameter' => '',
-			'Description' => '',
+			'PaymentAmount' => $arbSettings['PaymentAmount'], // required
+			'FirstPaymentAmount' => $arbSettings['FirstPaymentAmount'],
+			'FirstPaymentDate' => $arbSettings['FirstPaymentDate'],
+			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'], // required
+			'InvoiceNumber' => NULL,
+			'OrderId' => $data['Transaction']['id'],
+			'PaymentSubType' => $data['Transaction']['paymentSubType'], // required
+			'StartDate' => $arbSettings['StartDate'], // required
+			'EndDate' => $arbSettings['EndDate'],
+			'ScheduleStatus' => 'Active', // required
+			'ExecutionFrequencyType' => $arbSettings['ExecutionFrequencyType'], // required
+			'ExecutionFrequencyParameter' => $arbSettings['ExecutionFrequencyParameter'],
+			'Description' => __SYSTEM_SITE_NAME,
 			'Id' => 0
 		);
 		
@@ -253,27 +261,27 @@ class PaysimpleComponent extends Component {
 	public function updateRecurringPayment($data) {
 		
 		$params = array(
-			'CustomerId' => '',
-			'NextScheduleDate' => '',
-			'PauseUntilDate' => '',
-			'FirstPaymentDone' => '',
-			'DateOfLastPaymentMade' => '',
-			'TotalAmountPaid' => '',
-			'NumberOfPaymentsMade' => '',
-			'EndDate' => '', // updatable
-			'PaymentAmount' => '', // updatable
-			'PaymentSubType' => '', // updatable
-			'AccountId' => '', // updatable
-			'InvoiceNumber' => '',
-			'OrderId' => '',
-			'FirstPaymentAmount' => '', // updatable (if it hasn't started yet)
-			'FirstPaymentDate' => '', // updatable (if it hasn't started yet)
-			'StartDate' => '', // updatable (if it hasn't started yet)
-			'ScheduleStatus' => '',
-			'ExecutionFrequencyType' => '', // updatable
-			'ExecutionFrequencyParameter' => '', // updatable
-			'Description' => '',
-			'Id' => ''
+			'CustomerId' => null,
+			'NextScheduleDate' => null,
+			'PauseUntilDate' => null,
+			'FirstPaymentDone' => null,
+			'DateOfLastPaymentMade' => null,
+			'TotalAmountPaid' => null,
+			'NumberOfPaymentsMade' => null,
+			'EndDate' => null, // updatable
+			'PaymentAmount' => null, // updatable
+			'PaymentSubType' => null, // updatable
+			'AccountId' => null, // updatable
+			'InvoiceNumber' => null,
+			'OrderId' => null,
+			'FirstPaymentAmount' => null, // updatable (if it hasn't started yet)
+			'FirstPaymentDate' => null, // updatable (if it hasn't started yet)
+			'StartDate' => null, // updatable (if it hasn't started yet)
+			'ScheduleStatus' => null,
+			'ExecutionFrequencyType' => null, // updatable
+			'ExecutionFrequencyParameter' => null, // updatable
+			'Description' => null,
+			'Id' => null
 		);
 		
 		return $this->_sendRequest('PUT', '/recurringpayment', $params);
