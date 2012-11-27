@@ -279,7 +279,10 @@ class Transaction extends TransactionsAppModel {
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
 		
 		$officialTransaction = $this->calculateSubtotalAndShipping($officialTransaction);
-				
+		
+		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
+		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
+		
 		// return the official transaction
 		return $officialTransaction;
 	}
