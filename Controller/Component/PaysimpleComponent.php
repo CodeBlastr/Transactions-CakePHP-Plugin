@@ -232,15 +232,17 @@ class PaysimpleComponent extends Component {
 		
 		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
 		
-		// format StartDate
-		if(empty($arbSettings['StartDate'])) {
-			$arbSettings['StartDate'] = 0;
-		}
+		// determine & format StartDate
+		$arbSettings['StartDate'] = empty($arbSettings['StartDate']) ? 0 : $arbSettings['StartDate'];
 		$arbSettings['StartDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['StartDate'].' days'));
 
-		// format EndDate
+		// determine & format EndDate
 		if(!empty($arbSettings['EndDate'])) {
 			$arbSettings['EndDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['EndDate'].' days'));
+		}
+		// determine & format FirstPaymentDate
+		if(!empty($arbSettings['FirstPaymentDate'])) {
+			$arbSettings['FirstPaymentDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['FirstPaymentDate'].' days'));
 		}
 //		debug($arbSettings);
 //		break;
@@ -260,7 +262,7 @@ class PaysimpleComponent extends Component {
 			'Description' => __SYSTEM_SITE_NAME,
 			'Id' => 0
 		);
-		
+		//debug($params);break;
 		return $this->_sendRequest('POST', '/recurringpayment', $params);
 	}
 	
@@ -405,11 +407,12 @@ class PaysimpleComponent extends Component {
 	}
 
 /**
- *
- * @param string $method
- * @param string $action
- * @param array $data
- * @return boolean|array Returns FALSE or the "Response" array
+ * Prepares and sends your request to the API servers
+ * 
+ * @param string $method POST | GET | UPDATE | DELETE
+ * @param string $action PaySimple API endpoint
+ * @param array $data A PaySimple API Request Body packet as an array
+ * @return boolean|array Returns Exception/FALSE or the "Response" array
  */
 	public function _sendRequest($method, $action, $data = NULL) {
 
@@ -431,22 +434,39 @@ class PaysimpleComponent extends Component {
 			),
 		);
 		if ($data !== NULL) {
-			$data = json_encode($data);
 			$request['header']['Content-Type'] = 'application/json';
-			$request['header']['Content-Length'] = strlen($data);
-			$request['body'] = $data;
+			$request['header']['Content-Length'] = strlen(json_encode($data));
+			$request['body'] = json_encode($data);
 		}
 
 		$result = $this->_httpSocket->request($request);
+
+		return $this->_handleResult($result, $data);
+		
+	}
+	
+	
+	/**
+	 * 
+	 * @param Object $result An httpSocket response object
+	 * @param Array $data The PaySimple API Request Body packet as an array that was used for the request
+	 * @return Array The entire Response packet of a valid API call
+	 * @throws Exception The error message to display to the visitor
+	 */
+	private function _handleResult($result, $data) {
+		
 		$responseCode = $result->code;
 		$result = json_decode($result->body, TRUE);
 
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
+		
 		if (in_array($responseCode, $badResponseCodes)) {
+			
+			// build error message
 			if (is_string($result)) {
 				$this->errors[] = $message = $result;
 			} elseif (isset($result['Meta']['Errors']['ErrorMessages'])) {
-				$message = '';
+				$message = $result['Meta']['Errors']['ErrorCode']. ' ';
 				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
 					$message .= $error['Message'];
@@ -455,14 +475,26 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-//			debug($request);
+			
+//			// we need to know if this was an ARB that was declined
+//			if($data['Transaction']['is_arb']) {
+//				$arbErrorMessage = $result['Meta']['Errors']['ErrorMessages'][0]['Message'];
+//				if(strpos($arbErrorMessage, 'was saved, but the first scheduled payment failed')) {
+//					
+//				}
+//			}
+			
+			//debug($request);
 //			debug($responseCode);
 //			debug($result);
 //			break;
+			
+			// throw error message to display to the visitor
 			throw new Exception($message);
 			return FALSE;
 			
 		} else {
+			// return entire Response packet of a valid API call
 			return $result['Response'];
 		}
 	}
