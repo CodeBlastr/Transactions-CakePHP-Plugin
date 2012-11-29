@@ -81,7 +81,9 @@ class TransactionModelTestCase extends CakeTestCase {
 	public function testSubtotalCalculation() {
 		$userId = 1;
 		$result = $this->Transaction->processCart($userId);
-		$this->assertInternalType('float', $result['Transaction']['order_charge']);
+		
+		App::uses('Validation', 'Utility');
+		$this->assertTrue(Validation::money($result['Transaction']['order_charge'])); // 1.00
 	}
 
 	public function testReassignGuestCart() {
@@ -185,14 +187,22 @@ class TransactionModelTestCase extends CakeTestCase {
 			),
 			'Transaction' => array(
 				'mode' => 'PAYSIMPLE.CC',
-				'card_number' => '4111111111111111',
-				'card_exp_month' => '1',
-				'card_exp_year' => '2014',
-				'card_sec' => '999',
-				'ach_routing_number' => '',
-				'ach_account_number' => '',
-				'ach_bank_name' => '',
-				'ach_is_checking_account' => '',
+				//'card_number' => '4111111111111111',
+//				'card_number' => '5454545454545454',
+//				'card_exp_month' => '12',
+//				'card_exp_year' => '2014',
+//				'card_sec' => '999',
+				'card_number' => '',
+				'card_exp_month' => '',
+				'card_exp_year' => '',
+				'card_sec' => '',
+//				'ach_routing_number' => '',
+//				'ach_account_number' => '',
+//				'ach_bank_name' => '',
+				'ach_routing_number' => '307075259',
+				'ach_account_number' => '751111111',
+				'ach_bank_name' => 'Simply Bank',
+				'ach_is_checking_account' => '1',
 				'quantity' => ''
 			),
 			'TransactionItem' => array(

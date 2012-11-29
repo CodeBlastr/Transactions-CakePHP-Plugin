@@ -252,6 +252,10 @@ class Transaction extends TransactionsAppModel {
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
+		
+//debug($currentTransaction);
+//debug($submittedTransaction);
+//break;
 
 		// update quantities
 		$allHaveZeroQty = true;
