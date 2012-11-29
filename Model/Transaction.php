@@ -211,7 +211,7 @@ class Transaction extends TransactionsAppModel {
 				  )
 			  )
 		));
-	    
+
 	    if(!$theCart) {
 		  return FALSE;
 	    }

@@ -1,12 +1,12 @@
 <?php
 
-App::uses('Transaction', 'Model');
+App::uses('Transaction', 'Transactions.Model');
 
 /**
  * Transaction Test Case
  *
  */
-class TransactionTestCase extends CakeTestCase {
+class TransactionModelTestCase extends CakeTestCase {
 
 	/**
 	 * Fixtures
@@ -19,7 +19,7 @@ class TransactionTestCase extends CakeTestCase {
 		'plugin.transactions.transaction_coupon',
 	    'plugin.users.user',
 		'plugin.transactions.transaction_item',
-//	    'plugin.users.customer',
+	    'plugin.users.customer',
 	    'plugin.contacts.contact',
 //	    'plugin.users.assignee',
 //	    'plugin.transactions.transaction_coupon'

@@ -41,8 +41,8 @@ class TransactionsController extends TransactionsAppController {
 
 			  $this->Session->setFlash(__d('transactions', $e->getMessage()));
 			  
-			  $data['Transaction']['status'] = 'failed';
-			  $this->Transaction->save($data);
+			  //$data['Transaction']['status'] = 'failed'; // we're no longer doing this
+			  //$this->Transaction->save($data); // do we need to do this still?
 			  /** @todo set TransactionItem.status=frozen on failure? **/
 			  
 			  return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
@@ -208,7 +208,7 @@ class TransactionsController extends TransactionsAppController {
 	  $transactions = $this->Transaction->find('all',array(
 		  'conditions' => array(
 			  'customer_id' => $this->Session->read('Auth.User.id'),
-			  'status' => 'open'
+			  'status' => array('open', 'failed')
 			  ),
 		  'contain' => array('TransactionItem'),
 		  'order' => array('Transaction.modified' => 'desc')
@@ -228,10 +228,10 @@ class TransactionsController extends TransactionsAppController {
 			  $this->Transaction->delete($transactions[0]['Transaction']['id']);
 			  break;
 			case 'merge':
-			  $transaction = $this->Transaction->combineTransactions($transactions);
+			  $mergedTransaction = $this->Transaction->combineTransactions($transactions);
+			  $this->Transaction->saveAll($mergedTransaction);
 			  $this->Transaction->delete($transactions[0]['Transaction']['id']);
 			  $this->Transaction->delete($transactions[1]['Transaction']['id']);
-			  $this->Transaction->saveAll($transaction);
 			  break;
 		  }
 

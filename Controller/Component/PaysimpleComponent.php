@@ -232,6 +232,18 @@ class PaysimpleComponent extends Component {
 		
 		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
 		
+		// format StartDate
+		if(empty($arbSettings['StartDate'])) {
+			$arbSettings['StartDate'] = 0;
+		}
+		$arbSettings['StartDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['StartDate'].' days'));
+
+		// format EndDate
+		if(!empty($arbSettings['EndDate'])) {
+			$arbSettings['EndDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['EndDate'].' days'));
+		}
+//		debug($arbSettings);
+//		break;
 		$params = array(
 			'PaymentAmount' => $arbSettings['PaymentAmount'], // required
 			'FirstPaymentAmount' => $arbSettings['FirstPaymentAmount'],
