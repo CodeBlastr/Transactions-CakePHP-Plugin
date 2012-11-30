@@ -1,9 +1,16 @@
 <?php
 
 /**
+ * Zuha(tm) : Business Management Applications (http://zuha.com)
+ * Copyright 2009-2012
+ *
+ * Licensed under GPL v3 License
+ * Must retain the above copyright notice and release modifications publicly.
  * 
- * @author Joel Byrnes <joel@razorit.com>
- * @link https://sandbox-api.paysimple.com/v4/Help/
+ * @package			zuha
+ * @subpackage		zuha.app.plugins.transactions
+ * @author			Joel Byrnes <joel@razorit.com>
+ * @link			https://sandbox-api.paysimple.com/v4/Help/
  */
 App::uses('HttpSocket', 'Network/Http');
 
@@ -71,10 +78,23 @@ class PaysimpleComponent extends Component {
 
 			// make the actual payment
 			if($data['Transaction']['is_arb']) {
-				$paymentData = $this->createRecurringPayment($data);
+				
+				if(empty($data['TransactionItem'][0]['price'])) {
+					// When price is empty, there is a free trial
+					// In this case, set up an ARB payment as usual.
+					$paymentData = $this->createRecurringPayment($data);
+				} else {
+					// When a price is set, we charge that as a normal payment,
+					// then setup an ARB who's 1st payment is in $StartDate days.
+					$paymentData = $this->createPayment($data);
+					$paymentData = $this->createRecurringPayment($data);
+				}
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
+				$data['Transaction']['processor_response'] = $paymentData['ScheduleStatus'];
+				
 			} else {
 				$paymentData = $this->createPayment($data);
+				$data['Transaction']['processor_response'] = $paymentData['Status'];
 			}
 			
 			$data['Transaction']['Payment'] = $paymentData;
@@ -304,7 +324,7 @@ class PaysimpleComponent extends Component {
 	/**
 	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-pause-until-enddate
 	 * 
-	 * @param type $data
+	 * @param array $data
 	 * @return boolean
 	 */
 	public function pauseRecurringPayment($data) {
@@ -314,7 +334,7 @@ class PaysimpleComponent extends Component {
 	/**
 	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-suspend
 	 * 
-	 * @param type $scheduleId
+	 * @param integer $scheduleId
 	 * @return boolean
 	 */
 	public function suspendRecurringPayment($scheduleId) {
@@ -324,7 +344,7 @@ class PaysimpleComponent extends Component {
 	/**
 	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-resume
 	 * 
-	 * @param type $data
+	 * @param integer $data
 	 * @return boolean
 	 */
 	public function resumeRecurringPayment($data) {
