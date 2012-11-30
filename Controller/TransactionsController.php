@@ -35,7 +35,30 @@ class TransactionsController extends TransactionsAppController {
 //debug($data); break;
 			$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 
-			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
+			
+			if (defined('__TRANSACTIONS_CHECKOUT_REDIRECT')) {
+					extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT));
+					if(empty($url)) {
+						$plugin = strtolower(ZuhaInflector::pluginize($model));
+						$controller = Inflector::tableize($model);
+						if(!empty($pass)) {
+							// get foreign key of TransactionItem using given setings
+							$foreign_key = $this->Transaction->TransactionItem->find('first', array('fields' => $pass,
+								'conditions' => array(
+									'TransactionItem.transaction_id' => $this->Transaction->id,
+								)
+							));
+						} else {
+							$foreign_key = NULL;
+						}
+						$url = array('plugin' => $plugin, 'controller' => $controller, 'action' => $action, !empty($foreign_key['TransactionItem']['foreign_key']) ? $foreign_key['TransactionItem']['foreign_key'] : '');
+					}
+
+				} else {
+					$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
+				}
+			
+				return $this->redirect($url);
 
 		  } catch (Exception $e) {
 
