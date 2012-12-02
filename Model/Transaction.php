@@ -451,6 +451,52 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
+/**
+ * Retrieves various stats for dashboard display
+ * 
+ * @param string $param
+ * @return array|boolean
+ */
+        public function salesStats($period) {
+            // configure period
+            switch ($period) {
+                case 'today':
+                    $rangeStart = date('Y-m-d', strtotime('today'));
+                    break;
+                case 'thisWeek':
+                    $rangeStart = date('Y-m-d', strtotime('this sunday'));
+                    break;
+                case 'thisMonth':
+                    $rangeStart = date('Y-m-d', strtotime('first day of this month'));
+                    break;
+                case 'thisYear':
+                    $rangeStart = date('Y-m-d', strtotime('first day of this year'));
+                    break;
+                case 'allTime':
+                    $rangeStart = '0000-00-00';
+                    break;
+                default:
+                    break;
+            }
+            
+            // calculate data
+            $data = $this->find('all', array(
+                'conditions' => array(
+                    'OR' => array(
+                        "created >= '$rangeStart'",
+                        "modified >= '$rangeStart'",
+                        ),
+                    'status' => 'success'
+                    )
+            ));
+            $data['count'] = count($data);
+            $data['value'] = 0;
+            foreach ($data as $order) {
+                $data['value'] += $order['Transaction']['total'];
+            }
+           // debug($data); break;
+           return ($data) ? $data : false;
+        }
 	
 /**
  * An array of options for select inputs
