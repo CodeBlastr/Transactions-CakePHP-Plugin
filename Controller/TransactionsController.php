@@ -37,15 +37,38 @@ class TransactionsController extends TransactionsAppController {
            
 			$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 
-			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
+			
+			if (defined('__TRANSACTIONS_CHECKOUT_REDIRECT')) {
+					extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT));
+					if(empty($url)) {
+						$plugin = strtolower(ZuhaInflector::pluginize($model));
+						$controller = Inflector::tableize($model);
+						if(!empty($pass)) {
+							// get foreign key of TransactionItem using given setings
+							$foreign_key = $this->Transaction->TransactionItem->find('first', array('fields' => $pass,
+								'conditions' => array(
+									'TransactionItem.transaction_id' => $this->Transaction->id,
+								)
+							));
+						} else {
+							$foreign_key = NULL;
+						}
+						$url = array('plugin' => $plugin, 'controller' => $controller, 'action' => $action, !empty($foreign_key['TransactionItem']['foreign_key']) ? $foreign_key['TransactionItem']['foreign_key'] : '');
+					}
+
+				} else {
+					$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
+				}
+			
+				return $this->redirect($url);
 
 		  } catch (Exception $exc) {
 
               
 			  $this->Session->setFlash(__d('transactions', $exc->getMessage()));
 			  
-			  $data['Transaction']['status'] = 'failed';
-			  $this->Transaction->save($data);
+			  //$data['Transaction']['status'] = 'failed'; // we're no longer doing this
+			  //$this->Transaction->save($data); // do we need to do this still?
 			  /** @todo set TransactionItem.status=frozen on failure? **/
 			 //debug($data);
            //break;
@@ -219,7 +242,7 @@ class TransactionsController extends TransactionsAppController {
 	  $transactions = $this->Transaction->find('all',array(
 		  'conditions' => array(
 			  'customer_id' => $this->Session->read('Auth.User.id'),
-			  'status' => 'open'
+			  'status' => array('open', 'failed')
 			  ),
 		  'contain' => array('TransactionItem'),
 		  'order' => array('Transaction.modified' => 'desc')
@@ -239,10 +262,10 @@ class TransactionsController extends TransactionsAppController {
 			  $this->Transaction->delete($transactions[0]['Transaction']['id']);
 			  break;
 			case 'merge':
-			  $transaction = $this->Transaction->combineTransactions($transactions);
+			  $mergedTransaction = $this->Transaction->combineTransactions($transactions);
+			  $this->Transaction->saveAll($mergedTransaction);
 			  $this->Transaction->delete($transactions[0]['Transaction']['id']);
 			  $this->Transaction->delete($transactions[1]['Transaction']['id']);
-			  $this->Transaction->saveAll($transaction);
 			  break;
 		  }
 

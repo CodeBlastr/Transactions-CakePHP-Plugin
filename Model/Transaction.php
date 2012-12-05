@@ -211,7 +211,7 @@ class Transaction extends TransactionsAppModel {
 				  )
 			  )
 		));
-	    
+
 	    if(!$theCart) {
 		  return FALSE;
 	    }
@@ -224,9 +224,7 @@ class Transaction extends TransactionsAppModel {
 	
 /**
  * Combine the pre-checkout and post-checkout Transactions.
- * 
- * @todo Handle being passed empty carts
- * 
+ *  
  * @param integer $userId
  * @param array $data
  * @return type
@@ -262,6 +260,10 @@ class Transaction extends TransactionsAppModel {
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
+		
+//debug($currentTransaction);
+//debug($submittedTransaction);
+//break;
 
 		// update quantities
 		$allHaveZeroQty = true;
@@ -289,7 +291,10 @@ class Transaction extends TransactionsAppModel {
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
 		 
 		$officialTransaction = $this->calculateSubtotalAndShipping($officialTransaction);
-			
+        
+		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
+		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
+        
 		// return the official transaction
 		return $officialTransaction;
 	}
@@ -462,6 +467,52 @@ class Transaction extends TransactionsAppModel {
 	}
 	
 	
+/**
+ * Retrieves various stats for dashboard display
+ * 
+ * @param string $param
+ * @return array|boolean
+ */
+        public function salesStats($period) {
+            // configure period
+            switch ($period) {
+                case 'today':
+                    $rangeStart = date('Y-m-d', strtotime('today'));
+                    break;
+                case 'thisWeek':
+                    $rangeStart = date('Y-m-d', strtotime('this sunday'));
+                    break;
+                case 'thisMonth':
+                    $rangeStart = date('Y-m-d', strtotime('first day of this month'));
+                    break;
+                case 'thisYear':
+                    $rangeStart = date('Y-m-d', strtotime('first day of this year'));
+                    break;
+                case 'allTime':
+                    $rangeStart = '0000-00-00';
+                    break;
+                default:
+                    break;
+            }
+            
+            // calculate data
+            $data = $this->find('all', array(
+                'conditions' => array(
+                    'OR' => array(
+                        "created >= '$rangeStart'",
+                        "modified >= '$rangeStart'",
+                        ),
+                    'status' => 'success'
+                    )
+            ));
+            $data['count'] = count($data);
+            $data['value'] = 0;
+            foreach ($data as $order) {
+                $data['value'] += $order['Transaction']['total'];
+            }
+           // debug($data); break;
+           return ($data) ? $data : false;
+        }
 	
 /**
  * An array of options for select inputs

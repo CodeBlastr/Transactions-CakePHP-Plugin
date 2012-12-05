@@ -100,7 +100,7 @@
 			?>
 		  </fieldset><!-- #PaymentInformation -->
 
-	  </div>
+	  </div><!-- #transactionCartLeft -->
 
 
 	  <div id="transactionCartRight">
@@ -155,7 +155,7 @@
 			echo $this->Form->end(__d('transactions', 'Checkout'));
 			?>
 		  </fieldset>
-	  </div>
+	  </div><!-- #transactionCartRight -->
 
     </div><!--  id="orderTransactionForm" class="orderTransactionForm text-inputs" -->
 </div>
@@ -226,9 +226,11 @@
 
 <script type="text/javascript">      
     var shipTypeValue = $('#TransactionShippingType').val();
+
         <?php if (!empty($allVirtual)) { ?>
-        $("#TransactionShipping").parent().hide();
+            $("#TransactionShipping").parent().hide();
         <?php } ?>
+
 
 	/**
 	 * shipping same as billing toggle

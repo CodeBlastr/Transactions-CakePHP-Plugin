@@ -1,9 +1,16 @@
 <?php
 
 /**
+ * Zuha(tm) : Business Management Applications (http://zuha.com)
+ * Copyright 2009-2012
+ *
+ * Licensed under GPL v3 License
+ * Must retain the above copyright notice and release modifications publicly.
  * 
- * @author Joel Byrnes <joel@razorit.com>
- * @link https://sandbox-api.paysimple.com/v4/Help/
+ * @package			zuha
+ * @subpackage		zuha.app.plugins.transactions
+ * @author			Joel Byrnes <joel@razorit.com>
+ * @link			https://sandbox-api.paysimple.com/v4/Help/
  */
 App::uses('HttpSocket', 'Network/Http');
 
@@ -38,9 +45,10 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
+		//debug($data);
 		
-		try {
-         
+		try {      
+			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
 				$userData = $this->createCustomer($data);  
@@ -48,8 +56,8 @@ class PaysimpleComponent extends Component {
 			} else {
 				// we have their customer, unserialize the data
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
-			}
-            
+			}   
+			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
 			if (!empty($data['Transaction']['ach_account_number'])) {
 				// ACH Account
 				$accountData = $this->addAchAccount($data);
@@ -82,10 +90,30 @@ class PaysimpleComponent extends Component {
               
 				// they are using a Saved Payment Method; defined by an Id
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
-			}
+			}    
          
-			$paymentData = $this->createPayment($data);
-               
+			//$paymentData = $this->createPayment($data);   // part of a conflict 12/5/2012 RK
+			// make the actual payment
+			if($data['Transaction']['is_arb']) {
+				
+				if(empty($data['TransactionItem'][0]['price'])) {
+					// When price is empty, there is a free trial
+					// In this case, set up an ARB payment as usual.
+					$paymentData = $this->createRecurringPayment($data);
+				} else {
+					// When a price is set, we charge that as a normal payment,
+					// then setup an ARB who's 1st payment is in $StartDate days.
+					$paymentData = $this->createPayment($data);
+					$paymentData = $this->createRecurringPayment($data);
+				}
+				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
+				$data['Transaction']['processor_response'] = $paymentData['ScheduleStatus'];
+				
+			} else {
+				$paymentData = $this->createPayment($data);
+				$data['Transaction']['processor_response'] = $paymentData['Status'];
+			}
+			                                       
 			$data['Transaction']['Payment'] = $paymentData;
 
 			return $data;
@@ -240,23 +268,39 @@ class PaysimpleComponent extends Component {
 	 */
 	public function createRecurringPayment($data) {
 		
+		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
+		
+		// determine & format StartDate
+		$arbSettings['StartDate'] = empty($arbSettings['StartDate']) ? 0 : $arbSettings['StartDate'];
+		$arbSettings['StartDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['StartDate'].' days'));
+
+		// determine & format EndDate
+		if(!empty($arbSettings['EndDate'])) {
+			$arbSettings['EndDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['EndDate'].' days'));
+		}
+		// determine & format FirstPaymentDate
+		if(!empty($arbSettings['FirstPaymentDate'])) {
+			$arbSettings['FirstPaymentDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['FirstPaymentDate'].' days'));
+		}
+//		debug($arbSettings);
+//		break;
 		$params = array(
-			'PaymentAmount' => '', // required
-			'FirstPaymentAmount' => '',
-			'FirstPaymentDate' => '',
-			'AccountId' => '', // required
-			'InvoiceNumber' => '',
-			'OrderId' => '',
-			'PaymentSubType' => '', // required
-			'StartDate' => '', // required
-			'EndDate' => '',
-			'ScheduleStatus' => '', // required
-			'ExecutionFrequencyType' => '', // required
-			'ExecutionFrequencyParameter' => '',
-			'Description' => '',
+			'PaymentAmount' => $arbSettings['PaymentAmount'], // required
+			'FirstPaymentAmount' => $arbSettings['FirstPaymentAmount'],
+			'FirstPaymentDate' => $arbSettings['FirstPaymentDate'],
+			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'], // required
+			'InvoiceNumber' => NULL,
+			'OrderId' => $data['Transaction']['id'],
+			'PaymentSubType' => $data['Transaction']['paymentSubType'], // required
+			'StartDate' => $arbSettings['StartDate'], // required
+			'EndDate' => $arbSettings['EndDate'],
+			'ScheduleStatus' => 'Active', // required
+			'ExecutionFrequencyType' => $arbSettings['ExecutionFrequencyType'], // required
+			'ExecutionFrequencyParameter' => $arbSettings['ExecutionFrequencyParameter'],
+			'Description' => __SYSTEM_SITE_NAME,
 			'Id' => 0
 		);
-		
+		//debug($params);break;
 		return $this->_sendRequest('POST', '/recurringpayment', $params);
 	}
 	
@@ -269,27 +313,27 @@ class PaysimpleComponent extends Component {
 	public function updateRecurringPayment($data) {
 		
 		$params = array(
-			'CustomerId' => '',
-			'NextScheduleDate' => '',
-			'PauseUntilDate' => '',
-			'FirstPaymentDone' => '',
-			'DateOfLastPaymentMade' => '',
-			'TotalAmountPaid' => '',
-			'NumberOfPaymentsMade' => '',
-			'EndDate' => '', // updatable
-			'PaymentAmount' => '', // updatable
-			'PaymentSubType' => '', // updatable
-			'AccountId' => '', // updatable
-			'InvoiceNumber' => '',
-			'OrderId' => '',
-			'FirstPaymentAmount' => '', // updatable (if it hasn't started yet)
-			'FirstPaymentDate' => '', // updatable (if it hasn't started yet)
-			'StartDate' => '', // updatable (if it hasn't started yet)
-			'ScheduleStatus' => '',
-			'ExecutionFrequencyType' => '', // updatable
-			'ExecutionFrequencyParameter' => '', // updatable
-			'Description' => '',
-			'Id' => ''
+			'CustomerId' => null,
+			'NextScheduleDate' => null,
+			'PauseUntilDate' => null,
+			'FirstPaymentDone' => null,
+			'DateOfLastPaymentMade' => null,
+			'TotalAmountPaid' => null,
+			'NumberOfPaymentsMade' => null,
+			'EndDate' => null, // updatable
+			'PaymentAmount' => null, // updatable
+			'PaymentSubType' => null, // updatable
+			'AccountId' => null, // updatable
+			'InvoiceNumber' => null,
+			'OrderId' => null,
+			'FirstPaymentAmount' => null, // updatable (if it hasn't started yet)
+			'FirstPaymentDate' => null, // updatable (if it hasn't started yet)
+			'StartDate' => null, // updatable (if it hasn't started yet)
+			'ScheduleStatus' => null,
+			'ExecutionFrequencyType' => null, // updatable
+			'ExecutionFrequencyParameter' => null, // updatable
+			'Description' => null,
+			'Id' => null
 		);
 		
 		return $this->_sendRequest('PUT', '/recurringpayment', $params);
@@ -298,7 +342,7 @@ class PaysimpleComponent extends Component {
 	/**
 	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-pause-until-enddate
 	 * 
-	 * @param type $data
+	 * @param array $data
 	 * @return boolean
 	 */
 	public function pauseRecurringPayment($data) {
@@ -308,7 +352,7 @@ class PaysimpleComponent extends Component {
 	/**
 	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-suspend
 	 * 
-	 * @param type $scheduleId
+	 * @param integer $scheduleId
 	 * @return boolean
 	 */
 	public function suspendRecurringPayment($scheduleId) {
@@ -318,7 +362,7 @@ class PaysimpleComponent extends Component {
 	/**
 	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-resume
 	 * 
-	 * @param type $data
+	 * @param integer $data
 	 * @return boolean
 	 */
 	public function resumeRecurringPayment($data) {
@@ -401,11 +445,12 @@ class PaysimpleComponent extends Component {
 	}
 
 /**
- *
- * @param string $method
- * @param string $action
- * @param array $data
- * @return boolean|array Returns FALSE or the "Response" array
+ * Prepares and sends your request to the API servers
+ * 
+ * @param string $method POST | GET | UPDATE | DELETE
+ * @param string $action PaySimple API endpoint
+ * @param array $data A PaySimple API Request Body packet as an array
+ * @return boolean|array Returns Exception/FALSE or the "Response" array
  */
 	public function _sendRequest($method, $action, $data = NULL) {
 
@@ -428,22 +473,39 @@ class PaysimpleComponent extends Component {
 			),
 		);
 		if ($data !== NULL) {
-			$data = json_encode($data);
 			$request['header']['Content-Type'] = 'application/json';
-			$request['header']['Content-Length'] = strlen($data);
-			$request['body'] = $data;
+			$request['header']['Content-Length'] = strlen(json_encode($data));
+			$request['body'] = json_encode($data);
 		}
 
 		$result = $this->_httpSocket->request($request);
+
+		return $this->_handleResult($result, $data);
+		
+	}
+	
+	
+	/**
+	 * 
+	 * @param Object $result An httpSocket response object
+	 * @param Array $data The PaySimple API Request Body packet as an array that was used for the request
+	 * @return Array The entire Response packet of a valid API call
+	 * @throws Exception The error message to display to the visitor
+	 */
+	private function _handleResult($result, $data) {
+		
 		$responseCode = $result->code;
 		$result = json_decode($result->body, TRUE);
 
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
+		
 		if (in_array($responseCode, $badResponseCodes)) {
+			
+			// build error message
 			if (is_string($result)) {
 				$this->errors[] = $message = $result;
 			} elseif (isset($result['Meta']['Errors']['ErrorMessages'])) {
-				$message = '';
+				$message = $result['Meta']['Errors']['ErrorCode']. ' ';
 				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
 					$message .= $error['Message'];
@@ -452,14 +514,29 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-		//debug($request);
-		//debug($responseCode);
-		//debug($result);
-		//break;
+
+	
+			
+//			// we need to know if this was an ARB that was declined
+//			if($data['Transaction']['is_arb']) {
+//				$arbErrorMessage = $result['Meta']['Errors']['ErrorMessages'][0]['Message'];
+//				if(strpos($arbErrorMessage, 'was saved, but the first scheduled payment failed')) {
+//					
+//				}
+//			}
+			
+			//debug($request);
+//			debug($responseCode);
+//			debug($result);
+//			break;
+			
+			// throw error message to display to the visitor
+
 			throw new Exception($message);
 			return FALSE;
 			
 		} else {
+			// return entire Response packet of a valid API call
 			return $result['Response'];
 		}
 	}
