@@ -77,13 +77,13 @@ class Transaction extends TransactionsAppModel {
 		)
 	);
 
-	
+    
 /**
  * The checkout page has options.
  * This function's job is to get those options.
  * @return array
  */
-	public function gatherCheckoutOptions() {
+	public function gatherCheckoutOptions() {     
 	    $options['ssl'] = defined('__TRANSACTIONS_SSL') ? unserialize(__TRANSACTIONS_SSL) : null;
 	    $options['trustLogos'] = !empty($ssl['trustLogos']) ? $ssl['trustLogos'] : null;
 	    $options['enableShipping'] = defined('__TRANSACTIONS_ENABLE_SHIPPING') ? __TRANSACTIONS_ENABLE_SHIPPING : false;
@@ -234,6 +234,11 @@ class Transaction extends TransactionsAppModel {
 	public function finalizeTransactionData($submittedTransaction) {
 		$userId = $this->getCustomersId();
 		$options = $this->gatherCheckoutOptions();
+       //debug($userId);  
+       //debug($options); 
+       //debug($submittedTransaction); 
+      
+         
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
 		    'conditions' => array(
@@ -250,6 +255,9 @@ class Transaction extends TransactionsAppModel {
 				  )
 			  )
 		));
+        
+       //debug($currentTransaction);
+       // break;  
 
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
@@ -279,9 +287,9 @@ class Transaction extends TransactionsAppModel {
 		// combine the Current and Submitted Transactions
 		$officialTransaction = Set::merge($currentTransaction, $submittedTransaction);
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
-		
+		 
 		$officialTransaction = $this->calculateSubtotalAndShipping($officialTransaction);
-				
+			
 		// return the official transaction
 		return $officialTransaction;
 	}
@@ -304,7 +312,7 @@ class Transaction extends TransactionsAppModel {
 		$transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
 		$transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
 		//$transaction['Customer']['phone'] = $transaction['TransactionAddress'][0]['phone']; // required
-		debug($transaction);
+		//debug($transaction);
 		// generate a temporary password: ANNNN
 		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
 		
@@ -395,9 +403,17 @@ class Transaction extends TransactionsAppModel {
  */
 	public function beforePayment($data) {
 		try {
-			$data = $this->finalizeTransactionData($data);
-			$data = $this->finalizeUserData($data);
-
+           
+            $data = $this->finalizeTransactionData($data); 
+             
+            
+            //Check Transaction Coupon code empty or not
+            if($data['TransactionCoupon']['code']!=''){
+               $data = $this->TransactionCoupon->verify($data); 
+            }
+            
+       		$data = $this->finalizeUserData($data);
+            
 			return $data;
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());

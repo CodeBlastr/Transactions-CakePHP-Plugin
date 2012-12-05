@@ -6,6 +6,8 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property Transaction $Transaction
  */
 class TransactionCoupon extends TransactionsAppModel {
+    
+public $name = 'TransactionCoupon';  
 /**
  * Display field
  *
@@ -65,35 +67,47 @@ class TransactionCoupon extends TransactionsAppModel {
 
 	
 	public function verify($data, $conditions = null) {
-		# similar to apply but don't mark as used
+             
+        $mktime=mktime();
+        $current_date=date('Y-m-d',$mktime);     // Get Current Date
+        
+        // Check status is in Active or not and also check start date and end date valid or not.  
+        $conditions = array('TransactionCoupon.is_active' => 1,'TransactionCoupon.start_date <=' => $current_date,'TransactionCoupon.end_date >=' => $current_date);
+        
+         # similar to apply but don't mark as used
 		if (!empty($data['TransactionCoupon']['code'])) {
-			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
-			$coupon = $this->find('first', array('conditions' => $condtions));
-			
+			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions); 
+			$coupon = $this->find('first', array('conditions' => $condtions)); 
+           		
 			if (empty($coupon)) {
-				throw new Exception('Code out of date or does not apply.');
+				throw new Exception('Code out of date or does not apply.');   
 			} else {
 				$data = $this->_applyPriceChange(
 					$coupon['TransactionCoupon']['discount_type'], 
 					$coupon['TransactionCoupon']['discount'], 
 					$data);
-				$data['TransactionCoupon'] = $coupon['TransactionCoupon'];
+                $data['Transaction']['transaction_coupon_id']=$coupon['TransactionCoupon']['id'];    
+				$data['TransactionCoupon'] = $coupon['TransactionCoupon']; 
 				return $data;
-			}
+			}  
 		} else {
-			throw new Exception('Coupon code was empty.');
-		}
-	}
+			throw new Exception('Coupon code was empty.'); 
+		}   
+	} 
 	
 	private function _applyPriceChange($type = 'fixed', $discount = 0, $data = null) {
+        $data['Transaction']['order_charge'] = ereg_replace(",", "", $data['Transaction']['order_charge']);  
+       
 		if ($type == 'percent') {
 			# for now it does the total 
-			$data['Transaction']['order_charge'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['order_charge']);
+			$data['Transaction']['order_charge'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['order_charge']);    
 		} else {
 			# do fixed coupon price change 
 			$data['Transaction']['order_charge'] = ZuhaInflector::pricify($data['Transaction']['order_charge'] - $discount);
+            
 		}
-		
+        
+	    $data['Transaction']['total']=ereg_replace(",", "", $data['Transaction']['order_charge']);   
 		return $data;		
 	}
 	

@@ -79,9 +79,12 @@ class PaymentsComponent extends Object {
  */
 	function Pay($data = null) {
 		try {
+            //echo "<pre>";    
+           // print_r($data);
+            //exit();
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
-			$paymentProcessor = $paymentProcessor[0];
+			$paymentProcessor = $paymentProcessor[0]; 
 
 			$this->loadComponent($paymentProcessor);
 			if ($this->recurring) {

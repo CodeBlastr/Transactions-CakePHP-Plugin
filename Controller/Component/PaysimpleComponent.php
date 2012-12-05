@@ -23,9 +23,10 @@ class PaysimpleComponent extends Component {
 		if (defined('__TRANSACTIONS_PAYSIMPLE')) {
 			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
 		}
-
+         
 		$this->config = Set::merge($this->config, $config, $settings);
-
+        //debug($this->config);
+        //break;
 		$this->_httpSocket = new HttpSocket();
 	}
 
@@ -39,16 +40,16 @@ class PaysimpleComponent extends Component {
 	public function Pay($data) {
 		
 		try {
-//debug($data);
+         
 			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
-				$userData = $this->createCustomer($data);
-				$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData['Id'];
+				$userData = $this->createCustomer($data);  
+              	$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData['Id'];
 			} else {
 				// we have their customer, unserialize the data
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
 			}
-
+            
 			if (!empty($data['Transaction']['ach_account_number'])) {
 				// ACH Account
 				$accountData = $this->addAchAccount($data);
@@ -62,16 +63,35 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Moto';
 			} else {
+                
+                $ach_count=count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
+                $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']); 
+                
+                if($ach_count > 0) {
+                   for($i=0;$i<$ach_count;$i++) {
+                       if($data['Transaction']['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data['Transaction']['paymentSubType'] = 'Web';  }
+                     
+                   } 
+                }
+                
+                if($cc_count > 0) {
+                   for($i=0;$i<$cc_count;$i++) {
+                        if($data['Transaction']['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data['Transaction']['paymentSubType'] = 'Moto';  } 
+                   } 
+                }
+              
 				// they are using a Saved Payment Method; defined by an Id
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
 			}
-
+         
 			$paymentData = $this->createPayment($data);
+               
 			$data['Transaction']['Payment'] = $paymentData;
 
 			return $data;
 
 		} catch (Exception $exc) {
+           
 			throw new Exception($exc->getMessage());
 		}
 
@@ -122,7 +142,7 @@ class PaysimpleComponent extends Component {
 				'ZipCode' => $data['TransactionAddress'][1]['zip'],
 			);
 		}
-
+       
 		return $this->_sendRequest('POST', '/customer', $params);
 	}
 
@@ -192,7 +212,7 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createPayment($data) {
-
+     
 		$params = array(
 			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
@@ -389,7 +409,8 @@ class PaysimpleComponent extends Component {
  */
 	public function _sendRequest($method, $action, $data = NULL) {
 
-		if ($this->config['environment'] == 'sandbox') {
+	
+        if ($this->config['environment'] == 'sandbox') {
 			$endpoint = 'https://sandbox-api.paysimple.com/v4';
 		} else {
 			$endpoint = 'https://api.paysimple.com/v4';
@@ -431,10 +452,10 @@ class PaysimpleComponent extends Component {
 				$this->errors[] = $result;
 				$message = $result;
 			}
-//			debug($request);
-//			debug($responseCode);
-//			debug($result);
-//			break;
+		//debug($request);
+		//debug($responseCode);
+		//debug($result);
+		//break;
 			throw new Exception($message);
 			return FALSE;
 			

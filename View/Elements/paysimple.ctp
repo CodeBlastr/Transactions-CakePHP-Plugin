@@ -2,24 +2,24 @@
 <?php
 
 if(isset($this->request->data['Customer']['Connection'][0])) {
-	//debug($this->request->data);
+	//debug($this->request->data);  
 	$connectionData = unserialize($this->request->data['Customer']['Connection'][0]['value']);
-	
+	 
 	if(isset($connectionData['Account']['CreditCard'])) {
 		echo '<h5>Use a saved Credit Card</h5>';
 		foreach($connectionData['Account']['CreditCard'] as $savedCC) {
 			$ccAccounts[$savedCC['Id']] = $savedCC['Issuer'] . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'];
 			if($savedCC['IsDefault'] == true) $defaultAccount = $savedCC['Id'];
-		}
-		echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;'));
+		}  
+		echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;','hiddenField'=>false));
 	}
 	if(isset($connectionData['Account']['Ach'])) {
 		echo '<h5>Use a saved ACH Account</h5>';
 		foreach($connectionData['Account']['Ach'] as $savedAch) {
 			$achAccounts[$savedAch['Id']] = $savedAch['BankName'] . $savedAch['AccountNumber'];
 			if($savedAch['IsDefault'] == true) $defaultAccount = $savedAch['Id'];
-		}
-		echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;'));
+		} 
+		echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;','hiddenField'=>false));
 	}
 	
 	echo '<h5>Use a new Payment Method</h5>';

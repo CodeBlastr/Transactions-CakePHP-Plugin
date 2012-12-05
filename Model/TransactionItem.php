@@ -19,8 +19,13 @@ class TransactionItem extends TransactionsAppModel {
     public $displayField = 'name';
 
     public $validate = array(
-		'price' => 'notEmpty'
-    );
+	   'price' => array(
+            'notempty' => array(
+                'rule' => array('notempty'),
+                'message' => '*required',
+            ),
+        ),
+       );
     
 
 

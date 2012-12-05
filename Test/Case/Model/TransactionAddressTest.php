@@ -1,5 +1,5 @@
 <?php
-App::uses('TransactionAddress', 'Model');
+App::uses('TransactionAddress', 'Transactions.Model');
 
 /**
  * TransactionAddress Test Case
@@ -30,7 +30,7 @@ class TransactionAddressTestCase extends CakeTestCase {
  */
 	public function setUp() {
 		parent::setUp();
-		$this->TransactionAddress = ClassRegistry::init('TransactionAddress');
+		$this->TransactionAddress = ClassRegistry::init('Transactions.TransactionAddress');
 	}
 
 /**
@@ -43,5 +43,15 @@ class TransactionAddressTestCase extends CakeTestCase {
 
 		parent::tearDown();
 	}
+    
+     /**
+ * testAdd method
+ *
+ * @return void
+ */
+    public function testAdd() {
+        
+        
+    }
 
 }

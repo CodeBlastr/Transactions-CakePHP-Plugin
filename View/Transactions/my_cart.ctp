@@ -24,11 +24,21 @@
 
 <div id="transactionsCheckout" class="transactions checkout form">
     <?php
-    //echo $this->Html->script('system/jquery.validate.min', array('inline' => false));
+    echo $this->Html->script('/transactions/js/jquery-1.8.2.min', array('inline' => false));  
+    echo $this->Html->script('plugins/jquery.validate.min', array('inline' => false));
     echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
+    //echo $this->Html->css('/transactions/css/validationEngine.jquery', null, array('inline' => false));  
     echo $this->Form->create('Transaction', array('action' => 'checkout'));
+  //  echo $this->Html->script('/transactions/js/jquery-1.8.2.min', array('inline' => false));
+  //  echo $this->Html->script('/transactions/js/languages/jquery.validationEngine-en', array('inline' => false)); 
+   // echo $this->Html->script('/transactions/js/jquery.validationEngine', array('inline' => false)); 
     ?>
-
+    <script>
+     /*   jQuery(document).ready(function(){
+            // binds form submission and fields to the validation engine
+            jQuery("#TransactionCheckoutForm").validationEngine();
+        }); */
+    </script>     
   	<?php
 	if($this->request->data['Customer']['id'] == NULL) {
 	  // show a login button
@@ -51,15 +61,15 @@
 				<legend><?php echo __d('transactions', 'Billing Address'); ?></legend>
 				<?php
 				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required'));
-				echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
-				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required', 'size' => '49'));
-				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
-				echo $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength'=>'10', 'size' => '10'));
-				echo $this->Form->hidden('TransactionAddress.0.country', array('label' => 'Country', 'value' => 'US'));
-				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'maxlength'=>'10'));
+				echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'validate[required,custom[onlyLetterNumber],maxSize[20]', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.last_name', array('class' => 'validate[required,custom[onlyLetterNumber],maxSize[20]', 'div' => array('style' => 'display:inline-block; margin-left: 5px;')));
+				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'validate[required] text-input', 'size' => '49'));
+				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2', 'class' => 'validate[required] text-input','size' => '49'));
+				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'validate[required,custom[onlyLetterSp]] text-input', 'size' => '29', 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'validate[required] text-input', 'type' => 'select', 'options' => array_merge(array('' => '--Select--'), states()), 'div' => array('style' => 'display:inline-block')));
+				echo $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'validate[required,custom[onlyLetterNumber],maxSize[10]', 'maxlength'=>'10', 'size' => '10'));
+				echo $this->Form->hidden('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'validate[required,custom[onlyLetterNumber]','value' => 'US'));
+				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'validatevalidate[required,custom[phone]] text-input','maxlength'=>'10'));
 				echo $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.'));
 				echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
 				?>
@@ -83,6 +93,9 @@
 		  <fieldset id="paymentInformation">
 			<legend><?php echo __d('transactions', 'Payment Information'); ?></legend>
 			<?php
+            //debug($options['paymentMode']);
+            
+            
 				echo $this->Element(strtolower($options['paymentMode']));
 			?>
 		  </fieldset><!-- #PaymentInformation -->
@@ -121,22 +134,24 @@
 		  <fieldset>
 			<legend><?php echo __d('transactions', 'Order Summary') ?></legend>
 			<?php
-			//echo !empty($enableShipping) ? $this->Form->input('Transaction.shipping_charge', array('readonly' => true, 'value' => ZuhaInflector::pricify($options['defaultShippingCharge']))) : $this->Form->hidden('OrderTransaction.shipping_charge', array('readonly' => true, 'value' => ''));
+            			//echo !empty($enableShipping) ? $this->Form->input('Transaction.shipping_charge', array('readonly' => true, 'value' => ZuhaInflector::pricify($options['defaultShippingCharge']))) : $this->Form->hidden('OrderTransaction.shipping_charge', array('readonly' => true, 'value' => ''));
 			//echo $this->Form->input('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($myCart['Transaction']['order_charge'])));
+            echo $this->Form->hidden('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']))); 
 			$orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['order_charge']);
 			$pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); // field is FLOAT, no commas allowed
 			//echo $this->Form->input('Transaction.discount', array('label' => 'Discount', 'readonly' => true));
 			?>
 			<div><?php echo __d('transactions', 'Subtotal') ?>: <span id="TransactionSubtotal" class="total" style="float:right; font-weight: bold; font-size: 110%">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></span></div>
 			<div><?php echo __d('transactions', 'Shipping') ?>: <span id="TransactionShipping" class="total" style="float:right; font-weight: bold; font-size: 110%">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></span></div>
-			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%">- $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['discount']) ?></span></span></div>
+			<div><?php echo __d('transactions', 'Discount') ?>: <span id="TransactionDiscount" class="total" style="float:right; font-weight: bold; font-size: 110%"><span class="floatPrice"><?php //echo ZuhaInflector::pricify($this->request->data['Transaction']['discount']) ?></span></span></div>
 			<hr/>
 			<div style="margin: 10px 0; font-weight: bold;">Total: <span id="TransactionTotal" class="total" style="float:right; font-weight: bold; font-size: 120%">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></span></div>
 			<div><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Have a Promo Code?') ?></a></small></div>
 			<?php
+            echo $this->Form->hidden('Transaction.hiddentotal', array('label'=>'Total', 'readonly' => true, 'value' => $pricifiedOrderTotal));
 			//echo $this->Form->input('Transaction.total', array('label' => 'Total <small><a id="enterPromo" href="#">Enter Promo Code</a></small>', 'readonly' => true, 'value' => $pricifiedOrderTotal, 'class' =>'uneditable-input',/* 'after' => defined('__USERS_CREDITS_PER_PRICE_UNIT') ? " Or Credits : " . __USERS_CREDITS_PER_PRICE_UNIT * $orderTotal : "Or Credits : " .  $orderTotal */));
 			echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => '<a id="applyCode" href="#" class="btn">Apply Code</a>'));
-
+           
 			echo $this->Form->end(__d('transactions', 'Checkout'));
 			?>
 		  </fieldset>
@@ -144,8 +159,9 @@
 
     </div><!--  id="orderTransactionForm" class="orderTransactionForm text-inputs" -->
 </div>
-<script type="text/javascript">
 
+  <script type="text/javascript">  
+   
     // hide / show the coupon code input dependent on value
     if (!$("#TransactionCouponCode").val()) {
 	  $("#TransactionCouponCode").parent().hide();
@@ -154,40 +170,65 @@
 		  $("#TransactionCouponCode").parent().toggle('slow');
 	  });
     }
+     
     // hide the discount input if empty
     if (!$("#TransactionDiscount").val()) {
 	  $("#TransactionDiscount").parent().hide();
     }
+
+   
     // handle a submitted code for verification (update total)
     $("#applyCode").click(function(e){
-	  e.preventDefault();
+   	  e.preventDefault(); 
+      
+        if($("#TransactionHiddentotal").val() > 0) {
 	  $.ajax({
 		  type: "POST",
 		  data: $('#TransactionCheckoutForm').serialize(),
-		  url: "/transactions/transaction_coupons/verify.json" ,
-		  dataType: "json",
-		  success:function(data){
-			var discount = $("#TransactionOrderCharge").text() - data['data']['Transaction']['order_charge'];
-			$('#TransactionTotal').text(data['data']['Transaction']['order_charge']);
-			$("#TransactionDiscount").val(discount.toFixed(2));
+		  url: "/transactions/transaction_coupons/verify.json" ,  
+		  dataType: "json",       
+          success:function(data){  
+            
+        var discount = $("#TransactionOrderCharge").text() - data['data']['Transaction']['order_charge'];
+			$('#TransactionTotal').text('$'+data['data']['Transaction']['order_charge']);
+            $('#TransactionTotal').val(data['data']['Transaction']['order_charge']);
+            
+           	$("#TransactionDiscount").val(discount.toFixed(2));
+            if(data['data']['TransactionCoupon']['discount_type']=='fixed') {
+              symbol='$';  
+              $("#TransactionDiscount").text('- '+ symbol + data['data']['TransactionCoupon']['discount']);
+            }else{ 
+              var discount_amount=(data['data']['TransactionCoupon']['discount']/100)*$("#TransactionHiddentotal").val(); 
+              symbol='%';  
+            $("#TransactionDiscount").text('- '+ symbol+ data['data']['TransactionCoupon']['discount']+' ( $ '+discount_amount+')');
+            }
+             
+          //document.getElementById("TransactionOrderCharge").value=data['data']['Transaction']['order_charge'];
 			$("#TransactionDiscount").parent().show();
 			//total();
 		  },
-		  error:function(data){
-			$("#TransactionDiscount").val('');
+		  error:function(data){  
+     		$("#TransactionDiscount").val('');
 			$("#TransactionDiscount").parent().hide();
 			$('#TransactionTotal').val($("#TransactionOrderCharge").val());
 			alert('Code out of date or does not apply.');
 		  }
 	  });
+      
+               }
+            else {
+              alert("Total amount should not zero");
+            } 
     });
+    
+     
+ </script>               
 
-
-
+<script type="text/javascript">      
     var shipTypeValue = $('#TransactionShippingType').val();
-<?php if ($allVirtual) : ?>
+        <?php if (!empty($allVirtual)) { ?>
         $("#TransactionShipping").parent().hide();
-<?php endif; ?>
+        <?php } ?>
 
 	/**
 	 * shipping same as billing toggle

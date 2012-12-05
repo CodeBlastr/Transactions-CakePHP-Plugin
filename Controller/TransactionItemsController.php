@@ -58,11 +58,20 @@ class TransactionItemsController extends TransactionsAppController {
 			
 			/** @todo check stock and cart max **/
 			$isAddable = $this->TransactionItem->verifyItemRequest($this->request->data);
-			
-			// create the item internally
-			$itemData = $this->TransactionItem->mapItemData($this->request->data);
+           
+            $conditions = array('TransactionItem.foreign_key' => $this->request->data['TransactionItem']['foreign_key'], 'TransactionItem.transaction_id ' => $this->TransactionItem->Transaction->id,'TransactionItem.model' => $this->request->data['TransactionItem']['model']);
+            $chkdata = $this->TransactionItem->find('all', array('conditions' => $conditions));
+           
+            $itemData = $this->TransactionItem->mapItemData($this->request->data);  
+			if (empty($chkdata)) {   
+           // create the item internally
 			$this->TransactionItem->create($itemData);
-			
+           }else{
+            $this->request->data['TransactionItem']['quantity']  = $chkdata[0]['TransactionItem']['quantity'] + $this->request->data['TransactionItem']['quantity'];
+           
+			$this->TransactionItem->id=$chkdata[0]['TransactionItem']['id'];
+            
+           } 
 			// It puts the item in the cart.
 			if ($this->TransactionItem->save($this->request->data)) {
 				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));

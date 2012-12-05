@@ -13,7 +13,7 @@
 	</tr>
 	<?php
 	$i = 0;
-	foreach ($orderCoupons as $coupon): ?>
+	foreach ($transactionCoupons as $coupon): ?>
 	<tr>
 		<td><?php echo $this->Html->link(h($coupon['TransactionCoupon']['name']), array('action' => 'view', $coupon['TransactionCoupon']['id'])); ?>&nbsp;</td>
 		<td><?php echo h($coupon['TransactionCoupon']['discount']); ?>&nbsp;</td>

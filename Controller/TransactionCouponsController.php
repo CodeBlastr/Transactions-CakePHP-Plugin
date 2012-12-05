@@ -73,6 +73,7 @@ class TransactionCouponsController extends TransactionsAppController {
 		} else {
 			$this->request->data = $this->TransactionCoupon->read(null, $id);
 		}
+        $this->set('discountTypes', $this->TransactionCoupon->types()); 
 	}
 
 /**
@@ -98,10 +99,11 @@ class TransactionCouponsController extends TransactionsAppController {
 	}
 	
 	
-	public function verify() {
+	public function verify() { 
+       
 		// currently used at transactions/transactions/myCart only
-		$this->request->data = $this->TransactionCoupon->verify($this->request->data);
+       	$this->request->data = $this->TransactionCoupon->verify($this->request->data);
 		$this->set('data', $this->request->data);
-	}
+    }
 	
 }

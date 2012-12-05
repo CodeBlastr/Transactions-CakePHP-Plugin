@@ -26,26 +26,31 @@ class TransactionsController extends TransactionsAppController {
  * @return void
  */
 	public function checkout() {
-	    if($this->request->data) {
-		  try {
-			
+      
+       
+	    if($this->request->data) {  
+       try {
+		     
 			$data = $this->Transaction->beforePayment($this->request->data);
-
+          
 			$data = $this->Payments->pay($data);
-//debug($data); break;
+           
 			$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 
 			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'));
 
-		  } catch (Exception $e) {
+		  } catch (Exception $exc) {
 
-			  $this->Session->setFlash(__d('transactions', $e->getMessage()));
+              
+			  $this->Session->setFlash(__d('transactions', $exc->getMessage()));
 			  
 			  $data['Transaction']['status'] = 'failed';
 			  $this->Transaction->save($data);
 			  /** @todo set TransactionItem.status=frozen on failure? **/
-			  
-			  return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'myCart'));
+			 //debug($data);
+           //break;
+          // $this->Session->write('sessiondata',$data);
+	       return $this->redirect(array('plugin' => 'transactions','controller' => 'transactions','action' => 'myCart'));
 
 		  }
 
@@ -77,7 +82,7 @@ class TransactionsController extends TransactionsAppController {
    * @param string $id
    * @throws NotFoundException
    */
-	public function view($id = null) {
+	public function view($id = null) {    
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
@@ -92,12 +97,14 @@ class TransactionsController extends TransactionsAppController {
 	public function myCart() {
 	  	// gather checkout options like shipping, payments, ssl, etc
 		$options = $this->Transaction->gatherCheckoutOptions();
-
+          // echo '<pre>';
+          //print_r($options);
+          //exit();
 	    // ensure that SSL is on if it's supposed to be
 		if ($options['ssl'] !== null && !strpos($_SERVER['HTTP_HOST'], 'localhost')) {
 		  $this->Ssl->force();
 		}
-		
+		      
 		// If they have two carts, we are going to ask the customer what to do with them
 		// determine the user's "ID"
 		$userId = $this->Transaction->getCustomersId();
@@ -108,16 +115,20 @@ class TransactionsController extends TransactionsAppController {
 		if($numberOfCarts > 1) {
 
 		  return $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
-		  
+		    
 		} else {
 		  // get their cart and process it
 		  $this->request->data = $this->Transaction->processCart($userId);
 
+          /*$sessiondata = $this->Session->read('sessiondata');
+          if(@$sessiondata!='' && $this->request->data=='') { $this->request->data=$sessiondata; } else { $this->Session->delete('sessiondata');}    */
+            
 		  if (!$this->request->data) {
 			$this->Session->setFlash(__d('transactions', 'Cart is empty.'));
 		  }
-
-		  // set the variables to display in the cart
+           
+		 
+          // set the variables to display in the cart
 		  $this->set(compact('options'));
 		  
 		}

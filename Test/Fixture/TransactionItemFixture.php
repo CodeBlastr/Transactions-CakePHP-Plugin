@@ -4,6 +4,8 @@
  *
  */
 class TransactionItemFixture extends CakeTestFixture {
+    
+        public $name = 'TransactionItem';    
 
 /**
  * Fields
