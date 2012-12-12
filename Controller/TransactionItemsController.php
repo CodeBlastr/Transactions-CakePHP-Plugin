@@ -51,21 +51,29 @@ class TransactionItemsController extends TransactionsAppController {
  * @return void
  */
 	public function add() {
+        
 		if ($this->request->is('post')) {
 			// determine the user's "ID"
 			$userId = $this->TransactionItem->Transaction->getCustomersId();
+            
+             
 		    
 			// set a transaction id (cart id) for this user
 			$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId($userId);
 			
 			/** @todo check stock and cart max **/
 			$isAddable = $this->TransactionItem->verifyItemRequest($this->request->data);
+            
+            
 
             /** @todo this should go into beforeSave() with conditional check on $create    **/
             $conditions = array('TransactionItem.foreign_key' => $this->request->data['TransactionItem']['foreign_key'], 'TransactionItem.transaction_id ' => $this->TransactionItem->Transaction->id,'TransactionItem.model' => $this->request->data['TransactionItem']['model']);
             $chkdata = $this->TransactionItem->find('all', array('conditions' => $conditions));
            
-            $itemData = $this->TransactionItem->mapItemData($this->request->data);  
+           
+            $itemData = $this->TransactionItem->mapItemData($this->request->data);
+            
+            
             
 			if (empty($chkdata)) {   // Check the item already added
                 // create the item internally

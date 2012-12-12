@@ -30,14 +30,15 @@ class TransactionsController extends TransactionsAppController {
        
 	    if($this->request->data) {  
        try {
+         
 		     
 			$data = $this->Transaction->beforePayment($this->request->data);
-          
+            
 			$data = $this->Payments->pay($data);
-           
+            
 			$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
-
-			
+            
+			 
 			if (defined('__TRANSACTIONS_CHECKOUT_REDIRECT')) {
 					extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT));
 					if(empty($url)) {
@@ -163,6 +164,7 @@ class TransactionsController extends TransactionsAppController {
 	 * @return void
 	 */
 	public function add() {
+        
 		if ($this->request->is('post')) {
 			$this->Transaction->create();
 			if ($this->Transaction->save($this->request->data)) {

@@ -27,11 +27,8 @@
     echo $this->Html->script('/transactions/js/jquery-1.8.2.min', array('inline' => false));  
     echo $this->Html->script('plugins/jquery.validate.min', array('inline' => false));
     echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
-    //echo $this->Html->css('/transactions/css/validationEngine.jquery', null, array('inline' => false));  
     echo $this->Form->create('Transaction', array('action' => 'checkout'));
-  //  echo $this->Html->script('/transactions/js/jquery-1.8.2.min', array('inline' => false));
-  //  echo $this->Html->script('/transactions/js/languages/jquery.validationEngine-en', array('inline' => false)); 
-   // echo $this->Html->script('/transactions/js/jquery.validationEngine', array('inline' => false)); 
+
     ?>
     <script>
      /*   jQuery(document).ready(function(){
@@ -39,7 +36,16 @@
             jQuery("#TransactionCheckoutForm").validationEngine();
         }); */
     </script>     
-  	<?php
+  	<?php // is_virtual is true , then don't show shipping information form.  
+    $display_shipping=true;
+    $transaction_item_count=count($this->request->data['TransactionItem']);
+    for($i=0;$i<$transaction_item_count;$i++) {
+          if($this->request->data['TransactionItem'][$i]['is_virtual']==true) {
+              $display_shipping=false;
+          }
+    }
+    
+    
 	if($this->request->data['Customer']['id'] == NULL) {
 	  // show a login button
 	  echo __d('transactions', 'Returning Customer?') . '&nbsp;';
@@ -70,10 +76,16 @@
 				echo $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'validate[required,custom[onlyLetterNumber],maxSize[10]', 'maxlength'=>'10', 'size' => '10'));
 				echo $this->Form->hidden('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'validate[required,custom[onlyLetterNumber]','value' => 'US'));
 				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'validatevalidate[required,custom[phone]] text-input','maxlength'=>'10'));
-				echo $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.'));
+				
+                if($display_shipping==true) {
+                    //$display_shipping is false, shipping address not display 
+                echo $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.'));
 				echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
+                }
+                
 				?>
 			</fieldset>
+          
 			<fieldset id="shippingAddress">
 				<legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
 				<div id="shipping_error"></div>
@@ -87,6 +99,7 @@
 				echo $this->Form->hidden('TransactionAddress.1.type', array('value' => 'shipping'));
 				?>
 			</fieldset>
+           
 		  </div><!-- #orderTransactionAddress -->
 
 
@@ -111,12 +124,11 @@
 			<legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
 
 			<?php
-			//debug($this->request->data['TransactionItem']);
-			foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
+				foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
 			?>
 				<div class="transactionItemInCart" id="TransactionItem<?php echo $i ?>">
-					<?php
+					<?php      
 					echo $this->element('Transactions/cart_item', array(
 						'transactionItem' => $transactionItem,
 						'i' => $i
