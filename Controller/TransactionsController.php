@@ -71,10 +71,10 @@ class TransactionsController extends TransactionsAppController {
 			  //$data['Transaction']['status'] = 'failed'; // we're no longer doing this
 			  //$this->Transaction->save($data); // do we need to do this still?
 			  /** @todo set TransactionItem.status=frozen on failure? **/
-			 //debug($data);
-           //break;
-          // $this->Session->write('sessiondata',$data);
-	       return $this->redirect(array('plugin' => 'transactions','controller' => 'transactions','action' => 'myCart'));
+
+			  
+			  return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'cart'));
+
 
 		  }
 
@@ -101,12 +101,14 @@ class TransactionsController extends TransactionsAppController {
 		$this->set('transactions', $this->paginate());
 	}
 
-  /**
-   * 
-   * @param string $id
-   * @throws NotFoundException
-   */
-	public function view($id = null) {    
+
+/**
+ * 
+ * @param string $id
+ * @throws NotFoundException
+ */
+	public function view($id = null) {
+
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
@@ -114,11 +116,11 @@ class TransactionsController extends TransactionsAppController {
 		$this->set('transaction', $this->Transaction->read(null, $id));
 	}
 	
-	/**
-	 * 
-	 * @throws NotFoundException
-	 */
-	public function myCart() {
+/**
+ * 
+ * @throws NotFoundException
+ */
+    public function cart() {
 	  	// gather checkout options like shipping, payments, ssl, etc
 		$options = $this->Transaction->gatherCheckoutOptions();
           // echo '<pre>';
@@ -137,32 +139,26 @@ class TransactionsController extends TransactionsAppController {
 			));
 		
 		if($numberOfCarts > 1) {
-
-		  return $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
-		    
-		} else {
-		  // get their cart and process it
-		  $this->request->data = $this->Transaction->processCart($userId);
-
-          /*$sessiondata = $this->Session->read('sessiondata');
-          if(@$sessiondata!='' && $this->request->data=='') { $this->request->data=$sessiondata; } else { $this->Session->delete('sessiondata');}    */
-            
-		  if (!$this->request->data) {
-			$this->Session->setFlash(__d('transactions', 'Cart is empty.'));
-		  }
-           
-		 
-          // set the variables to display in the cart
-		  $this->set(compact('options'));
+     
+            return $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'mergeCarts'));
 		  
+		} else {
+            // get their cart and process it
+            $this->request->data = $this->Transaction->processCart($userId);
+            if (empty($this->request->data['TransactionItem'])) {
+                $this->render('cart_empty');
+            }
+            // set the variables to display in the cart
+            $this->set(compact('options'));
+
 		}
 	}
 
-	/**
-	 * add method
-	 *
-	 * @return void
-	 */
+/**
+ * add method
+ *
+ * @return void
+ */
 	public function add() {
         
 		if ($this->request->is('post')) {
@@ -183,11 +179,11 @@ class TransactionsController extends TransactionsAppController {
 	}
 
 
-	/**
-	 * 
-	 * @param string $id
-	 * @throws NotFoundException
-	 */
+/**
+ * 
+ * @param string $id
+ * @throws NotFoundException
+ */
 	public function edit($id = null) {
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
@@ -212,12 +208,12 @@ class TransactionsController extends TransactionsAppController {
 	}
 
 
-	/**
-	 * 
-	 * @param string $id
-	 * @throws MethodNotAllowedException
-	 * @throws NotFoundException
-	 */
+/**
+ * 
+ * @param string $id
+ * @throws MethodNotAllowedException
+ * @throws NotFoundException
+ */
 	public function delete($id = null) {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
@@ -235,9 +231,9 @@ class TransactionsController extends TransactionsAppController {
 	}
 	
 	
-	/**
-	 * 
-	 */
+/**
+ * 
+ */
 	public function mergeCarts() {
 	  // find their carts.
 	  // there should only be 2
@@ -271,7 +267,7 @@ class TransactionsController extends TransactionsAppController {
 			  break;
 		  }
 
-		  $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action' => 'myCart'));
+		  $this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action' => 'cart'));
 		  
 		}
 	  }

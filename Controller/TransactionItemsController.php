@@ -43,6 +43,7 @@ class TransactionItemsController extends TransactionsAppController {
 		$this->set('transactionItem', $this->TransactionItem->read(null, $id));
 	}
 
+
 /**
  * add method
  *
@@ -86,14 +87,16 @@ class TransactionItemsController extends TransactionsAppController {
             /** end the @todo **/
 			
 
-			// It puts the item in the cart.
-			if ($this->TransactionItem->save($this->request->data)) {
-				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
-				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'myCart'));
-			} else {
-			  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
-			  $this->redirect($this->referer());
-			}
+
+				// It puts the item in the cart.
+				if ($this->TransactionItem->save($this->request->data)) {
+					$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
+					$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart'));
+				} else {
+				  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
+				  $this->redirect($this->referer());
+				}
+
                 
 
 		} else {
@@ -102,11 +105,11 @@ class TransactionItemsController extends TransactionsAppController {
 	}
 
 
-	/**
-	 * 
-	 * @param string $id
-	 * @throws NotFoundException
-	 */
+/**
+ * 
+ * @param string $id
+ * @throws NotFoundException
+ */
 	public function edit($id = null) {
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
@@ -135,25 +138,22 @@ class TransactionItemsController extends TransactionsAppController {
 	}
 
 
-	/**
-	 * 
-	 * @param string $id
-	 * @throws MethodNotAllowedException
-	 * @throws NotFoundException
-	 */
+/**
+ * 
+ * @param string $id
+ * @throws MethodNotAllowedException
+ * @throws NotFoundException
+ */
 	public function delete($id = null) {
-		if (!$this->request->is('post')) {
-			throw new MethodNotAllowedException();
-		}
 		$this->TransactionItem->id = $id;
 		if (!$this->TransactionItem->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
 		}
 		if ($this->TransactionItem->delete()) {
-			$this->Session->setFlash(__d('transactions', 'Transaction item deleted'));
-			$this->redirect(array('action' => 'index'));
+			$this->Session->setFlash(__d('transactions', 'Removed'));
+			$this->redirect(array('controller' => 'transactions', 'action' => 'cart'));
 		}
-		$this->Session->setFlash(__d('transactions', 'Transaction item was not deleted'));
-		$this->redirect(array('action' => 'index'));
+		$this->Session->setFlash(__d('transactions', 'Item could not be removed'));
+		$this->redirect(array('controller' => 'transactions', 'action' => 'cart'));
 	}
 }

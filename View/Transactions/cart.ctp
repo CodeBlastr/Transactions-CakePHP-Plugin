@@ -124,9 +124,10 @@
 			<legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
 
 			<?php
-				foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
-				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
-			?>
+
+			//debug($this->request->data['TransactionItem']);
+			foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
+				echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id'])); ?>
 				<div class="transactionItemInCart" id="TransactionItem<?php echo $i ?>">
 					<?php      
 					echo $this->element('Transactions/cart_item', array(

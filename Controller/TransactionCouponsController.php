@@ -99,10 +99,11 @@ class TransactionCouponsController extends TransactionsAppController {
 	}
 	
 	
+
 	public function verify() { 
-       
-		// currently used at transactions/transactions/myCart only
-       	$this->request->data = $this->TransactionCoupon->verify($this->request->data);
+        
+  		// currently used at transactions/transactions/cart only
+		$this->request->data = $this->TransactionCoupon->verify($this->request->data);
 		$this->set('data', $this->request->data);
     }
 	
