@@ -26,6 +26,13 @@ class Transaction extends TransactionsAppModel {
 			'fields' => '',
 			'order' => ''
 		),
+    	'TransactionTax' => array(
+			'className' => 'Transactions.TransactionTax',
+			'foreignKey' => 'tax_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
 		'Customer' => array(
 			'className' => 'Users.User',
 			'foreignKey' => 'customer_id',

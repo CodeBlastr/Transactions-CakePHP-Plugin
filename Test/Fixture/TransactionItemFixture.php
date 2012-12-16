@@ -5,46 +5,17 @@
  */
 class TransactionItemFixture extends CakeTestFixture {
     
-        public $name = 'TransactionItem';    
+    public $name = 'TransactionItem';    
+
 
 /**
- * Fields
+ * Import
  *
  * @var array
  */
-	public $fields = array(
-		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary', 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'name' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 512, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'transaction_payment_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'transaction_shipment_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'transaction_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'quantity' => array('type' => 'float', 'null' => false, 'default' => '1'),
-		'price' => array('type' => 'float', 'null' => false, 'default' => '0'),
-		'weight' => array('type' => 'float', 'null' => true, 'default' => NULL),
-		'height' => array('type' => 'float', 'null' => true, 'default' => NULL),
-		'width' => array('type' => 'float', 'null' => true, 'default' => NULL),
-		'length' => array('type' => 'float', 'null' => true, 'default' => NULL),
-		'status' => array('type' => 'string', 'null' => true, 'default' => 'incart', 'length' => 100, 'collate' => 'utf8_general_ci', 'comment' => '\'\',\'pending\',\'sent\',\'successful\',\'paid\',\'frozen\',\'cancelled\',\'incart\',\'requestReturn\',\'return\'', 'charset' => 'utf8'),
-		'tracking_no' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 100, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'location' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 50, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'deadline' => array('type' => 'date', 'null' => true, 'default' => NULL),
-		'arb_settings' => array('type' => 'text', 'null' => true, 'default' => NULL, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'payment_type' => array('type' => 'string', 'null' => true, 'default' => NULL, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'featured' => array('type' => 'boolean', 'null' => false, 'default' => NULL),
-		'foreign_key' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'model' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 50, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'is_virtual' => array('type' => 'boolean', 'null' => true, 'default' => NULL),
-		'hours_expire' => array('type' => 'integer', 'null' => true, 'default' => NULL, 'comment' => 'Used to denote how long a catalog item should be available after purchase.'),
-		'customer_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'contact_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'assignee_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'creator_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'modifier_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
-		'created' => array('type' => 'datetime', 'null' => false, 'default' => NULL),
-		'modified' => array('type' => 'datetime', 'null' => false, 'default' => NULL),
-		'indexes' => array('PRIMARY' => array('column' => 'id', 'unique' => 1)),
-		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_general_ci', 'engine' => 'MyISAM')
-	);
+    public $import = array('config' => 'Transactions.TransactionItem');
+    
+    
 
 /**
  * Records
@@ -56,8 +27,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000001',
 			'name' => 'Test Item #1',
-			'transaction_payment_id' => '',
-			'transaction_shipment_id' => '',
 			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000002',
 			'quantity' => 1,
 			'price' => 2,
@@ -77,7 +46,6 @@ class TransactionItemFixture extends CakeTestFixture {
 			'is_virtual' => 1,
 			'hours_expire' => 1,
 			'customer_id' => '5738299d-9040-43c9-85b1-22d400000001',
-			'contact_id' => '',
 			'assignee_id' => '',
 			'creator_id' => '',
 			'modifier_id' => '',
@@ -87,8 +55,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000002',
 			'name' => 'Test Item #2',
-			'transaction_payment_id' => '',
-			'transaction_shipment_id' => '',
 			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000002',
 			'quantity' => 2,
 			'price' => 2,
@@ -108,7 +74,6 @@ class TransactionItemFixture extends CakeTestFixture {
 			'is_virtual' => 1,
 			'hours_expire' => 1,
 			'customer_id' => '5738299d-9040-43c9-85b1-22d400000001',
-			'contact_id' => '',
 			'assignee_id' => '',
 			'creator_id' => '',
 			'modifier_id' => '',
@@ -119,8 +84,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000003',
 			'name' => 'Test Item #3',
-			'transaction_payment_id' => '',
-			'transaction_shipment_id' => '',
 			'transaction_id' => '5077241d-9040-43c9-85b1-22d40000001',
 			'quantity' => 1,
 			'price' => 1,
@@ -140,7 +103,6 @@ class TransactionItemFixture extends CakeTestFixture {
 			'is_virtual' => 1,
 			'hours_expire' => 1,
 			'customer_id' => '1',
-			'contact_id' => '',
 			'assignee_id' => '',
 			'creator_id' => '',
 			'modifier_id' => '',
@@ -151,8 +113,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000004',
 			'name' => 'ARB Test Item #3',
-			'transaction_payment_id' => '',
-			'transaction_shipment_id' => '',
 			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000003',
 			'quantity' => 1,
 			'price' => 4,
@@ -172,7 +132,6 @@ class TransactionItemFixture extends CakeTestFixture {
 			'is_virtual' => 1,
 			'hours_expire' => 1,
 			'customer_id' => '5738299d-9040-43c9-85b1-22d400000002',
-			'contact_id' => '',
 			'assignee_id' => '',
 			'creator_id' => '',
 			'modifier_id' => '',
@@ -183,8 +142,6 @@ class TransactionItemFixture extends CakeTestFixture {
 		array(
 			'id' => '50773d75-cab4-40dd-b34c-187800000005',
 			'name' => 'ARB Test Item #4',
-			'transaction_payment_id' => '',
-			'transaction_shipment_id' => '',
 			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000004',
 			'quantity' => 1,
 			'price' => 6,
@@ -204,7 +161,6 @@ class TransactionItemFixture extends CakeTestFixture {
 			'is_virtual' => 1,
 			'hours_expire' => 1,
 			'customer_id' => '1',
-			'contact_id' => '',
 			'assignee_id' => '',
 			'creator_id' => '',
 			'modifier_id' => '',
