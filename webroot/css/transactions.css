@@ -1,22 +1,18 @@
 /* Transactions Plugin stuff 
  * the checkout page is two column by default */
-#transactionCartLeft {
-	float: left;
-	width: 48%;
-}
-#transactionCartRight {
-	float: right;
-	width: 48%;
-}
 
 .myCart fieldset {margin: 15px 0; background: rgba(255, 255, 255, 0.1); padding: 5px;}
 .myCart legend {font-weight: bold; font-size: 120%; font-variant: small-caps; letter-spacing: 1px;}
 
 .transactionItemInCart {
-  clear:both; margin: 15px 20px;
+    clear:both; 
 }
 .transactionItemInCart .gallery-thumb {
   display: inline-block;  margin-right: 10px;
+}
+td.total {
+    text-align: right;
+    font-weight: bold;
 }
 
 input:-moz-placeholder, textarea:-moz-placeholder {
@@ -56,10 +52,18 @@ input:-moz-placeholder, textarea:-moz-placeholder {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(228, 129, 52, 0.6);
     outline: 0 none;
 }
-#orderTransactionItems {background: rgba(255, 255, 255, 0.1); padding: 5px;}
-#shippingAddress {display: none;}
-
-.TransactionItemCartPrice { display: inline-block; float: right; font-weight: bold; padding: 22px 0; }
+#orderTransactionItems {
+    background: rgba(255, 255, 255, 0.1); 
+    padding: 5px;
+}
+#shippingAddress {
+    display: none;
+}
+.TransactionItemCartPrice { 
+    display: inline-block; 
+    float: right; 
+    font-weight: bold; 
+}
 .priceOfOne { display: none; }
 
 .helpBox { cursor: help; }

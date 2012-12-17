@@ -5,66 +5,73 @@
  */
 class PaymentsComponent extends Object {
 
-	var $paysettings = array();
-	var $response = array();
-	var $paymentComponent = null;
-	var $Controller = null;
-	var $recurring = false;
+	public $paysettings = array();
+	public $response = array();
+	public $paymentComponent = null;
+	public $Controller = null;
+	public $recurring = false;
 
-	function initialize() {
+	public function initialize() {
 		
 	}
 
-	function beforeRender() {
+	public function beforeRender() {
 		
 	}
 
-	function beforeRedirect() {
+	public function beforeRedirect() {
 		
 	}
 
-	function shutdown() {
+	public function shutdown() {
 		
 	}
 
-	// class variables go here 
-	function startup(&$controller) {
-		$this->Controller = $controller;
-		// This method takes a reference to the controller which is loading it. 
-		// Perform controller initialization here. 
+
+	public function startup(Controller $controller) {
+    	$this->Controller = $controller;
+        if (!defined('__TRANSACTIONS_DEFAULT_PAYMENT')) {
+            $this->Controller->Session->setFlash(__('Payment configuration required.'));
+            $this->Controller->redirect(array('plugin' => false, 'controller' => 'settings', 'action' => 'index'));
+        }
 	}
 
-	// set recurring value default is false
-	function recurring($val = false) {
+/**
+ * set recurring value default is false
+ */
+	public function recurring($val = false) {
 		$this->recurring = $val;
 	}
 
-	function loadComponent($components = array()) {
-
-		foreach ((array) $components as $component => $config) {
-			if (is_int($component)) {
-				$component = $config;
-				$config = null;
-			}
-			list($plugin, $componentName) = pluginSplit($component);
-			if (isset($this->Controller->{$componentName})) {
-				continue;
-			}
-
-			$component = 'Transactions.' . $component;
-
-			App::import('Component', $component);
-			$componentFullName = $componentName . 'Component';
-			$component = new $componentFullName(new ComponentCollection(), $config);
-
-			if (method_exists($component, 'initialize')) {
-				$component->initialize($this->Controller);
-			}
-			if (method_exists($component, 'startup')) {
-				$component->startup($this->Controller);
-			}
-			$this->paymentComponent = $component;
-		}
+	public function loadComponent($components = array()) {
+        if (!empty($components)) {
+    		foreach ((array) $components as $component => $config) {
+    			if (is_int($component)) {
+    				$component = $config;
+    				$config = null;
+    			}
+    			list($plugin, $componentName) = pluginSplit($component);
+    			if (isset($this->Controller->{$componentName})) {
+    				continue;
+    			}
+    
+    			$component = 'Transactions.' . $component;
+    
+    			App::import('Component', $component);
+    			$componentFullName = $componentName . 'Component';
+    			$component = new $componentFullName(new ComponentCollection(), $config);
+    
+    			if (method_exists($component, 'initialize')) {
+    				$component->initialize($this->Controller);
+    			}
+    			if (method_exists($component, 'startup')) {
+    				$component->startup($this->Controller);
+    			}
+    			$this->paymentComponent = $component;
+    		}
+        } else {
+            throw new NotFoundException('Site payment settings have not been configured.');
+        }
 	}
 
 /**
@@ -79,9 +86,6 @@ class PaymentsComponent extends Object {
  */
 	function Pay($data = null) {
 		try {
-            //echo "<pre>";    
-           // print_r($data);
-            //exit();
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
 			$paymentProcessor = $paymentProcessor[0]; 
@@ -89,30 +93,22 @@ class PaymentsComponent extends Object {
 			$this->loadComponent($paymentProcessor);
 			if ($this->recurring) {
 				$this->paymentComponent->recurring(true);
-				
 				return $this->paymentComponent->Pay($data);
-				
-			} else {
-				
-				return $this->paymentComponent->Pay($data);
-				
+			} else {	
+				return $this->paymentComponent->Pay($data);	
 			}
-
 			//return $this->paymentComponent->response;
-
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
 	}
 
-/*
+/**
  * function changeSubscription() use to change the recurring profile status
  * profileId: id of recurrence, can be profile id of payer
  * action: suspended or cancelled
  */
-
 	function ManageRecurringPaymentsProfileStatus($data = null) {
-
 		$this->loadComponent(ucfirst(strtolower($data['Mode'])));
 		$this->paymentComponent->ManageRecurringPaymentsProfileStatus($data['profileId'], $data['action']);
 

@@ -88,6 +88,7 @@ class Transaction extends TransactionsAppModel {
 /**
  * The checkout page has options.
  * This function's job is to get those options.
+ * 
  * @return array
  */
 	public function gatherCheckoutOptions() {     
@@ -121,21 +122,21 @@ class Transaction extends TransactionsAppModel {
  * @return string The UUID of the User
  */
 	public function getCustomersId() {
-	  $authUserId = CakeSession::read('Auth.User.id');
-	  $transactionGuestId = CakeSession::read('Transaction._guestId');
-	  if ($authUserId) {
-		$userId = $authUserId;
-	  } elseif($transactionGuestId) {
-		$userId = $transactionGuestId;
-	  } else {
-		$userId = String::uuid();
-		CakeSession::write('Transaction._guestId', $userId);
-	  }
-
-	  // Assign their Guest Cart to their Logged in self, if neccessary
-	  $this->reassignGuestCart($transactionGuestId, $authUserId);
-	  
-	  return $userId;
+        $authUserId = CakeSession::read('Auth.User.id');
+        $transactionGuestId = CakeSession::read('Transaction._guestId');
+        if ($authUserId) {
+            $userId = $authUserId;
+        } elseif($transactionGuestId) {
+            $userId = $transactionGuestId;
+        } else {
+            $userId = String::uuid();
+            CakeSession::write('Transaction._guestId', $userId);
+        }
+        
+        // Assign their Guest Cart to their Logged in self, if neccessary
+        $this->reassignGuestCart($transactionGuestId, $authUserId);
+        
+        return $userId;
 	}
 
 	
@@ -167,7 +168,6 @@ class Transaction extends TransactionsAppModel {
  * @return array
  */
 	public function calculateSubtotalAndShipping($data) {
-	
 	    $subTotal = 0;
 	    $shippingCharge = 0;
 		
@@ -200,32 +200,29 @@ class Transaction extends TransactionsAppModel {
  * @return boolean|array
  */
 	public function processCart($userId) {
-	    
 		$options = $this->gatherCheckoutOptions();
 		
-	    $theCart = $this->find('first', array(
-		  'conditions' => array(
-			  'Transaction.customer_id' => $userId,
-			  'Transaction.status' => 'open'
-			  ),
-		  'contain' => array(
-			  'TransactionItem',
-			  'TransactionAddress',
-			  'Customer' => array(
-				  'Connection' => array(
-					'conditions' => array('Connection.type' => $options['paymentMode'])  
-					)
-				  )
-			  )
-		));
+	    $cart = $this->find('first', array(
+		    'conditions' => array(
+			    'Transaction.customer_id' => $userId,
+			    'Transaction.status' => 'open'
+			    ),
+		    'contain' => array(
+			    'TransactionItem',
+			    'TransactionAddress',
+			    'Customer' => array(
+				    'Connection' => array(
+					    'conditions' => array('Connection.type' => $options['paymentMode'])  
+					    )
+				     )
+			    )
+		    ));
 
-	    if(!$theCart) {
-		  return FALSE;
-	    }
-	    
-	    $theCart = $this->calculateSubtotalAndShipping($theCart);
-
-	    return $theCart;
+	    if (empty($cart)) {
+            return false;
+        }
+        
+	    return $this->calculateSubtotalAndShipping($cart);
 	}
 	
 	
@@ -239,10 +236,6 @@ class Transaction extends TransactionsAppModel {
 	public function finalizeTransactionData($submittedTransaction) {
 		$userId = $this->getCustomersId();
 		$options = $this->gatherCheckoutOptions();
-       //debug($userId);  
-       //debug($options); 
-       //debug($submittedTransaction); 
-      
          
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
@@ -259,18 +252,11 @@ class Transaction extends TransactionsAppModel {
 					)
 				  )
 			  )
-		));
-        
-       //debug($currentTransaction);
-       // break;  
+		)); 
 
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
-		
-//debug($currentTransaction);
-//debug($submittedTransaction);
-//break;
 
 		// update quantities
 		$allHaveZeroQty = true;
@@ -315,30 +301,27 @@ class Transaction extends TransactionsAppModel {
  * @return array Same array with neccessary and completed fields
  */
 	public function finalizeUserData($transaction) {
-
-	  // ensure their 'Customer' data has values when they are not logged in
-	  if(empty($transaction['Customer']['id']) || !isset($transaction['Customer'])) {
-		//$transaction['Customer']['id'] = $transaction['Transaction']['customer_id'];
-		$transaction['Customer']['first_name'] = $transaction['TransactionAddress'][0]['first_name'];
-		$transaction['Customer']['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
-		$transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
-		$transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
-		//$transaction['Customer']['phone'] = $transaction['TransactionAddress'][0]['phone']; // required
-		//debug($transaction);
-		// generate a temporary password: ANNNN
-		$transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
-		
-		// set their User Role Id
-		$transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
-	  }
-
-	  // copy Payment data to Shipment data if neccessary
-	  if($transaction['TransactionAddress'][0]['shipping'] == '0') {
-		  $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
-		  $transaction['TransactionAddress'][1]['type'] = 'shipping';
-	  }
-
-	  return $transaction;
+        // ensure their 'Customer' data has values when they are not logged in
+        if(empty($transaction['Customer']['id']) || !isset($transaction['Customer'])) {
+            $transaction['Customer']['first_name'] = $transaction['TransactionAddress'][0]['first_name'];
+            $transaction['Customer']['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
+            $transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
+            $transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
+            
+            // generate a temporary password: ANNNN
+            $transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
+            
+            // set their User Role Id
+            $transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
+        }
+        
+        // copy Payment data to Shipment data if neccessary
+        if($transaction['TransactionAddress'][0]['shipping'] == '0') {
+            $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
+            $transaction['TransactionAddress'][1]['type'] = 'shipping';
+        }
+        
+        return $transaction;
 	}
 
 	
@@ -348,24 +331,23 @@ class Transaction extends TransactionsAppModel {
  * @return array A single Transaction
  */
 	public function combineTransactions($transactions) {
+	    foreach($transactions as $transaction) {
+            foreach($transaction['TransactionItem'] as $transactionItem) {
+                if( ! isset($finalTransactionItems[$transactionItem['foreign_key']]) ) {
+                    $finalTransactionItems[$transactionItem['foreign_key']] = $transactionItem;
+                } else {
+                    $finalTransactionItems[$transactionItem['foreign_key']]['quantity'] += $transactionItem['quantity'];
+                }
+            }
+	    }
 
-	  foreach($transactions as $transaction) {
-		foreach($transaction['TransactionItem'] as $transactionItem) {
-		  if( ! isset($finalTransactionItems[$transactionItem['foreign_key']]) ) {
-			$finalTransactionItems[$transactionItem['foreign_key']] = $transactionItem;
-		  } else {
-			$finalTransactionItems[$transactionItem['foreign_key']]['quantity'] += $transactionItem['quantity'];
-		  }
-		}
-	  }
-
-	  // reset the keys back to 0,1,2,3..
-	  $finalTransaction['TransactionItem'] = array_values($finalTransactionItems);
-
-	  // reuse the Transaction data from the 1st Transaction (ideally, the newest Transaction)
-	  $finalTransaction['Transaction'] = $transactions[0]['Transaction'];
-
-	  return $finalTransaction;
+        // reset the keys back to 0,1,2,3..
+        $finalTransaction['TransactionItem'] = array_values($finalTransactionItems);
+        
+        // reuse the Transaction data from the 1st Transaction (ideally, the newest Transaction)
+        $finalTransaction['Transaction'] = $transactions[0]['Transaction'];
+        
+        return $finalTransaction;
 	}
 	
 	
