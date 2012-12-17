@@ -108,7 +108,8 @@ class Transaction extends TransactionsAppModel {
 		}
 
 	    $options['defaultShippingCharge'] = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : false;
-	    
+	    $options['countries'] = $this->TransactionTax->countries(array('type' => 'enabled'));
+	    $options['states'] = $this->TransactionTax->states(array('type' => 'enabled'));
 	    return $options;
 	}
 	

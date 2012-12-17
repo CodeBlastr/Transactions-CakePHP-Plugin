@@ -193,7 +193,13 @@ public $name = 'TransactionTax';
         break;
 	}
     
-    public function countries($filter = false) {
+/**
+ * Countries
+ * 
+ * @param array $options  ['type' => 'filtered' || 'enabled']
+ * @return array
+ */
+    public function countries($options = array()) {
         
         $countries =  array(
             'ZZ' => 'Everywhere Else',
@@ -441,18 +447,25 @@ public $name = 'TransactionTax';
             'ZM' => 'Zambia',
             'ZW' => 'Zimbabwe',
             );
-        if ($filter) {
+        if (!empty($options['type']) && $options['type'] == 'filtered') {
             $countries = array_diff_key($countries, $this->find('list', array('conditions' => array('TransactionTax.parent_id' => null), 'fields' => array('TransactionTax.code', 'TransactionTax.name'))));
         }
+        
+        if (!empty($options['type']) && $options['type'] == 'enabled') {
+            $countries = $this->find('list', array('fields' => array('TransactionTax.code', 'TransactionTax.name'), 'conditions' => array('TransactionTax.parent_id' => null)));
+        }
+        
         return $countries;
     }
     
 /**
  * States
  *
+ * @param array $options  ['type' => 'enabled']
+ * @return array
  */
-	public function states() {
-		return array(
+	public function states($options = array()) {
+		$states = array(
 			'US-AL' => 'Alabama',
 			'US-AK' => 'Alaska',
 			'US-AZ' => 'Arizona',
@@ -510,6 +523,12 @@ public $name = 'TransactionTax';
 			'US-WI' => 'Wisconsin',
 			'US-WY' => 'Wyoming',
 			);
+        
+        if (!empty($options['type']) && $options['type'] == 'enabled') {
+            $states = $this->find('list', array('fields' => array('TransactionTax.code', 'TransactionTax.name', 'TransactionTax.parent_id'), 'conditions' => array('TransactionTax.parent_id NOT' => null)));
+        }
+        
+        return $states;
 	}
     
 /**

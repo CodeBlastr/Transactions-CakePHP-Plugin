@@ -41,10 +41,10 @@
     				<?php
         			echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required'))));
     				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required email'));
-                    echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required'));
+                    echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['countries']));
     				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required'));
     				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2', 'class' => 'required'));
-    				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => states())) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength' => '10')) ));
+    				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength' => '10')) ));
     				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'maxlength'=>'10'));
     				echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.')) : null;
     				echo $options['displayShipping'] ? $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing')) : null; ?>
@@ -54,12 +54,10 @@
     				<legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
     				<div id="shipping_error"></div>
     				<?php
+    				echo $this->Form->input('TransactionAddress.1.country', array('label' => 'Country ', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['countries']));
     				echo $this->Form->input('TransactionAddress.1.street_address_1', array('label' => 'Street', 'size' => '49'));
     				echo $this->Form->input('TransactionAddress.1.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-    				echo $this->Form->input('TransactionAddress.1.city', array('label' => 'City'));
-    				echo $this->Form->input('TransactionAddress.1.state', array('label' => 'State ', 'empty' => '-- Select --', 'options' => states()));
-    				echo $this->Form->input('TransactionAddress.1.zip', array('label' => 'Zip', 'maxlength'=>'10'));
-    				echo $this->Form->input('TransactionAddress.1.country', array('label' => 'Country '));
+    				echo $this->Form->input('TransactionAddress.1.city', array('label' => 'City ', 'after' => $this->Form->input('TransactionAddress.1.state', array('label' => 'State ', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.1.zip', array('label' => 'Zip ', 'maxlength' => '10')) ));
     				echo $this->Form->hidden('TransactionAddress.1.type', array('value' => 'shipping')); ?>
 			    </fieldset>
 		    </div>
@@ -78,7 +76,7 @@
 			    <?php
 			    foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				    echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
-				    echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $this->element('Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i), array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))));
+				    echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $this->Element('Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i), array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))));
 			    } ?>
 		    </fieldset>
 
@@ -87,18 +85,25 @@
 			    <?php
             	echo $this->Form->hidden('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']))); 
 			    $orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['order_charge']);
-			    $pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); ?>
-			    <div class="promoCode"><small><a id="enterPromo" href="#"><?php echo __d('transactions', 'Have a Promo Code?') ?></a></small></div>
-    		    <?php echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => '<a id="applyCode" href="#" class="btn">Apply Code</a>')); ?>
-                <table class="table-hover"><tbody><tr>
-                <td class="subTotal"><?php echo __d('transactions', 'Subtotal') ?> <td id="TransactionSubtotal" class="total">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></td>
-			    </tr><tr>
-                <td class="shippingTotal"><?php echo __('Shipping') ?>  </td><td id="TransactionShipping" class="total">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></td>
-			    </tr><tr>
-                <td class="discountTotal"><?php echo __('Discount') ?>: <span id="TransactionDiscount" class="total"><span class="floatPrice"></span></span></div>
-			    </tr><tr>
-			    <td class="transactionTotal" style="margin: 10px 0; font-weight: bold;">Total </td><td id="TransactionTotal" class="total">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></td>
-			    </tbody></tr></table>
+			    $pricifiedOrderTotal = number_format($orderTotal, 2, null, '');
+			    echo $this->Html->link(__('<small>Have a Promo Code?</small>'), '#', array('id' => 'promoCode', 'escape' => false));
+                echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => '<a id="applyCode" href="#" class="btn">Apply Code</a>')); ?>
+                <table class="table-hover">
+                    <tbody>
+                        <tr>
+                            <td class="subTotal"><?php echo __d('transactions', 'Subtotal') ?> <td id="TransactionSubtotal" class="total">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></td>
+                        </tr>
+                        <tr>
+                            <td class="shippingTotal"><?php echo __('Shipping') ?>  </td><td id="TransactionShipping" class="total">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></td>
+                        </tr>
+                        <tr>
+                            <td class="discountTotal"><?php echo __('Discount') ?>: <span id="TransactionDiscount" class="total"><span class="floatPrice"></span></span></div>
+                        </tr>
+                        <tr>
+                            <td class="transactionTotal" style="margin: 10px 0; font-weight: bold;">Total </td><td id="TransactionTotal" class="total">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></td>
+                        </tr>
+                    </tbody>
+                </table>
                 <?php
                 echo $this->Form->hidden('Transaction.hiddentotal', array('label'=>'Total', 'readonly' => true, 'value' => $pricifiedOrderTotal));
 			    echo $this->Form->end(__('Checkout'));	?>
