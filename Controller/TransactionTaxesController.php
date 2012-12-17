@@ -20,6 +20,13 @@ class TransactionTaxesController extends TransactionsAppController {
  * @var string $uses
  */
 	public $uses = 'Transactions.TransactionTax';
+    
+/**
+ * Allowed actions
+ * 
+ * @var string $uses
+ */
+	public $allowedActions = array('calculate');
 	
 /**
  * index method
@@ -67,7 +74,7 @@ class TransactionTaxesController extends TransactionsAppController {
 				$this->Session->setFlash(__('The Tax could not be saved. Please, try again.'));
 			}
 		}
-    	$this->set('codes', $this->TransactionTax->countries(true));
+    	$this->set('codes', $this->TransactionTax->countries(array('type' => 'filtered')));
         $this->set('title_for_layout', __('Add Region & Tax'));
         $this->set('page_title_for_layout', __('Add Region & Tax'));
 	}
@@ -129,5 +136,15 @@ class TransactionTaxesController extends TransactionsAppController {
 		$this->Session->setFlash(__('Tax was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
+    
+/**
+ * Calculate method
+ * 
+ */
+    public function rate() {
+        //if ($this->request->is('post') || $this->request->is('put')) {
+            $this->set('transactionTax', $this->TransactionTax->applyTax($this->request->data));
+        //}
+    }
 	
 }

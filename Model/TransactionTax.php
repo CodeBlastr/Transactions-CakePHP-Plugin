@@ -187,10 +187,32 @@ public $name = 'TransactionTax';
         return $data;
     }
 
-
-	protected function _applyTax($data) {
-        $debug($data);
-        break;
+/**
+ * Apply tax
+ * 
+ * @param array $data
+ * @return array
+ * @todo add math for more tax types - We only support state tax at the moment
+ */
+	public function applyTax($data) {
+        $data['Transaction']['tax_charge'] = 0;
+        $data['Transaction']['sub_total'] = !empty($data['Transaction']['sub_total']) ? $data['Transaction']['sub_total'] : 0;
+        
+        if (!empty($data['TransactionAddress'][0])) {
+            $addresses = Set::combine($data['TransactionAddress'], '{n}.country', '{n}.state', '{n}.type');
+            $country = key($addresses['billing']);
+            $state = $addresses['billing'][$country];
+            $this->bindModel(array('hasOne' => array('Child' => array('className' => 'Transactions.TransactionTax', 'foreignKey' => 'parent_id', 'conditions' => array('Child.code' => $state)))));
+            $tax = $this->find('first', array('conditions' => array('TransactionTax.code' => $country), 'contain' => array('Child')));
+            
+            if ($tax['Child']['rate']) {
+                $rate = !empty($tax['Child']['rate']) ? $tax['Child']['rate'] / 100 : 0;
+                $data['Transaction']['tax_rate'] = $rate;
+                $data['Transaction']['tax_charge'] = round($data['Transaction']['sub_total'] * $rate, 2);
+            }
+        }
+        
+        return $data;
 	}
     
 /**
@@ -525,7 +547,7 @@ public $name = 'TransactionTax';
 			);
         
         if (!empty($options['type']) && $options['type'] == 'enabled') {
-            $states = $this->find('list', array('fields' => array('TransactionTax.code', 'TransactionTax.name', 'TransactionTax.parent_id'), 'conditions' => array('TransactionTax.parent_id NOT' => null)));
+            $states = Set::combine($this->find('all', array('fields' => array('TransactionTax.code', 'TransactionTax.name', 'TransactionTax.parent_id', 'Parent.id', 'Parent.code'), 'conditions' => array('TransactionTax.parent_id NOT' => null), 'contain' => 'Parent')), '{n}.TransactionTax.code', '{n}.TransactionTax.name', '{n}.Parent.code');
         }
         
         return $states;

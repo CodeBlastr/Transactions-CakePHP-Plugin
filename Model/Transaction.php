@@ -138,55 +138,36 @@ class Transaction extends TransactionsAppModel {
         $this->reassignGuestCart($transactionGuestId, $authUserId);
         
         return $userId;
-	}
-
-	
-//	/** MOVED TO TransactionsAppModel
-//	
-//	 * This function is meant to transfer a cart when a guest shopper logs in.
-//	 * After doing so, it deletes their Transaction._guestId session.
-//	 * 
-//	 * @param mixed $fromId
-//	 * @param mixed $toId
-//	 * @return boolean
-//	 * @throws Exception 
-//	 */
-//	public function reassignGuestCart($fromId, $toId) {
-//	  if($fromId && $toId) {
-//		if ($this->updateAll(array('customer_id' => $toId), array('customer_id' => $fromId))) {
-//		  return true;
-//		} else {
-//		  throw new Exception(__d('transactions', 'Guest cart merge failed'));
-//		}
-//	  }
-//	}
-	
+	}	
 
 /**
- * figure out the subTotal and shippingCharge
+ * Calculate
  * 
  * @param array $data
  * @return array
  */
-	public function calculateSubtotalAndShipping($data) {
+	public function calculateTotal($data) {
+        // defaults
+        $data = $this->TransactionTax->applyTax($data);        
 	    $subTotal = 0;
 	    $shippingCharge = 0;
-		
+        
+        // recalculate subtotal
 	    foreach($data['TransactionItem'] as $txnItem) {
-		  $subTotal += $txnItem['price'] * $txnItem['quantity'];
-		  //$shippingCharge += $txnItem['shipping_charge'];
+            $subTotal += $txnItem['price'] * $txnItem['quantity'];
 	    }
-	    
-	    $data['Transaction']['order_charge'] = number_format($subTotal, 2, '.', false);
-	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
-		$data['Transaction']['total'] = number_format($subTotal + $shippingCharge, 2, '.', false);
-		
+        
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
+        // GET THIS OUT OF HERE!!!!
 		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
 		if($defaultShippingCharge !== FALSE) {
-			$data['Transaction']['shipping_charge'] = number_format($defaultShippingCharge, 2, '.', false);
+			$shippingCharge = number_format($defaultShippingCharge, 2, '.', false);
 		}
-		
+	    $data['Transaction']['sub_total'] = number_format($subTotal, 2, '.', false);
+	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
+	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
+		$data['Transaction']['total'] = number_format($subTotal + $data['Transaction']['tax_charge'] + $shippingCharge, 2, '.', false);
+        
 		return $data;
 		
 	}
@@ -200,10 +181,10 @@ class Transaction extends TransactionsAppModel {
  * @param string $userId
  * @return boolean|array
  */
-	public function processCart($userId) {
+	public function processCart($userId, $data = array()) {
 		$options = $this->gatherCheckoutOptions();
 		
-	    $cart = $this->find('first', array(
+	    $cart = Set::merge($this->find('first', array(
 		    'conditions' => array(
 			    'Transaction.customer_id' => $userId,
 			    'Transaction.status' => 'open'
@@ -217,13 +198,12 @@ class Transaction extends TransactionsAppModel {
 					    )
 				     )
 			    )
-		    ));
+		    )), $data);
 
 	    if (empty($cart)) {
             return false;
         }
-        
-	    return $this->calculateSubtotalAndShipping($cart);
+	    return $this->calculateTotal($cart);
 	}
 	
 	
@@ -244,16 +224,16 @@ class Transaction extends TransactionsAppModel {
 				'Transaction.customer_id' => $userId,
 				'Transaction.status' => 'open'
 				),
-		    'contain' => array(
-			  'TransactionItem',
-			  'TransactionAddress',
-			  'Customer' => array(
-				  'Connection' => array(
-					'conditions' => array('Connection.type' => $options['paymentMode'])  
-					)
-				  )
-			  )
-		)); 
+            'contain' => array(
+                'TransactionItem',
+                'TransactionAddress',
+                'Customer' => array(
+                    'Connection' => array(
+                        'conditions' => array('Connection.type' => $options['paymentMode'])  
+                        )
+                    )
+                )
+            )); 
 
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
@@ -261,15 +241,16 @@ class Transaction extends TransactionsAppModel {
 
 		// update quantities
 		$allHaveZeroQty = true;
+        
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
 		    if($submittedTxnItem['quantity'] > 0) {
-			  foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
-				  if($currentTxnItem['id'] == $submittedTxnItem['id']) {
-					$currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
-					$finalTxnItems[] = $currentTxnItem;
-				  }
-			  }
-			  $allHaveZeroQty = false;
+                foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
+                    if($currentTxnItem['id'] == $submittedTxnItem['id']) {
+                        $currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
+                        $finalTxnItems[] = $currentTxnItem;
+                    }
+                }
+                $allHaveZeroQty = false;
 		    }
 		}
 			
@@ -283,8 +264,11 @@ class Transaction extends TransactionsAppModel {
 		// combine the Current and Submitted Transactions
 		$officialTransaction = Set::merge($currentTransaction, $submittedTransaction);
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
+        
+        // add tax
+        $officialTransaction = $this->TransactionTax->applyTax($officialTransaction);
 		 
-		$officialTransaction = $this->calculateSubtotalAndShipping($officialTransaction);
+		$officialTransaction = $this->calculateTotal($officialTransaction);
         
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
@@ -298,7 +282,7 @@ class Transaction extends TransactionsAppModel {
  * - Ensures that the necessary data is present to create a Customer
  * - Fills out the TransactionShipment fields when shipping info is same as billing info
  * 
- * @param array $transaction Transaction data that was posted by the checkout/cart form
+ * @param array $transaction Transaction data that was posted by the cart form
  * @return array Same array with neccessary and completed fields
  */
 	public function finalizeUserData($transaction) {
@@ -398,15 +382,12 @@ class Transaction extends TransactionsAppModel {
  */
 	public function beforePayment($data) {
 		try {
-           
             $data = $this->finalizeTransactionData($data); 
-             
             
             //Check Transaction Coupon code empty or not
             if($data['TransactionCoupon']['code']!=''){
                $data = $this->TransactionCoupon->verify($data); 
             }
-            
        		$data = $this->finalizeUserData($data);
             
 			return $data;
@@ -500,8 +481,7 @@ class Transaction extends TransactionsAppModel {
             foreach ($data as $order) {
                 $data['value'] += $order['Transaction']['total'];
             }
-           // debug($data); break;
-           return ($data) ? $data : false;
+            return ($data) ? $data : false;
         }
 	
 /**

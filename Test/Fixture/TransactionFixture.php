@@ -19,6 +19,25 @@ class TransactionFixture extends CakeTestFixture {
  * @var array
  */
 	public $records = array(
+		array(
+			'id' => '5077241d-9040-43c9-85b1-22d40000000',
+			'transaction_coupon_id' => '',
+			'processor_response' => '',
+			'introduction' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',
+			'conclusion' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',
+			'status' => 'open',
+			'mode' => '',
+			'total' => 1,
+			'is_virtual' => 0,
+			'is_arb' => 0,
+			'customer_id' => '5738299d-9040-43c9-85b1-22d400000000',
+			'contact_id' => '1',
+			'assignee_id' => '1',
+			'creator_id' => '1',
+			'modifier_id' => '1',
+			'created' => '2012-10-11 19:55:09',
+			'modified' => '2012-10-11 19:55:09'
+		),
 		// transaction for User.id = 1
 		array(
 			'id' => '5077241d-9040-43c9-85b1-22d40000001',
@@ -96,6 +115,26 @@ class TransactionFixture extends CakeTestFixture {
 			'assignee_id' => '',
 			'creator_id' => '',
 			'modifier_id' => '',
+			'created' => '2012-10-11 19:55:09',
+			'modified' => '2012-10-11 19:55:09'
+		),
+		// transaction for guest Customer.id = 8723994
+		array(
+			'id' => '5043572d-9040-43c9-85b1-22d400000005',
+			'transaction_coupon_id' => '',
+			'processor_response' => '',
+			'introduction' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',
+			'conclusion' => 'Lorem ipsum dolor sit amet, aliquet feugiat. Convallis morbi fringilla gravida, phasellus feugiat dapibus velit nunc, pulvinar eget sollicitudin venenatis cum nullam, vivamus ut a sed, mollitia lectus. Nulla vestibulum massa neque ut et, id hendrerit sit, feugiat in taciti enim proin nibh, tempor dignissim, rhoncus duis vestibulum nunc mattis convallis.',
+			'status' => 'open',
+			'mode' => '',
+			'total' => 2,
+			'is_virtual' => 0,
+			'is_arb' => 0,
+			'customer_id' => '8723994',
+			'contact_id' => '1',
+			'assignee_id' => '1',
+			'creator_id' => '1',
+			'modifier_id' => '1',
 			'created' => '2012-10-11 19:55:09',
 			'modified' => '2012-10-11 19:55:09'
 		),

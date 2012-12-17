@@ -25,7 +25,7 @@
     <?php
     echo $this->Html->script('plugins/jquery.validate.min', array('inline' => false));
     echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
-    echo $this->Form->create('Transaction', array('action' => 'checkout', 'class' => 'form-responsive validate'));     
+    echo $this->Form->create('Transaction', array('class' => 'form-responsive validate'));     
     
 	if($this->request->data['Customer']['id'] == NULL) {
 	    // show a login button
@@ -43,7 +43,7 @@
     				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required email'));
                     echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['countries']));
     				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required'));
-    				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2', 'class' => 'required'));
+    				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2'));
     				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength' => '10')) ));
     				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'maxlength'=>'10'));
     				echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.')) : null;
@@ -83,21 +83,25 @@
 		    <fieldset>
 			    <legend><?php echo __d('transactions', 'Summary') ?></legend>
 			    <?php
-            	echo $this->Form->hidden('Transaction.order_charge', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']))); 
-			    $orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['order_charge']);
+            	echo $this->Form->hidden('Transaction.sub_total', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($this->request->data['Transaction']['sub_total']))); 
+            	// might not need this : echo $this->Form->hidden('Transaction.tax_charge', array('type' => 'hidden')); 
+			    $orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['tax_charge']) + floatval($this->request->data['Transaction']['sub_total']);
 			    $pricifiedOrderTotal = number_format($orderTotal, 2, null, '');
 			    echo $this->Html->link(__('<small>Have a Promo Code?</small>'), '#', array('id' => 'promoCode', 'escape' => false));
-                echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => '<a id="applyCode" href="#" class="btn">Apply Code</a>')); ?>
+                echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => __(' %s', $this->Html->link('Apply', '#', array('id' => 'applyCode', 'class' => 'btn'))))); ?>
                 <table class="table-hover">
                     <tbody>
                         <tr>
-                            <td class="subTotal"><?php echo __d('transactions', 'Subtotal') ?> <td id="TransactionSubtotal" class="total">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['order_charge']) ?></span></td>
+                            <td class="subTotal"><?php echo __d('transactions', 'Subtotal') ?> <td id="TransactionSubtotal" class="total">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['sub_total']) ?></span></td>
                         </tr>
                         <tr>
                             <td class="shippingTotal"><?php echo __('Shipping') ?>  </td><td id="TransactionShipping" class="total">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></td>
                         </tr>
                         <tr>
-                            <td class="discountTotal"><?php echo __('Discount') ?>: <span id="TransactionDiscount" class="total"><span class="floatPrice"></span></span></div>
+                            <td class="discountTotal"><?php echo __('Discount') ?>: </td><td id="TransactionDiscount" class="total"><span class="floatPrice"></span></td></div>
+                        </tr>
+                        <tr>
+                            <td class="taxTotal"><?php echo __('Tax') ?>: </td><td id="TransactionTax" class="total">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['tax_charge']; ?></span></td></div>
                         </tr>
                         <tr>
                             <td class="transactionTotal" style="margin: 10px 0; font-weight: bold;">Total </td><td id="TransactionTotal" class="total">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></td>
@@ -113,12 +117,12 @@
 </div>
 
 
-<script type="text/javascript">  
-   
+<script type="text/javascript">
+$(function() {
     // hide / show the coupon code input dependent on value
     if (!$("#TransactionCouponCode").val()) {
 	  $("#TransactionCouponCode").parent().hide();
-	  $("#enterPromo").click(function(e){
+	  $("#promoCode").click(function(e){
 		  e.preventDefault();
 		  $("#TransactionCouponCode").parent().toggle('slow');
 	  });
@@ -137,14 +141,14 @@
         if($("#TransactionHiddentotal").val() > 0) {
 	        $.ajax({
 		        type: "POST",
-		        data: $('#TransactionCheckoutForm').serialize(),
+		        data: $('#TransactionCartForm').serialize(),
 		        url: "/transactions/transaction_coupons/verify.json" ,  
 		        dataType: "json",       
                 success:function(data) {  
             
-                    var discount = $("#TransactionOrderCharge").text() - data['data']['Transaction']['order_charge'];
-			        $('#TransactionTotal').text('$'+data['data']['Transaction']['order_charge']);
-                    $('#TransactionTotal').val(data['data']['Transaction']['order_charge']);
+                    var discount = $("#TransactionOrderCharge").text() - data['data']['Transaction']['sub_total'];
+			        $('#TransactionTotal').text('$'+data['data']['Transaction']['sub_total']);
+                    $('#TransactionTotal').val(data['data']['Transaction']['sub_total']);
                     $("#TransactionDiscount").val(discount.toFixed(2));
                     if(data['data']['TransactionCoupon']['discount_type']=='fixed') {
                         symbol='$';  
@@ -168,91 +172,19 @@
         } 
     });
     
-    var shipTypeValue = $('#TransactionShippingType').val();
-
-	// shipping same as billing toggle 
-    $('#TransactionAddress0Shipping').change(function(e){
-	  if ( $('#TransactionAddress0Shipping').attr("checked") == undefined) {
-		  $('#TransactionAddress1FirstName').val($('#TransactionAddress0FirstName').val());
-		  $('#TransactionAddress1LastName').val($('#TransactionAddress0LastName').val());
-		  $('#TransactionAddress1StreetAddress1').val($('#TransactionAddress0StreetAddress1').val());
-		  $('#TransactionAddress1StreetAddress2').val($('#TransactionAddress0StreetAddress2').val());
-		  $('#TransactionAddress1City').val($('#TransactionAddress0City').val());
-		  $('#TransactionAddress1State').val($('#TransactionAddress0State').val());
-		  $('#TransactionAddress1Zip').val($('#TransactionAddress0Zip').val());
-		  $('#TransactionAddress1Country').val($('#TransactionAddress0Country').val());
-		  $('#shippingAddress').hide('slow');
-	  }
-	  if ( $('#TransactionAddress0Shipping').attr("checked") == 'checked') {
-		  $('#shippingAddress').show('slow');
-	  }
-    });
-
-    $('.shipping_type').change(function(e){
-	    shipTypeValue = $(this).val();
-	    var dimmensions = new Array();
-	    $(this).parent().siblings().children().each(function() {
-		    dimmensions[$(this).attr("id")] = $(this).val();
-	    });
-	    getShipRate(shipTypeValue, dimmensions);
-    });
-
-
-    function getShipRate(shipTypeValue, dimmensions) {
-	    if (shipTypeValue == ' ') {
-		    $('#TransactionShippingCharge').val(0);
-		    $('#TransactionTotal').val(parseFloat(<?php echo $this->request->data['Transaction']['order_charge']; ?>));
-		    return;
-	    }
-
-	    $.ajax({
-		    type: "POST",
-		    data: $('#TransactionCheckoutForm').serialize(),
-		    url: "/shipping/shippings/getShippingCharge/",
-		    dataType: "text",
-		    success:function(data){
-			    response(data, dimmensions['OrderTransactionShippingAmmount'])
-		    }
-	    });
-    }
-
-    function response(data, prevShippingAmmount) {
-	    if (data.length > 0) {
-		    var response = JSON.parse(data);
-		    if(response['Message']) {
-			    $('#shipping_error').html(response['Message']);
-			    //$('#step3').hide();
-		    } else if(response['amount']) {
-			    $('#shipping_error').html('');
-			    var transactionShipCharge = parseFloat($('#TransactionShippingCharge').val());
-			    if(isNaN(transactionShipCharge)) {
-				    transactionShipCharge = 0;
-                    transactionShipCharge -= parseFloat(prevShippingAmmount) ;
-                    transactionShipCharge += parseFloat(response['amount']) ;
-                    $('#TransactionShippingCharge').val(transactionShipCharge);
-                }
-			    $('#TransactionTotal').val(parseFloat(<?php echo $this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
-		    }
-	    }
-    }
-
-    function shipping_response(data, option_value, option_key) {
-	    if (data.length > 0) {
-		    var response = JSON.parse(data);
-		    if(response['amount']) {
-			    $('#TransactionShippingType').append('<option value="' + option_value + '">'+ option_key +'</option>');
-			    $('#TransactionShippingCharge').val(response['amount']);
-			    $('#TransactionTotal').val(parseFloat(<?php echo $this->request->data['Transaction']['order_charge']; ?>) + parseFloat(response['amount']) );
-		    }
-	    }
-    }
-    
 	// dynamic totals
 	$('.TransactionItemCartQty').bind("change keyup", function(e){
 		updateItemTotals($(this));
 		updateSubtotal();
+		updateTaxTotal();
 		updateOrderTotal();
 	});
+    $('#TransactionAddress0Country, #TransactionAddress0State').change(function() {
+		updateSubtotal();
+		updateTaxRate();
+		updateTaxTotal();
+		updateOrderTotal();
+    });
 	
 	function updateItemTotals(itemQty) {
 		var transactionItemX = itemQty.attr('id').replace('Quantity', '');
@@ -271,19 +203,52 @@
 		$('#TransactionSubtotal .floatPrice').text(subtotal.toFixed(2));		
 	}
 
+    function updateTaxRate() {
+        if ($('#TransactionAddress0Country').val() && $('#TransactionAddress0State').val()) {
+            $.ajax({
+                type: "POST",
+                data: $('#TransactionCartForm').serialize(),
+                url: "/transactions/transaction_taxes/rate.json",
+                dataType: "text",
+                success:function(data){
+                    var response = JSON.parse(data);
+                    var rate = response['transactionTax']['Transaction']['tax_rate'];
+                    $('#jsTaxRate').remove();
+                    if(typeof rate !== 'undefined') {
+                        // nothing it's already set
+                    } else {
+                        rate = 0;
+                    }
+                    
+                    $('body').append('<span id="jsTaxRate">' + rate + '</span>');
+                    updateTaxTotal();
+                    updateOrderTotal();
+                }
+            });
+        }
+    }
+    
+    function updateTaxTotal() {
+        var rate = $('#jsTaxRate').text();
+        var tax = parseFloat(rate * parseFloat($('#TransactionSubtotal .floatPrice').text())).toFixed(2);
+        $('#TransactionTax .floatPrice').text(tax);
+    }
+
 	function updateShippingTotal() {
 		
 	}
 
 	function updateOrderTotal() {
 		var subtotal = parseFloat($('#TransactionSubtotal .floatPrice').text());
+		var taxTotal = parseFloat($('#TransactionTax .floatPrice').text());
 		var shippingTotal = parseFloat($('#TransactionShipping .floatPrice').text());
 		var discountTotal = parseFloat($('#TransactionDiscount .floatPrice').text());
 		if($.isNumeric(discountTotal) === false) discountTotal = 0;
 		
-		var orderTotal = subtotal + shippingTotal - discountTotal;
+		var orderTotal = subtotal + taxTotal + shippingTotal - discountTotal;
 		
 		$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
 		
 	}
+});
 </script>

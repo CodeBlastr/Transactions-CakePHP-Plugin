@@ -105,29 +105,6 @@ class TransactionsController extends TransactionsAppController {
 		$assignees = $this->Transaction->Assignee->find('list');
 		$this->set(compact('transactionAddresses', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
 	}
-    
-/**
- * checkout method
- * processes the order and payment
- *
- * @return void
- */
-    public function checkout() {
-        if($this->request->is('post')) {  
-            try {
-			    $data = $this->Transaction->beforePayment($this->request->data);
-			    $data = $this->Payments->pay($data);
-			    $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
-				return $this->redirect($this->_redirect());
-    		} catch (Exception $exc) {
-    		    $this->Session->setFlash(__d('transactions', $exc->getMessage()));
-    			return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'cart'));
-    		}
-	    } else {
-		    $this->Session->setFlash(__d('transactions', 'Invalid transaction.'));
-		    return $this->redirect($this->referer());
-	    }
-	}
 
 /**
  * Delete method
@@ -151,6 +128,7 @@ class TransactionsController extends TransactionsAppController {
 		$this->Session->setFlash(__d('transactions', 'Transaction was not deleted'));
 		return $this->redirect(array('action' => 'index'));
 	}
+
     
 /**
  * Cart method
@@ -158,6 +136,17 @@ class TransactionsController extends TransactionsAppController {
  * @throws NotFoundException
  */
     public function cart() {
+        if($this->request->is('post') || $this->request->is('put')) {
+            try {
+			    $data = $this->Transaction->beforePayment($this->request->data);
+			    $data = $this->Payments->pay($data);
+			    $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+				return $this->redirect($this->_redirect());
+    		} catch (Exception $exc) {
+    		    $this->Session->setFlash($exc->getMessage());
+    		}
+	    }
+        
 	  	// gather checkout options like shipping, payments, ssl, etc
 		$options = $this->Transaction->gatherCheckoutOptions();
         
@@ -172,7 +161,7 @@ class TransactionsController extends TransactionsAppController {
             return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'mergeCarts'));
 		} else {
             // get their cart and process it
-            $this->request->data = $this->Transaction->processCart($userId);
+            $this->request->data = $this->Transaction->processCart($userId, $this->request->data);
             // show the empty cart view
             empty($this->request->data['TransactionItem']) ? $this->view = 'cart_empty' : null;
             // set the variables to display in the cart

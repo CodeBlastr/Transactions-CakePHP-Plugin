@@ -29,11 +29,13 @@ class PaysimpleComponent extends Component {
 		parent::__construct($collection, $config);
 		if (defined('__TRANSACTIONS_PAYSIMPLE')) {
 			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
+            $this->config = Set::merge($this->config, $config, $settings);
 		}
-         
-		$this->config = Set::merge($this->config, $config, $settings);
-        //debug($this->config);
-        //break;
+        // check required config
+        if (empty($this->config['apiUsername']) || empty($config['sharedSecret'])) {
+            throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
+        }
+        
 		$this->_httpSocket = new HttpSocket();
 	}
 
@@ -45,8 +47,7 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
-		//debug($data);
-		
+        
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
@@ -71,31 +72,24 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Moto';
 			} else {
-                
                 $ach_count=count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
-                $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']); 
-                
+                $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
                 if($ach_count > 0) {
                    for($i=0;$i<$ach_count;$i++) {
                        if($data['Transaction']['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data['Transaction']['paymentSubType'] = 'Web';  }
                      
                    } 
                 }
-                
                 if($cc_count > 0) {
                    for($i=0;$i<$cc_count;$i++) {
                         if($data['Transaction']['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data['Transaction']['paymentSubType'] = 'Moto';  } 
                    } 
                 }
-              
 				// they are using a Saved Payment Method; defined by an Id
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
-			}    
-         
-			//$paymentData = $this->createPayment($data);   // part of a conflict 12/5/2012 RK
-			// make the actual payment
+			}
+            // make the actual payment
 			if($data['Transaction']['is_arb']) {
-				
 				if(empty($data['TransactionItem'][0]['price'])) {
 					// When price is empty, there is a free trial
 					// In this case, set up an ARB payment as usual.
@@ -108,18 +102,13 @@ class PaysimpleComponent extends Component {
 				}
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
 				$data['Transaction']['processor_response'] = $paymentData['ScheduleStatus'];
-				
 			} else {
 				$paymentData = $this->createPayment($data);
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
-			}
-			                                       
+			}                          
 			$data['Transaction']['Payment'] = $paymentData;
-
 			return $data;
-
 		} catch (Exception $exc) {
-           
 			throw new Exception($exc->getMessage());
 		}
 
@@ -240,11 +229,12 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createPayment($data) {
-     
+        debug($data);
+        break;
 		$params = array(
 			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
-			'Amount' => $data['Transaction']['order_charge'],
+			'Amount' => $data['Transaction']['total'],
 			'IsDebit' => false, // IsDebit indicates whether this Payment is a refund.
 			'InvoiceNumber' => NULL,
 			'PurchaseOrderNumber' => NULL,
@@ -254,7 +244,6 @@ class PaysimpleComponent extends Component {
 			'PaymentSubType' => $data['Transaction']['paymentSubType'],
 			'Id' => 0
 		);
-
 		return $this->_sendRequest('POST', '/payment', $params);
 	}
 	

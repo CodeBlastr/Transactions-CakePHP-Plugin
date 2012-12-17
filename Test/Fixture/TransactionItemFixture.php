@@ -167,5 +167,34 @@ class TransactionItemFixture extends CakeTestFixture {
 			'created' => '2012-10-11 21:43:17',
 			'modified' => '2012-10-11 21:43:17'
 		),
+		// a single item for the logged in User.id 1
+		array(
+			'id' => '50773d75-cab4-40dd-b34c-187800000006',
+			'name' => 'Test Item #5',
+			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000005',
+			'quantity' => 1,
+			'price' => 1,
+			'weight' => 1,
+			'height' => 1,
+			'width' => 1,
+			'length' => 1,
+			'status' => '',
+			'tracking_no' => '',
+			'location' => '',
+			'deadline' => '2012-10-11',
+			'arb_settings' => '',
+			'payment_type' => '',
+			'featured' => 1,
+			'foreign_key' => '',
+			'model' => '',
+			'is_virtual' => 1,
+			'hours_expire' => 1,
+			'customer_id' => '8723994',
+			'assignee_id' => '',
+			'creator_id' => '',
+			'modifier_id' => '',
+			'created' => '2012-10-11 21:43:17',
+			'modified' => '2012-10-11 21:43:17'
+		),
 	);
 }

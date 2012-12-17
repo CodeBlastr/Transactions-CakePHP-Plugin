@@ -120,6 +120,8 @@ class TransactionsSchema extends CakeSchema {
 		'status' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 100, 'collate' => 'utf8_general_ci', 'comment' => 'was enum with \'failed\',\'success\',\'paid\',\'pending\',\'shipped\',\'frozen\',\'cancelled\' as values', 'charset' => 'utf8'),
 		'mode' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 25, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),
 		'total' => array('type' => 'float', 'null' => true, 'default' => NULL),
+		'tax_charge' => array('type' => 'float', 'null' => true, 'default' => NULL),
+		'shipping_charge' => array('type' => 'float', 'null' => true, 'default' => NULL),
 		'is_virtual' => array('type' => 'boolean', 'null' => true, 'default' => NULL),
 		'is_arb' => array('type' => 'boolean', 'null' => true, 'default' => '0'),
 		'tax_id' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),

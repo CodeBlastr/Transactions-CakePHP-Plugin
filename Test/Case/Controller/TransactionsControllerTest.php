@@ -198,7 +198,7 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 //		// give them a guest id that has TransactionItems in our fixture
 //		$this->Transactions->Session->write('Transaction._guestId', '5738299d-9040-43c9-85b1-22d400000001');
 //		
-//		$this->testAction('/transactions/transactions/checkout', array('data' => $submittedTransaction));
+//		$this->testAction('/transactions/transactions/cart', array('data' => $submittedTransaction));
 //		
 //		$result = $this->headers['Location'];
 //		$expected = $this->returnBaseUri().'/transactions/transactions/success';
@@ -270,7 +270,7 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 //		// give them a guest id that has TransactionItems in our fixture
 //		$this->Transactions->Session->write('Transaction._guestId', '5738299d-9040-43c9-85b1-22d400000002');
 //		
-//		$this->testAction('/transactions/transactions/checkout', array('data' => $submittedTransaction));
+//		$this->testAction('/transactions/transactions/cart', array('data' => $submittedTransaction));
 //		
 //		$result = $this->headers['Location'];
 //		$expected = $this->returnBaseUri().'/transactions/transactions/success';
@@ -344,7 +344,7 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 			'username' => 'admin',
 		));
 		
-		$this->testAction('/transactions/transactions/checkout', array('data' => $submittedTransaction));
+		$this->testAction('/transactions/transactions/cart', array('data' => $submittedTransaction));
 
 		$result = $this->headers['Location'];
 		$expected = $this->returnBaseUri().'/transactions/transactions/success';

@@ -96,18 +96,17 @@ public $name = 'TransactionCoupon';
 	} 
 	
 	private function _applyPriceChange($type = 'fixed', $discount = 0, $data = null) {
-        $data['Transaction']['order_charge'] = ereg_replace(",", "", $data['Transaction']['order_charge']);  
+        $data['Transaction']['sub_total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);  
        
 		if ($type == 'percent') {
 			# for now it does the total 
-			$data['Transaction']['order_charge'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['order_charge']);    
+			$data['Transaction']['sub_total'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['sub_total']);    
 		} else {
 			# do fixed coupon price change 
-			$data['Transaction']['order_charge'] = ZuhaInflector::pricify($data['Transaction']['order_charge'] - $discount);
+			$data['Transaction']['sub_total'] = ZuhaInflector::pricify($data['Transaction']['sub_total'] - $discount);
             
 		}
-        
-	    $data['Transaction']['total']=ereg_replace(",", "", $data['Transaction']['order_charge']);   
+	    $data['Transaction']['total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);   
 		return $data;		
 	}
 	
@@ -124,7 +123,7 @@ public $name = 'TransactionCoupon';
 		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
 		$this->validate = false;
 		if ($this->save($coupon)) {
-			return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['order_charge'];
+			return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['sub_total'];
 		} else {
 			throw new Exception('Code apply failed.');
 		}
