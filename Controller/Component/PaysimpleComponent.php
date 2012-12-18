@@ -32,7 +32,7 @@ class PaysimpleComponent extends Component {
             $this->config = Set::merge($this->config, $config, $settings);
 		}
         // check required config
-        if (empty($this->config['apiUsername']) || empty($config['sharedSecret'])) {
+        if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
             throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
         }
         
@@ -130,7 +130,10 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createCustomer($data) {
-
+		
+		$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][0]['state']);
+		$safeStateCode = str_replace('CA-', '', $safeStateCode);
+		
 		$params = array(
 			'FirstName' => $data['TransactionAddress'][0]['first_name'],
 			'LastName' => $data['TransactionAddress'][0]['last_name'],
@@ -139,7 +142,8 @@ class PaysimpleComponent extends Component {
 				'StreetAddress1' => $data['TransactionAddress'][0]['street_address_1'],
 				'StreetAddress2' => $data['TransactionAddress'][0]['street_address_2'],
 				'City' => $data['TransactionAddress'][0]['city'],
-				'StateCode' => $data['TransactionAddress'][0]['state'],
+				'StateCode' => $safeStateCode,
+				'Country' => $data['TransactionAddress'][0]['country'],
 				'ZipCode' => $data['TransactionAddress'][0]['zip'],
 			),
 			'ShippingSameAsBilling' => true,
@@ -150,12 +154,16 @@ class PaysimpleComponent extends Component {
 
 		if ($data['TransactionAddress'][0]['shipping'] == 'checked') {
 			// their shipping is not the same as their billing
+			
+			$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][1]['state']);
+			$safeStateCode = str_replace('CA-', '', $safeStateCode);
+			
 			$params['ShippingSameAsBilling'] = false;
 			$params['BillingAddress'] = array(
 				'StreetAddress1' => $data['TransactionAddress'][1]['street_address_1'],
 				'StreetAddress2' => $data['TransactionAddress'][1]['street_address_2'],
 				'City' => $data['TransactionAddress'][1]['city'],
-				'StateCode' => $data['TransactionAddress'][1]['state'],
+				'StateCode' => $safeStateCode,
 				'ZipCode' => $data['TransactionAddress'][1]['zip'],
 			);
 		}
@@ -229,8 +237,7 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createPayment($data) {
-        debug($data);
-        break;
+
 		$params = array(
 			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
