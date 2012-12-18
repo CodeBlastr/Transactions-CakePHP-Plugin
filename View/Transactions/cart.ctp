@@ -46,8 +46,8 @@
     				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2'));
     				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength' => '10')) ));
     				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'maxlength'=>'10'));
-    				echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.')) : null;
-    				echo $options['displayShipping'] ? $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing')) : null; ?>
+                    echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
+    				echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your contact information.')) : null; ?>
 			    </fieldset>
           
 			    <fieldset id="shippingAddress" class="control-group">
@@ -112,7 +112,7 @@
                 echo $this->Form->hidden('Transaction.hiddentotal', array('label'=>'Total', 'readonly' => true, 'value' => $pricifiedOrderTotal));
 			    echo $this->Form->end(__('Checkout'));	?>
 		    </fieldset>
-	    </div><!-- #transactionCartRight -->
+	    </div>
     </div>
 </div>
 
@@ -132,6 +132,15 @@ $(function() {
     if (!$("#TransactionDiscount").val()) {
 	  $("#TransactionDiscount").parent().hide();
     }
+    
+    $('#TransactionAddress0Shipping').change(function(e){
+	  if ( $('#TransactionAddress0Shipping').attr("checked") == undefined) {
+		  $('#shippingAddress').hide('slow');
+	  }
+	  if ( $('#TransactionAddress0Shipping').attr("checked") == 'checked') {
+		  $('#shippingAddress').show('slow');
+	  }
+    });
 
    
     // handle a submitted code for verification (update total)
@@ -220,7 +229,7 @@ $(function() {
                         rate = 0;
                     }
                     
-                    $('body').append('<span id="jsTaxRate">' + rate + '</span>');
+                    $('body').append('<span id="jsTaxRate" style="visibility: hidden;">' + rate + '</span>');
                     updateTaxTotal();
                     updateOrderTotal();
                 }
@@ -252,3 +261,17 @@ $(function() {
 	}
 });
 </script>
+
+
+
+
+<?php
+// set the contextual menu items
+$this->set('context_menu', array('menus' => array(
+    array(
+		'heading' => 'Products',
+		'items' => array(
+			$this->Html->link(__('Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
+			)
+		),
+	))); ?>
