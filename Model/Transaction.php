@@ -473,7 +473,7 @@ class Transaction extends TransactionsAppModel {
                         "created >= '$rangeStart'",
                         "modified >= '$rangeStart'",
                         ),
-                    'status' => 'success'
+                    'status' => 'paid'
                     )
             ));
             $data['count'] = count($data);
