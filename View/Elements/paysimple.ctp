@@ -8,18 +8,25 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 	if(isset($connectionData['Account']['CreditCard'])) {
 		echo '<h5>Use a saved Credit Card</h5>';
 		foreach($connectionData['Account']['CreditCard'] as $savedCC) {
-			$ccAccounts[$savedCC['Id']] = $savedCC['Issuer'] . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'];
+			$ccAccounts[$savedCC['Id']] = $savedCC['Issuer'] . ' ' . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'];
 			if($savedCC['IsDefault'] == true) $defaultAccount = $savedCC['Id'];
+			// echo out a hidden div for easy copying of data from the saved account list to the payment fields
+//			echo $this->Html->div('hidden', $savedCC['Issuer'], array('id' => $savedCC['Id'].'_issuer'));
+//			echo $this->Html->div('hidden', $savedCC['CreditCardNumber'], array('id' => $savedCC['Id'].'_card'));
+//			echo $this->Html->div('hidden', $savedCC['ExpirationDate'], array('id' => $savedCC['Id'].'_exp'));
 		}  
-		echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;','hiddenField'=>false));
+		echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedCredit'));
 	}
 	if(isset($connectionData['Account']['Ach'])) {
 		echo '<h5>Use a saved ACH Account</h5>';
 		foreach($connectionData['Account']['Ach'] as $savedAch) {
 			$achAccounts[$savedAch['Id']] = $savedAch['BankName'] . $savedAch['AccountNumber'];
 			if($savedAch['IsDefault'] == true) $defaultAccount = $savedAch['Id'];
+			// echo out a hidden div for easy copying of data from the saved account list to the payment fields
+//			echo $this->Html->div('hidden', $savedAch['BankName'], array('id' => $savedAch['Id'].'_bank'));
+//			echo $this->Html->div('hidden', $savedAch['AccountNumber'], array('id' => $savedAch['Id'].'_acct'));
 		} 
-		echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;','hiddenField'=>false));
+		echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedAch'));
 	}
 	
 	echo '<h5>Use a new Payment Method</h5>';
@@ -42,6 +49,20 @@ echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', '
 
 <script type="text/javascript">
 $(function() {
+	$(".savedCredit, .savedAch").click(function(){
+		clearPaymentInputs();
+		// copy data to fields?
+		
+	});
+	
+	function clearPaymentInputs() {
+		$('input.paysimpleCc, input.paysimpleCheck').each(function(){
+			$(this).val('');
+			$(this).removeClass('required');
+			$(this).removeAttr('required');
+		});
+	}
+	
     function changePaymentInputs() {
 		if ($('#TransactionMode').val() == 'PAYSIMPLE.CHECK') {
 			$('input.paysimpleCheck').each(function(){
