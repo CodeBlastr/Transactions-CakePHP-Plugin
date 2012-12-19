@@ -136,11 +136,12 @@ class TransactionsController extends TransactionsAppController {
  * @throws NotFoundException
  */
     public function cart() {
-        if($this->request->is('post') || $this->request->is('put')) {
+        
+        if($this->request->is('post') || $this->request->is('put')) { 
             try {
 			    $data = $this->Transaction->beforePayment($this->request->data);
-			    $data = $this->Payments->pay($data);
-			    $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+                $data = $this->Payments->pay($data); 
+                $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 				return $this->redirect($this->_redirect());
     		} catch (Exception $exc) {
     		    $this->Session->setFlash($exc->getMessage());

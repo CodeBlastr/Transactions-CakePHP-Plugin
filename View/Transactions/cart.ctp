@@ -22,7 +22,7 @@
 ?>
 
 <div id="transactionsCheckout" class="transactions checkout form">
-    <?php
+    <?php 
     echo $this->Html->script('plugins/jquery.validate.min', array('inline' => false));
     echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
     echo $this->Form->create('Transaction', array('class' => 'form-responsive validate'));     
@@ -73,10 +73,10 @@
 		    <?php echo $this->Element('trust_logos', array('plugin' => 'transactions')); ?>
 		    <fieldset id="transactionItems" class="transactionItems">
 			    <legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
-			    <?php
+			    <?php 
 			    foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				    echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
-				    echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $this->Element('Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i), array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))));
+                    echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $this->Element('Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i), array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))));
 			    } ?>
 		    </fieldset>
 

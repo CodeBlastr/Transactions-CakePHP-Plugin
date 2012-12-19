@@ -86,23 +86,23 @@ class TransactionItem extends TransactionsAppModel {
  * @param array $data
  * @return array
  */
-    public function mapItemData($data) {
-        
-       
-
+    public function mapItemData($data) { 
+      
 		if (empty($data['TransactionItem']['model'])) {
 			throw new InternalErrorException(__('Invalid transaction item'));
 		}
            
-		$model = Inflector::classify($data['TransactionItem']['model']);
+		$model = Inflector::classify($data['TransactionItem']['model']);                       
         
-        $m = ZuhaInflector::pluginize($model) . '.Model' ;
-       
-		App::uses($model, ZuhaInflector::pluginize($model) . '.Model');
+        $m = ZuhaInflector::pluginize($model) . '.Model' ;    
         
-		$Model = new $model;
+		App::uses($model, ZuhaInflector::pluginize($model) . '.Model');  
+        
+		$Model = new $model; 
        
+        
 		$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
+        
            
 		$itemData = Set::merge(
 				$itemData,

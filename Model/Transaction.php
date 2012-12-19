@@ -234,26 +234,28 @@ class Transaction extends TransactionsAppModel {
                     )
                 )
             )); 
-
+         
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
-
+       
 		// update quantities
 		$allHaveZeroQty = true;
-        
+      
 		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
+    
 		    if($submittedTxnItem['quantity'] > 0) {
                 foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
+             
                     if($currentTxnItem['id'] == $submittedTxnItem['id']) {
                         $currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
-                        $finalTxnItems[] = $currentTxnItem;
+                        $finalTxnItems[] = $currentTxnItem;  
                     }
                 }
                 $allHaveZeroQty = false;
 		    }
 		}
-			
+		       
 		if($allHaveZeroQty) {
 			throw new Exception('Cart is empty');
 		}
@@ -264,7 +266,7 @@ class Transaction extends TransactionsAppModel {
 		// combine the Current and Submitted Transactions
 		$officialTransaction = Set::merge($currentTransaction, $submittedTransaction);
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
-        
+      
         // add tax
         $officialTransaction = $this->TransactionTax->applyTax($officialTransaction);
 		 
@@ -272,7 +274,7 @@ class Transaction extends TransactionsAppModel {
         
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
-        
+            
 		// return the official transaction
 		return $officialTransaction;
 	}
@@ -382,8 +384,9 @@ class Transaction extends TransactionsAppModel {
  */
 	public function beforePayment($data) {
 		try {
+           
             $data = $this->finalizeTransactionData($data); 
-            
+         
             //Check Transaction Coupon code empty or not
             if($data['TransactionCoupon']['code']!=''){
                $data = $this->TransactionCoupon->verify($data); 
@@ -408,6 +411,19 @@ class Transaction extends TransactionsAppModel {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
 
 			$this->save($data);
+            
+            $models = $data['TransactionItem'];
+            
+            foreach ($models as $val)  {
+               $model=$val['model']; 
+            }
+            
+            App::uses($model, ZuhaInflector::pluginize($model) . '.Model');  
+
+            $Model = new $model; 
+                        
+            $Model->afterSuccessfulPayment($data);
+          
 
 			foreach($data['TransactionItem'] as $txnItem) {
 				$txnItem['transaction_id'] = $this->id;

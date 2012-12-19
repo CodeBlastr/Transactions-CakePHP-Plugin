@@ -31,9 +31,11 @@ class PaysimpleComponent extends Component {
 			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
             $this->config = Set::merge($this->config, $config, $settings);
 		}
+        
+        
         // check required config
-        if (empty($this->config['apiUsername']) || empty($config['sharedSecret'])) {
-            throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
+        if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
+              throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
         }
         
 		$this->_httpSocket = new HttpSocket();
@@ -47,7 +49,7 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
-        
+         
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
@@ -65,7 +67,7 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Account']['Ach'][] = $accountData;
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Web';
-			} elseif (!empty($data['Transaction']['card_number'])) {
+			} elseif (!empty($data['Transaction']['card_number'])) {   
 				// Credit Card Account
 				$accountData = $this->addCreditCardAccount($data);
 				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $accountData;
@@ -229,8 +231,7 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createPayment($data) {
-        debug($data);
-        break;
+        
 		$params = array(
 			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
