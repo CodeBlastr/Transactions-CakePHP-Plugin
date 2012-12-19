@@ -173,6 +173,19 @@ class TransactionsController extends TransactionsAppController {
 	}
     
 /**
+ * My method
+ * 
+ * Show transaction history
+ * @return void
+ */
+    public function my() {
+        $this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
+        $this->paginate['contain'] = 'TransactionItem';
+        //$this->Transaction->recursive = 2;
+        $this->set('transactions', $this->paginate());
+    }
+    
+/**
  * Success method
  */
 	public function success() {
