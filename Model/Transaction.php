@@ -421,8 +421,9 @@ class Transaction extends TransactionsAppModel {
             App::uses($model, ZuhaInflector::pluginize($model) . '.Model');  
 
             $Model = new $model; 
-                        
-            $Model->afterSuccessfulPayment($data);
+            if(method_exists($Model,'afterSuccessfulPayment')) { 
+               $Model->afterSuccessfulPayment($data);
+            }
           
 
 			foreach($data['TransactionItem'] as $txnItem) {
@@ -447,7 +448,7 @@ class Transaction extends TransactionsAppModel {
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
 
 				$this->Customer->Connection->save($connection);
-			}
+			}  
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
@@ -489,7 +490,7 @@ class Transaction extends TransactionsAppModel {
                         "created >= '$rangeStart'",
                         "modified >= '$rangeStart'",
                         ),
-                    'status' => 'success'
+                    'status' => 'paid'
                     )
             ));
             $data['count'] = count($data);

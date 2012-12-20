@@ -174,6 +174,19 @@ class TransactionsController extends TransactionsAppController {
 	}
     
 /**
+ * My method
+ * 
+ * Show transaction history
+ * @return void
+ */
+    public function my() {
+        $this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
+        $this->paginate['contain'] = 'TransactionItem';
+        //$this->Transaction->recursive = 2;
+        $this->set('transactions', $this->paginate());
+    }
+    
+/**
  * Success method
  */
 	public function success() {
@@ -226,11 +239,11 @@ class TransactionsController extends TransactionsAppController {
  *
  * @return array $url
  */
-    protected function _redirect() {
+    protected function _redirect() { 
         if (defined('__TRANSACTIONS_CHECKOUT_REDIRECT')) {
-			extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT));
+			extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT)); 
 			if(empty($url)) {
-				$plugin = strtolower(ZuhaInflector::pluginize($model));
+				$plugin = strtolower(ZuhaInflector::pluginize($model));         
 				$controller = Inflector::tableize($model);
 				if(!empty($pass)) {
 					// get foreign key of TransactionItem using given setings
@@ -245,7 +258,7 @@ class TransactionsController extends TransactionsAppController {
 				$url = array('plugin' => $plugin, 'controller' => $controller, 'action' => $action, !empty($foreign_key['TransactionItem']['foreign_key']) ? $foreign_key['TransactionItem']['foreign_key'] : '');
 			}
 		} else {
-			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
+			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'); 
 		}
         return $url;
     }

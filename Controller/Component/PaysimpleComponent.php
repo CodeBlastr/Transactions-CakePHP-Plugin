@@ -35,7 +35,9 @@ class PaysimpleComponent extends Component {
         
         // check required config
         if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
-              throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
+
+            throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
+
         }
         
 		$this->_httpSocket = new HttpSocket();
@@ -49,7 +51,7 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
-         
+            
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
@@ -132,7 +134,10 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createCustomer($data) {
-
+		
+		$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][0]['state']);
+		$safeStateCode = str_replace('CA-', '', $safeStateCode);
+		
 		$params = array(
 			'FirstName' => $data['TransactionAddress'][0]['first_name'],
 			'LastName' => $data['TransactionAddress'][0]['last_name'],
@@ -141,7 +146,8 @@ class PaysimpleComponent extends Component {
 				'StreetAddress1' => $data['TransactionAddress'][0]['street_address_1'],
 				'StreetAddress2' => $data['TransactionAddress'][0]['street_address_2'],
 				'City' => $data['TransactionAddress'][0]['city'],
-				'StateCode' => $data['TransactionAddress'][0]['state'],
+				'StateCode' => $safeStateCode,
+				'Country' => $data['TransactionAddress'][0]['country'],
 				'ZipCode' => $data['TransactionAddress'][0]['zip'],
 			),
 			'ShippingSameAsBilling' => true,
@@ -152,12 +158,16 @@ class PaysimpleComponent extends Component {
 
 		if ($data['TransactionAddress'][0]['shipping'] == 'checked') {
 			// their shipping is not the same as their billing
+			
+			$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][1]['state']);
+			$safeStateCode = str_replace('CA-', '', $safeStateCode);
+			
 			$params['ShippingSameAsBilling'] = false;
 			$params['BillingAddress'] = array(
 				'StreetAddress1' => $data['TransactionAddress'][1]['street_address_1'],
 				'StreetAddress2' => $data['TransactionAddress'][1]['street_address_2'],
 				'City' => $data['TransactionAddress'][1]['city'],
-				'StateCode' => $data['TransactionAddress'][1]['state'],
+				'StateCode' => $safeStateCode,
 				'ZipCode' => $data['TransactionAddress'][1]['zip'],
 			);
 		}
@@ -231,7 +241,7 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createPayment($data) {
-        
+
 		$params = array(
 			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
@@ -393,6 +403,7 @@ class PaysimpleComponent extends Component {
 
 /**
  * This function executes upon failure
+ * @todo obsolete..?  seems that it may be.
  */
 	public function echoErrors() {
 		//debug($this->errors);
@@ -492,22 +503,18 @@ class PaysimpleComponent extends Component {
 		if (in_array($responseCode, $badResponseCodes)) {
 			
 			// build error message
-			if (is_string($result)) {
-				$this->errors[] = $message = $result;
-			} elseif (isset($result['Meta']['Errors']['ErrorMessages'])) {
-				$message = $result['Meta']['Errors']['ErrorCode']. ' ';
+			if (isset($result['Meta']['Errors']['ErrorMessages'])) {
+				//$message = $result['Meta']['Errors']['ErrorCode']. ' '; // this might be a redundant message
+				$message = '';
 				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
-					$message .= $error['Message'];
+					$message .= '<li>'.$error['Message'].'</li>';
 				}
 			} else {
-				$this->errors[] = $result;
-				$message = $result;
+				$this->errors[] = $message = $result;
 			}
-
-	
 			
-//			// we need to know if this was an ARB that was declined
+//			// we need to know if this was an ARB that was declined ??
 //			if($data['Transaction']['is_arb']) {
 //				$arbErrorMessage = $result['Meta']['Errors']['ErrorMessages'][0]['Message'];
 //				if(strpos($arbErrorMessage, 'was saved, but the first scheduled payment failed')) {
@@ -515,10 +522,10 @@ class PaysimpleComponent extends Component {
 //				}
 //			}
 			
-			//debug($request);
-//			debug($responseCode);
-//			debug($result);
-//			break;
+			// some error logging perhaps?
+//			CakeLog::write('failed_transactions', $responseCode);
+//			CakeLog::write('failed_transactions', $request);
+//			CakeLog::write('failed_transactions', $result);
 			
 			// throw error message to display to the visitor
 
