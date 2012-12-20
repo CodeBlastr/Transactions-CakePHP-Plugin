@@ -36,6 +36,7 @@ class TransactionsController extends TransactionsAppController {
 	public function index() {
 		$this->Transaction->recursive = 0;
 		$this->set('transactions', $this->paginate());
+        $this->set('displayName', 'created');
 	}
 
 /**
