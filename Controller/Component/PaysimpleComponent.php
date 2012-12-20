@@ -399,6 +399,7 @@ class PaysimpleComponent extends Component {
 
 /**
  * This function executes upon failure
+ * @todo obsolete..?  seems that it may be.
  */
 	public function echoErrors() {
 		//debug($this->errors);
@@ -498,22 +499,18 @@ class PaysimpleComponent extends Component {
 		if (in_array($responseCode, $badResponseCodes)) {
 			
 			// build error message
-			if (is_string($result)) {
-				$this->errors[] = $message = $result;
-			} elseif (isset($result['Meta']['Errors']['ErrorMessages'])) {
-				$message = $result['Meta']['Errors']['ErrorCode']. ' ';
+			if (isset($result['Meta']['Errors']['ErrorMessages'])) {
+				//$message = $result['Meta']['Errors']['ErrorCode']. ' '; // this might be a redundant message
+				$message = '';
 				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
-					$message .= $error['Message'];
+					$message .= '<li>'.$error['Message'].'</li>';
 				}
 			} else {
-				$this->errors[] = $result;
-				$message = $result;
+				$this->errors[] = $message = $result;
 			}
-
-	
 			
-//			// we need to know if this was an ARB that was declined
+//			// we need to know if this was an ARB that was declined ??
 //			if($data['Transaction']['is_arb']) {
 //				$arbErrorMessage = $result['Meta']['Errors']['ErrorMessages'][0]['Message'];
 //				if(strpos($arbErrorMessage, 'was saved, but the first scheduled payment failed')) {
@@ -521,10 +518,10 @@ class PaysimpleComponent extends Component {
 //				}
 //			}
 			
-			//debug($request);
-//			debug($responseCode);
-//			debug($result);
-//			break;
+			// some error logging perhaps?
+//			CakeLog::write('failed_transactions', $responseCode);
+//			CakeLog::write('failed_transactions', $request);
+//			CakeLog::write('failed_transactions', $result);
 			
 			// throw error message to display to the visitor
 
