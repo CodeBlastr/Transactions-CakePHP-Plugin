@@ -153,9 +153,11 @@ class Transaction extends TransactionsAppModel {
 	    $shippingCharge = 0;
         
         // recalculate subtotal
-	    foreach($data['TransactionItem'] as $txnItem) {
-            $subTotal += $txnItem['price'] * $txnItem['quantity'];
-	    }
+        if (!empty($data['TransactionItem'])) {
+		    foreach($data['TransactionItem'] as $txnItem) {
+	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
+		    }
+		}
         
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
         // GET THIS OUT OF HERE!!!!
