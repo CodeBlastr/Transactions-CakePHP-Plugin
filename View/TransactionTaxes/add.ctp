@@ -10,9 +10,16 @@
     <?php echo $this->Form->end(__('Add Region'));?>
 </div>
 
+
 <?php 
 // set the contextual menu items
 $this->set('context_menu', array('menus' => array(
+    array(
+		'heading' => 'Products',
+		'items' => array(
+			$this->Html->link(__('Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
+			)
+		),
 	array(
 		'heading' => 'Taxes',
 		'items' => array(

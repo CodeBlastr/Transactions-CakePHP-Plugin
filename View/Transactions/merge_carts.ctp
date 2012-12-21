@@ -27,3 +27,14 @@ echo $this->Html->link(__d('transactions', 'Combine Both Carts'), array('action'
 echo $this->Html->link(__d('transactions', 'Use Cart #2'), array('action' => 'mergeCarts', 'choice'=>'2'), array('class' => 'btn'));
 
 ?>
+
+<?php
+// set the contextual menu items
+$this->set('context_menu', array('menus' => array(
+    array(
+		'heading' => 'Products',
+		'items' => array(
+			$this->Html->link(__('Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
+			)
+		),
+	))); ?>
