@@ -39,6 +39,9 @@ class PaysimpleComponent extends Component {
             throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
 
         }
+		if (!in_array('Connections', CakePlugin::loaded())) {
+            throw new Exception('Connections plugin is required, contact admin with error code : 72984359283745');
+		}
         
 		$this->_httpSocket = new HttpSocket();
 	}
@@ -109,7 +112,10 @@ class PaysimpleComponent extends Component {
 			} else {
 				$paymentData = $this->createPayment($data);
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
-			}                          
+			}                        
+			if ($data['Transaction']['processor_response'] == 'Failed') {
+				throw new Exception($paymentData['ProviderAuthCode']);
+			}
 			$data['Transaction']['Payment'] = $paymentData;
 			return $data;
 		} catch (Exception $exc) {

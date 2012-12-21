@@ -10,26 +10,33 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 		foreach($connectionData['Account']['CreditCard'] as $savedCC) {
 			$ccAccounts[$savedCC['Id']] = $savedCC['Issuer'] . ' ' . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'];
 			if($savedCC['IsDefault'] == true) $defaultAccount = $savedCC['Id'];
-			// echo out a hidden div for easy copying of data from the saved account list to the payment fields
-//			echo $this->Html->div('hidden', $savedCC['Issuer'], array('id' => $savedCC['Id'].'_issuer'));
-//			echo $this->Html->div('hidden', $savedCC['CreditCardNumber'], array('id' => $savedCC['Id'].'_card'));
-//			echo $this->Html->div('hidden', $savedCC['ExpirationDate'], array('id' => $savedCC['Id'].'_exp'));
+			echo $this->Form->input('paysimple_account', array(
+				'value' => $savedCC['Id'],
+				'label' => $savedCC['Issuer'] . ' ' . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'],
+				'type' => 'checkbox',
+				'hiddenField' => false,
+				'class' => 'savedCredit'
+			));
 		}  
-		echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedCredit'));
+		//echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedCredit'));
 	}
 	if(isset($connectionData['Account']['Ach'])) {
 		echo '<h5>Use a saved ACH Account</h5>';
 		foreach($connectionData['Account']['Ach'] as $savedAch) {
 			$achAccounts[$savedAch['Id']] = $savedAch['BankName'] . $savedAch['AccountNumber'];
 			if($savedAch['IsDefault'] == true) $defaultAccount = $savedAch['Id'];
-			// echo out a hidden div for easy copying of data from the saved account list to the payment fields
-//			echo $this->Html->div('hidden', $savedAch['BankName'], array('id' => $savedAch['Id'].'_bank'));
-//			echo $this->Html->div('hidden', $savedAch['AccountNumber'], array('id' => $savedAch['Id'].'_acct'));
+			echo $this->Form->input('paysimple_account', array(
+				'value' => $savedCC['Id'],
+				'label' => $savedAch['BankName'] . ": " . $savedAch['AccountNumber'],
+				'type' => 'checkbox',
+				'hiddenField' => false,
+				'class' => 'savedAch'
+			));
 		} 
-		echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedAch'));
+		//echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedAch'));
 	}
 	
-	echo '<h5>Use a new Payment Method</h5>';
+	echo '<h5 id="useNewPayment">Use a new Payment Method</h5>';
 }
 
 
@@ -56,25 +63,50 @@ echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', '
    </fieldset><!-- #echeckInfo --> 
 <script type="text/javascript">
 $(function() {
+	// clear the new payment method inputs when they choose a previous payment method
 	$(".savedCredit, .savedAch").click(function(){
-		clearPaymentInputs();
-		// copy data to fields?
+		// uncheck other saved methods
+		var clickedCheckboxId = $(this).attr('id');
+				
+		if($('#'+clickedCheckboxId).prop('checked') == false) {
+			// if they are deselecting a saved payment method
+			$('#useNewPayment').show('slow');
+			$('#TransactionMode').parent().parent().show('slow');
+			changePaymentInputs();
+			return ;
+		} 
 		
-	});
-	
-	function clearPaymentInputs() {
+		$(".savedCredit, .savedAch").each(function() {
+			if($(this).attr('id') !== clickedCheckboxId) $(this).prop('checked', false);
+		});
+
+		// remove required from cc and check inputs
 		$('input.paysimpleCc, input.paysimpleCheck').each(function(){
 			$(this).val('');
 			$(this).removeClass('required');
 			$(this).removeAttr('required');
 		});
-	}
+		// hide cc and check inputs
+		$('#useNewPayment').hide('slow');
+		$('#TransactionMode').parent().parent().hide('slow');
+		$('.paysimpleCc').parent().parent().hide('slow');
+		$('.paysimpleCheck').parent().parent().hide('slow');
+	});
+	
+	// delect saved payment account when they type in a new account
+	$('input.paysimpleCc, input.paysimpleCheck').keypress(function(){
+		$(".savedCredit, .savedAch").prop('checked', false);
+		changePaymentInputs();
+	});
 	
     function changePaymentInputs() {
+		$(".savedCredit, .savedAch").prop('checked', false);
 		if ($('#TransactionMode').val() == 'PAYSIMPLE.CHECK') {
 			$('input.paysimpleCheck').each(function(){
-				$(this).addClass('required');
-				$(this).attr('required', 'required');
+				if($(this).attr('id') !== 'TransactionAchIsCheckingAccount') {
+					$(this).addClass('required');
+					$(this).attr('required', 'required');
+				}
 			});
 			$('input.paysimpleCc').each(function(){
 				$(this).val('');

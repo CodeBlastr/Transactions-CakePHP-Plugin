@@ -153,9 +153,11 @@ class Transaction extends TransactionsAppModel {
 	    $shippingCharge = 0;
         
         // recalculate subtotal
-	    foreach($data['TransactionItem'] as $txnItem) {
-            $subTotal += $txnItem['price'] * $txnItem['quantity'];
-	    }
+        if (!empty($data['TransactionItem'])) {
+		    foreach($data['TransactionItem'] as $txnItem) {
+	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
+		    }
+		}
         
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
         // GET THIS OUT OF HERE!!!!
@@ -468,13 +470,13 @@ class Transaction extends TransactionsAppModel {
                     $rangeStart = date('Y-m-d', strtotime('today'));
                     break;
                 case 'thisWeek':
-                    $rangeStart = date('Y-m-d', strtotime('this sunday'));
+                    $rangeStart = date('Y-m-d', strtotime('last sunday'));
                     break;
                 case 'thisMonth':
                     $rangeStart = date('Y-m-d', strtotime('first day of this month'));
                     break;
                 case 'thisYear':
-                    $rangeStart = date('Y-m-d', strtotime('first day of this year'));
+                    $rangeStart = date('Y') . '-01-01';
                     break;
                 case 'allTime':
                     $rangeStart = '0000-00-00';
@@ -482,6 +484,7 @@ class Transaction extends TransactionsAppModel {
                 default:
                     break;
             }
+			$rangeStart .= ' 00:00:00';
             
             // calculate data
             $data = $this->find('all', array(

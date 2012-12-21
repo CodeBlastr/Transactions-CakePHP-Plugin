@@ -36,6 +36,7 @@ class TransactionsController extends TransactionsAppController {
 	public function index() {
 		$this->Transaction->recursive = 0;
 		$this->set('transactions', $this->paginate());
+        $this->set('displayName', 'created');
 	}
 
 /**
@@ -166,7 +167,7 @@ class TransactionsController extends TransactionsAppController {
             // show the empty cart view
             empty($this->request->data['TransactionItem']) ? $this->view = 'cart_empty' : null;
             // set the variables to display in the cart
-            $options['displayShipping'] = count($this->request->data['TransactionItem']) != array_sum(Set::extract('/is_virtual', $this->request->data['TransactionItem']));
+            $options['displayShipping'] = !empty($this->request->data['TransactionItem']) ? count($this->request->data['TransactionItem']) != array_sum(Set::extract('/is_virtual', $this->request->data['TransactionItem'])) : true;
             $this->set(compact('options'));
 		}
         $this->set('title_for_layout', __('Checkout'));
