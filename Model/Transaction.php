@@ -352,7 +352,6 @@ class Transaction extends TransactionsAppModel {
 
 			if (!$isLoggedIn) {
 				$this->Customer->save($data);
-				//break;
 				// Refactor their $data with their new Customer.id
 				$data['Transaction']['customer_id'] = $this->Customer->id;
 				$data['Customer']['id'] = $this->Customer->id;
@@ -423,7 +422,7 @@ class Transaction extends TransactionsAppModel {
 			}
 			
 			// Create OR Update their payment processor data
-			if($data['Customer']['Connection']) {
+			if(!empty($data['Customer']['Connection'])) {
 				$options = $this->gatherCheckoutOptions();
 				// connection[id] should be pre-filled or empty
 				$connection['id'] = (!empty($data['Customer']['Connection'][0]['id'])) ? $data['Customer']['Connection'][0]['id'] : null;
@@ -431,7 +430,6 @@ class Transaction extends TransactionsAppModel {
 				$connection['type'] = $options['paymentMode'];
 				// connection[value] should be directly from the payment processor
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
-
 				$this->Customer->Connection->save($connection);
 			}
 		} catch (Exception $e) {

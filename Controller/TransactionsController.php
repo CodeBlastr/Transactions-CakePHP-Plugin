@@ -59,7 +59,6 @@ class TransactionsController extends TransactionsAppController {
  * @return void
  */
 	public function add() {
-        
 		if ($this->request->is('post')) {
 			$this->Transaction->create();
 			if ($this->Transaction->save($this->request->data)) {
