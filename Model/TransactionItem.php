@@ -127,18 +127,23 @@ class TransactionItem extends TransactionsAppModel {
     public function verifyItemRequest($data) {
 		$isArb = false;
 
-		$transaction = $this->Transaction->findById($this->Transaction->id); 
+		// check to see if this Transaction already contains an ARB item
+		$transaction = $this->Transaction->find('first', array(
+			'conditions' => array('id' => $this->Transaction->id),
+			'contain' => 'TransactionItem'
+			));
         if (!empty($transaction['TransactionItem'])) {
             foreach ($transaction['TransactionItem'] as $transactionItem) {
                 App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
                 $Model = new $data['TransactionItem']['model'];
                 $product = $Model->findById($transactionItem['foreign_key']);
-                if(!empty($product['arb_settings'])) {
+                if(!empty($product['arb_settings']) || !empty($transactionItem['arb_settings'])) {
                     $isArb = true;
                 }
             }
         }
-
+//debug($data);
+//debug($transaction);break;
 		
 		if($isArb && count($transaction['TransactionItem']) > 1) {
 			// you can only have one item in your cart if one of the items is using ARB
