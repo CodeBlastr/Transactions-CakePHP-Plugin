@@ -120,11 +120,22 @@ class TransactionItem extends TransactionsAppModel {
  * Used to check whether the item being added to the cart
  * is incompatible with other items in the cart. 
  * 
+ * ARB:
+ * - Check to see if transaction already has an ARB item, if so, disregard their current request
+ * - If they are adding their first ARB item, we need to make sure it's serialized.
+ * -- TransactionItems can have ARB settings in them, or it can come from the Product itself.
+ * 
  * @todo ($transaction =) doesn't seem to be right.  Kind of like it wouldn't contain the TransactionItem, and that $this->Transaction->id isn't the best variable name to use. 
  * @todo check stock and cart max and ARB
  * @param array $data
  */
     public function verifyItemRequest($data) {
+		
+		// check for a model
+		if(empty($data['TransactionItem']['model'])) {
+			throw new Exception(__d('transactions', 'Invalid transaction request [M]'));
+		}
+		
 		$isArb = false;
 
 		// check to see if this Transaction already contains an ARB item
@@ -134,26 +145,42 @@ class TransactionItem extends TransactionsAppModel {
 			));
         if (!empty($transaction['TransactionItem'])) {
             foreach ($transaction['TransactionItem'] as $transactionItem) {
+
+				// check to see if this TransactionItem's Model record has arb_settings
                 App::uses($data['TransactionItem']['model'], ZuhaInflector::pluginize($data['TransactionItem']['model']) . '.Model');
                 $Model = new $data['TransactionItem']['model'];
+				
                 $product = $Model->findById($transactionItem['foreign_key']);
-                if(!empty($product['arb_settings']) || !empty($transactionItem['arb_settings'])) {
+				
+                if( !empty($product['arb_settings']) || !empty($transactionItem['arb_settings']) || !empty($data['TransactionItem']['arb_settings'])) {
                     $isArb = true;
+					break;//foreach()
                 }
             }
         }
-//debug($data);
-//debug($transaction);break;
+		
+//		debug($isArb);
+//		debug($data);
+//		debug($transaction);break;
 		
 		if($isArb && count($transaction['TransactionItem']) > 1) {
 			// you can only have one item in your cart if one of the items is using ARB
-			return false;
+			throw new NotFoundException(__d('transactions', 'Item payment plans not compatible.  Please checkout or remove an item.'));;
 		} else {
-			return true;
+			return;
 		} 
 
     }
 
+	
+	public function beforeSave($options) {
+		// serialize ARB settings that were passed with the TransactionItem
+		if(!empty($this->data['TransactionItem']['arb_settings'])) {
+			$this->data['TransactionItem']['arb_settings'] = serialize($this->data['TransactionItem']['arb_settings']);
+		}
+		return parent::beforeSave($options);
+	}
+	
 	
     public function statuses() {
         $statuses = array();

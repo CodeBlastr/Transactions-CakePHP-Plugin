@@ -54,32 +54,46 @@ class TransactionItemsController extends TransactionsAppController {
 	public function add() {
         
 		if ($this->request->is('post')) {
-			// determine the user's "ID"
-			$userId = $this->TransactionItem->Transaction->getCustomersId();
-            
-		    
-			// set a transaction id (cart id) for this user
-			$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId($userId);
 			
-			/** @todo check stock and cart max **/
-			$isAddable = $this->TransactionItem->verifyItemRequest($this->request->data);
-            
-            
-            /** @todo this should go into beforeSave() with conditional check on $create **/
-            $conditions = array('TransactionItem.foreign_key' => $this->request->data['TransactionItem']['foreign_key'], 'TransactionItem.transaction_id ' => $this->TransactionItem->Transaction->id,'TransactionItem.model' => $this->request->data['TransactionItem']['model']);
-            $chkdata = $this->TransactionItem->find('all', array('conditions' => $conditions));
-           
-           
-            $itemData = $this->TransactionItem->mapItemData($this->request->data);
-			
+			try {
 
-			// It puts the item in the cart.
-			if ($this->TransactionItem->save($this->request->data)) {
-				$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
-				$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart'));
-			} else {
-			  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
-			  $this->redirect($this->referer());
+				// determine the user's "ID"
+				$userId = $this->TransactionItem->Transaction->getCustomersId();
+
+				// determine and set the transaction id (cart id) for this user
+				$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId($userId);
+
+				/** @todo check stock and cart max **/
+				$this->TransactionItem->verifyItemRequest($this->request->data);
+
+
+				/** @todo this should go into beforeSave() with conditional check on $create **/
+				$conditions = array('TransactionItem.foreign_key' => $this->request->data['TransactionItem']['foreign_key'], 'TransactionItem.transaction_id ' => $this->TransactionItem->Transaction->id,'TransactionItem.model' => $this->request->data['TransactionItem']['model']);
+				$chkdata = $this->TransactionItem->find('all', array('conditions' => $conditions));
+
+
+				$itemData = $this->TransactionItem->mapItemData($this->request->data);
+
+				if (empty($chkdata)) {   // Check the item already added
+					// create the item internally
+					$this->TransactionItem->create($itemData);
+				} else {
+					$this->request->data['TransactionItem']['quantity'] = $chkdata[0]['TransactionItem']['quantity'] + $this->request->data['TransactionItem']['quantity'];
+					$this->TransactionItem->id = $chkdata[0]['TransactionItem']['id'];
+				}
+				
+				// It puts the item in the cart.
+				if ($this->TransactionItem->save($this->request->data)) {
+					$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
+					$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart'));
+				} else {
+				  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
+				  $this->redirect($this->referer());
+				}
+			
+			} catch (Exception $exc) {
+				throw new Exception(__d('transactions', $exc->getMessage()));
+				//$this->Session->setFlash($exc->getMessage());
 			}
 
             

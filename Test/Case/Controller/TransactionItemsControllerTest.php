@@ -37,10 +37,7 @@ class TransactionItemsControllerTestCase extends ControllerTestCase  {
  */
 	public $fixtures = array(
 	    'plugin.transactions.transaction_item',
-	    'plugin.catalogs.catalog_item',
-	    'plugin.transactions.transaction_payment',
 	    'plugin.transactions.transaction',
-	    'plugin.transactions.transaction_shipment',
 	    'plugin.users.user',
 	    'plugin.transactions.transaction_coupon',
 	    'plugin.users.customer',
@@ -112,27 +109,40 @@ class TransactionItemsControllerTestCase extends ControllerTestCase  {
 /**
  * testAdd method
  *
+ * @expectedExceptionMessage Invalid transaction request
  * @return void
  */
 	public function testBadAdd() {
-	    $data = array(
-		'price' => 'asdf'
-	    );
-	    $result = $this->testAction('/transactions/transaction_items/add', array('data' => $data, 'method' => 'post'));
-	    //debug($result);
-	    $this->assertNoErrors();
+		try {
+			$data = array(
+				'price' => 'asdf'
+		    );
+		    $result = $this->testAction('/transactions/transaction_items/add', array('data' => $data, 'method' => 'post'));
+		    //debug($result);
+		} catch (Exception $expected) {
+			return;
+		}
+
+		$this->fail('An expected exception has not been raised.');
 	}
 	
 	public function testGoodAdd() {
-	    $data = array(
-		'model' => 'Product',
-		'name' => 'Test Product',
-		'quantity' => 1,
-		'price' => 100.25
-	    );
-	    $result = $this->testAction('/transactions/transaction_items/add', array('data' => $data, 'method' => 'post'));
-	    //debug($result);
-	    $this->assertNoErrors();
+		try {
+			$data = array(
+				'TransactionItem' => array(
+					'model' => 'Product',
+					'name' => 'Test Product',
+					'quantity' => 1,
+					'price' => 100.25
+				)
+			);
+			$result = $this->testAction('/transactions/transaction_items/add', array('data' => $data, 'method' => 'post'));
+			//debug($result);break;
+		} catch (Exception $expected) {
+			$this->fail($expected->getMessage());
+			return;
+		}
+	    $this->pass();
 	}
 /**
  * testEdit method
