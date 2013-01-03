@@ -44,13 +44,26 @@ class TransactionsController extends TransactionsAppController {
  * 
  * @param string $id
  * @throws NotFoundException
+ * @todo Add LoggableBehavior and track who the referrer was from the stats in the session $this->triggerLog() in the model, if done right.
  */
 	public function view($id = null) {
 		$this->Transaction->id = $id;
 		if (!$this->Transaction->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
-		$this->set('transaction', $this->Transaction->read(null, $id));
+        
+        $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
+		$this->paginate['contain'][] = 'ProductOption';
+        $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
+		debug($transactionItems);
+        $this->Transaction->contain(array('Customer', 'Assignee'));
+        $this->set('transaction', $transaction = Set::merge($this->Transaction->read(null, $id), array('TransactionItem' => $transactionItems)));
+        $this->set('statuses', $this->Transaction->TransactionItem->statuses());
+		$this->set('assignees', $assignees = $this->Transaction->Assignee->find('list'));
+		$this->set('shippingAddress', $this->Transaction->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.transaction_id' => $id, 'TransactionAddress.type' => 'shipping'))));
+		$this->set('billingAddress', $this->Transaction->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.transaction_id' => $id, 'TransactionAddress.type' => 'billing'))));
+		$this->set('orderCount', $this->Transaction->find('count', array('conditions' => array('Transaction.customer_id' => $transaction['Transaction']['customer_id']))));
+        $this->set('page_title_for_layout', 'Transaction');
 	}
 
 /**
@@ -69,7 +82,7 @@ class TransactionsController extends TransactionsAppController {
 			}
 		}
 
-		//$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
+		// $transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
 		$assignees = $this->Transaction->Assignee->find('list');
@@ -89,7 +102,7 @@ class TransactionsController extends TransactionsAppController {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
 		if ( ($this->request->is('post') || $this->request->is('put')) && !empty($this->request->data)) {
-			if ($this->Transaction->save($this->request->data)) {
+			if ($this->Transaction->saveAll($this->request->data)) {
 				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
 				return $this->redirect(array('action' => 'index'));
 			} else {

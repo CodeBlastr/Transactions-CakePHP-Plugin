@@ -16,6 +16,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
 class TransactionItem extends TransactionsAppModel {
 
     public $name = 'TransactionItem';
+	
     public $displayField = 'name';
 
     public $validate = array(
@@ -23,8 +24,8 @@ class TransactionItem extends TransactionsAppModel {
             'notempty' => array(
                 'rule' => array('notempty'),
                 'message' => '*required',
-            ),
-        ),
+            	),
+        	),
        );
     
 
@@ -51,7 +52,36 @@ class TransactionItem extends TransactionsAppModel {
 			'order' => ''
 		),
     );
-
+	
+/**
+ * Constructor method
+ * 
+ */
+	public function __construct($id = false, $table = null, $ds = null) {
+		if (in_array('Tasks', CakePlugin::loaded())) {
+			$this->actsAs['Tasks.Assignable'] = array('notifyAssignee' => true, 'notifySubject' => 'New Order Assigned', 'notifyMessage' => 'Please login and view your assigned tasks, or orders to get the order details.');
+		}
+    	parent::__construct($id, $table, $ds);		
+    }
+	
+/**
+ * Before Find Callback
+ * 
+	//public function afterFind($results, $primary = false) {
+	public function beforeFind($queryData = array()) {
+		if (!empty($results[0]['TransactionItem']['model'])) {
+			foreach ($results as $result) {
+				$this->bindModel('belongsTo' => array(
+					$result['TransactionItem']['model'] => array(
+						'className' => ZuhaInflector::pluginize($result['TransactionItem']['model']),
+						'foreignKey' => 'foreign_key'
+						)
+					));
+			}
+		}
+	    return $results;
+	}
+ */
 
 /**
  * Creates a new cart or returns the id of the existing cart for a user, based on their user id

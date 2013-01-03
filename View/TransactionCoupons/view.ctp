@@ -18,9 +18,8 @@ $this->set('context_menu', array('menus' => array(
 	array(
 		'heading' => 'Checkout Coupons',
 		'items' => array(
-			$this->Html->link(__('Edit', true), array('controller' => 'transaction_coupons', 'action' => 'edit', $transactionCoupon['TransactionCoupon']['id']), array('class' => 'edit')),
+			$this->Html->link(__('Edit'), array('controller' => 'transaction_coupons', 'action' => 'edit', $transactionCoupon['TransactionCoupon']['id']), array('class' => 'edit')),
 			$this->Html->link(__('Delete'), array('action' => 'delete', $this->Form->value('Condition.id')), null, __('Are you sure you want to delete # %s?', $this->Form->value('Condition.id')), array('class' => 'delete')),
 			)
 		),
-	))); 
-?>
+	))); ?>
