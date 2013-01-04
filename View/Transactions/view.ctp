@@ -95,7 +95,7 @@
         	$i = 0;
         	foreach ($transaction['TransactionItem'] as $item) { ?>
         	    <tr>
-            		<td><?php echo $this->Html->link($item['name'], array('plugin' => Inflector::tableize(ZuhaInflector::pluginize($item['model'])), 'controller' => Inflector::tableize($item['model']), 'action' => 'view', $item['id'])); ?></td>
+            		<td><?php echo $this->Html->link($item['name'], array('plugin' => Inflector::tableize(ZuhaInflector::pluginize($item['model'])), 'controller' => Inflector::tableize($item['model']), 'action' => 'view', $item['foreign_key'])); ?></td>
                 	<td><?php echo __('$%s', ZuhaInflector::pricify($item['price'])); ?></td>
                 	<td><?php echo $this->Form->input('TransactionItem.'.$i.'.tracking_no', array('value' => $item['tracking_no'], 'label' => false, 'class' => 'span')); ?></td>
                     <td><?php echo $this->Form->input('TransactionItem.'.$i.'.status', array('value' => $item['status'], 'label' => false, 'class' => 'span')); ?></td>
