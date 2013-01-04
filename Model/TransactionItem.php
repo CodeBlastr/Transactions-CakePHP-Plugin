@@ -65,20 +65,20 @@ class TransactionItem extends TransactionsAppModel {
  * Before Find Callback
  * 
  */
-//	public function afterFind($results, $primary = false) {
-//		if (!empty($results[0]['TransactionItem']['model'])) {
-//            // let the model say how the associated record should look
-//			$models = Set::extract('/TransactionItem/model', $results);
-//            foreach ($models as $model) {
-//                App::uses($model, ZuhaInflector::pluginize($model).'.Model');
-//                $Model = new $model;
-//                if (is_callable(array($Model, 'transactionItemAssociation'))) {
-//                    $results = $Model->transactionItemAssociation($results);
-//                }
-//            }
-//		}        
-//	    return $results;
-//	}
+	public function afterFind($results, $primary = false) {
+		if (!empty($results[0]['TransactionItem']['model'])) {
+            // let the model say how the associated record should look
+			$models = Set::extract('/TransactionItem/model', $results);
+            foreach ($models as $model) {
+                App::uses($model, ZuhaInflector::pluginize($model).'.Model');
+                $Model = new $model;
+                if (method_exists($Model, 'transactionItemAssociation') && is_callable(array($Model, 'transactionItemAssociation'))) {
+                    $results = $Model->transactionItemAssociation($results);
+                }
+            }
+		}        
+	    return $results;
+	}
 
 /**
  * Creates a new cart or returns the id of the existing cart for a user, based on their user id
