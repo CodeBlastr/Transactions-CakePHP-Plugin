@@ -475,6 +475,7 @@ public $name = 'TransactionTax';
         
         if (!empty($options['type']) && $options['type'] == 'enabled') {
             $countries = $this->find('list', array('fields' => array('TransactionTax.code', 'TransactionTax.name'), 'conditions' => array('TransactionTax.parent_id' => null)));
+            $countries = empty($countries) ? array('US' => 'United States') : $countries;  // a default for new stores that haven't enabled, nor need taxes
         }
         
         return $countries;
@@ -548,6 +549,7 @@ public $name = 'TransactionTax';
         
         if (!empty($options['type']) && $options['type'] == 'enabled') {
             $states = Set::combine($this->find('all', array('fields' => array('TransactionTax.code', 'TransactionTax.name', 'TransactionTax.parent_id', 'Parent.id', 'Parent.code'), 'conditions' => array('TransactionTax.parent_id NOT' => null), 'contain' => 'Parent')), '{n}.TransactionTax.code', '{n}.TransactionTax.name', '{n}.Parent.code');
+            $states = empty($states) ? $this->states() : $states;
         }
         
         return $states;

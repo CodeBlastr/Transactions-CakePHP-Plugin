@@ -54,7 +54,7 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
-            
+
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
@@ -98,12 +98,10 @@ class PaysimpleComponent extends Component {
             // make the actual payment
 			if($data['Transaction']['is_arb']) {
 				if(empty($data['TransactionItem'][0]['price'])) {
-					// When price is empty, there is a free trial
-					// In this case, set up an ARB payment as usual.
+					// When price is empty, there is a free trial. In this case, set up an ARB payment as usual.
 					$paymentData = $this->createRecurringPayment($data);
 				} else {
-					// When a price is set, we charge that as a normal payment,
-					// then setup an ARB who's 1st payment is in $StartDate days.
+					// When a price is set, we charge that as a normal payment, then setup an ARB who's 1st payment is in $StartDate days.
 					$paymentData = $this->createPayment($data);
 					$paymentData = $this->createRecurringPayment($data);
 				}

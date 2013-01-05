@@ -33,7 +33,7 @@
 	    echo $this->Html->link(__d('transactions', 'Please Login'), array('plugin' => 'users', 'controller' => 'users', 'action' => 'login'), array('class' => 'btn'));
 	} ?>
     
-    <div id="transactionForm" class="transactionForm text-inputs row">
+    <div id="transactionForm" class="transactionForm text-inputs row-fluid">
 	    <div id="transactionCartLeft" class="span8 pull-left">
 		    <div id="transactionAddress">
 			    <fieldset id="billingAddress" class="control-group">
@@ -41,7 +41,7 @@
     				<?php
         			echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required'))));
     				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required email'));
-                    echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['countries']));
+                    echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required', 'type' => 'select', 'options' => $options['countries']));
     				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required'));
     				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2'));
     				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'maxlength' => '10')) ));
