@@ -26,11 +26,12 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 			$achAccounts[$savedAch['Id']] = $savedAch['BankName'] . $savedAch['AccountNumber'];
 			if($savedAch['IsDefault'] == true) $defaultAccount = $savedAch['Id'];
 			echo $this->Form->input('paysimple_account', array(
-				'value' => $savedCC['Id'],
+				'value' => $savedAch['Id'],
 				'label' => $savedAch['BankName'] . ": " . $savedAch['AccountNumber'],
 				'type' => 'checkbox',
 				'hiddenField' => false,
-				'class' => 'savedAch'
+				'class' => 'savedAch',
+				'id' => 'savedAch_'.$savedAch['Id']
 			));
 		} 
 		//echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedAch'));
@@ -65,17 +66,18 @@ echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', '
 $(function() {
 	// clear the new payment method inputs when they choose a previous payment method
 	$(".savedCredit, .savedAch").click(function(){
-		// uncheck other saved methods
+
 		var clickedCheckboxId = $(this).attr('id');
 				
 		if($('#'+clickedCheckboxId).prop('checked') == false) {
-			// if they are deselecting a saved payment method
+			// they are deselecting a saved payment method
 			$('#useNewPayment').show('slow');
 			$('#TransactionMode').parent().parent().show('slow');
 			changePaymentInputs();
 			return ;
-		} 
+		}
 		
+		// uncheck other saved methods
 		$(".savedCredit, .savedAch").each(function() {
 			if($(this).attr('id') !== clickedCheckboxId) $(this).prop('checked', false);
 		});

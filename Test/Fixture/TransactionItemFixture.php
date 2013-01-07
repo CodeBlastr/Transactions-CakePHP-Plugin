@@ -99,7 +99,7 @@ class TransactionItemFixture extends CakeTestFixture {
 			'payment_type' => '',
 			'featured' => 1,
 			'foreign_key' => '',
-			'model' => '',
+			'model' => 'Product',
 			'is_virtual' => 1,
 			'hours_expire' => 1,
 			'customer_id' => '1',
