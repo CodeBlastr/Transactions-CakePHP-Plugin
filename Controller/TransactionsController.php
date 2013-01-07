@@ -53,7 +53,6 @@ class TransactionsController extends TransactionsAppController {
 		}
         
         $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
-		$this->paginate['contain'][] = 'ProductOption';
         $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
 		//debug($transactionItems);
         $this->Transaction->contain(array('Customer', 'Assignee'));

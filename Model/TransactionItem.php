@@ -56,32 +56,30 @@ class TransactionItem extends TransactionsAppModel {
 /**
  * Constructor method
  * 
- */
 	public function __construct($id = false, $table = null, $ds = null) {
-		if (in_array('Tasks', CakePlugin::loaded())) {
-			$this->actsAs['Tasks.Assignable'] = array('notifyAssignee' => true, 'notifySubject' => 'New Order Assigned', 'notifyMessage' => 'Please login and view your assigned tasks, or orders to get the order details.');
-		}
-    	parent::__construct($id, $table, $ds);		
+    	parent::__construct($id, $table, $ds);
     }
+ */
 	
 /**
  * Before Find Callback
  * 
-	//public function afterFind($results, $primary = false) {
-	public function beforeFind($queryData = array()) {
+ */
+	public function afterFind($results, $primary = false) {
 		if (!empty($results[0]['TransactionItem']['model'])) {
-			foreach ($results as $result) {
-				$this->bindModel('belongsTo' => array(
-					$result['TransactionItem']['model'] => array(
-						'className' => ZuhaInflector::pluginize($result['TransactionItem']['model']),
-						'foreignKey' => 'foreign_key'
-						)
-					));
-			}
-		}
+            // let the model say how the associated record should look
+			$models = Set::extract('/TransactionItem/model', $results);
+            foreach ($models as $model) {
+				$model = Inflector::classify($model);
+                App::uses($model, ZuhaInflector::pluginize($model).'.Model');
+                $Model = new $model;
+                if (method_exists($Model, 'transactionItemAssociation') && is_callable(array($Model, 'transactionItemAssociation'))) {
+                    $results = $Model->transactionItemAssociation($results);
+                }
+            }
+		}        
 	    return $results;
 	}
- */
 
 /**
  * Creates a new cart or returns the id of the existing cart for a user, based on their user id
@@ -187,10 +185,6 @@ class TransactionItem extends TransactionsAppModel {
                 }
             }
         }
-		
-//		debug($isArb);
-//		debug($data);
-//		debug($transaction);break;
 		
 		if($isArb && count($transaction['TransactionItem']) > 1) {
 			// you can only have one item in your cart if one of the items is using ARB
