@@ -368,9 +368,126 @@ class PaysimpleComponent extends Component {
 		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/resume');
 	}
 	
-	
-
 /**
+ * Returns a list of Invoice records
+ * @return type
+ */
+	public function getInvoices() {
+		return $this->_sendRequest('GET', '/invoice');
+	}
+/**
+ * Returns an Invoice record for the specified identifier
+ * @param type $invoiceId
+ * @return type
+ */
+	public function getInvoice($invoiceId) {
+		return $this->_sendRequest('GET', '/invoice/'.$invoiceId);
+	}
+/**
+ * Returns the next available invoice number when using auto-numbering within PaySimple
+ * @return type
+ */
+	public function getNextInvoiceNumber() {
+		return $this->_sendRequest('GET', '/invoice/number');
+	}
+/**
+ * Gets all of the payments for the specified Invoice identifier
+ * @param type $invoiceId
+ * @return type
+ */
+	public function getInvoicePayments($invoiceId) {
+		return $this->_sendRequest('GET', '/invoice/'.$invoiceId.'/payments');
+	}
+/**
+ * Gets a list of actions on an Invoice given the specified identifier
+ * @param type $invoiceId
+ * @return type
+ */
+	public function getInvoiceActions($invoiceId) {
+		return $this->_sendRequest('GET', '/invoice/'.$invoiceId.'/actions');
+	}
+/**
+ * Returns a list of Line Item records for the specified Invoice identifier
+ * @param type $invoiceId
+ * @return type
+ */
+	public function getInvoiceLineItems($invoiceId) {
+		return $this->_sendRequest('GET', '/invoice/'.$invoiceId.'/invoicelineitems');
+	}
+/**
+ * Creates an Invoice record when provided with an Invoice object. This route does not immediately send the Invoice
+ * @param type $data
+ * @return type
+ */
+	public function createInvoice($data) {
+		return $this->_sendRequest('POST', '/invoice', $data);
+	}
+/**
+ * Updates an Invoice record when provided with an Invoice object
+ * @param type $data
+ * @return type
+ */
+	public function updateInvoice($data) {
+		return $this->_sendRequest('PUT', '/invoice', $data);
+	}
+/**
+ * Sends or resends an Invoice record given an identifier (via email)
+ * @param type $invoiceId
+ * @return type
+ */
+	public function sendInvoice($invoiceId) {
+		return $this->_sendRequest('PUT', '/invoice/'.$invoiceId.'/send');
+	}
+/**
+ * Marks an Invoice as paid or partially paid when provided with an Invoice identifier and a Received Payment object.
+ * @param type $data
+ * @return type
+ */
+	public function addInvoicePayment($data) {
+		return $this->_sendRequest('PUT', '/invoice/'.$data['invoiceId'].'/externalpayment', $data);
+	}
+/**
+ * Marks an Invoice paid when provided with an identifier. NOTE: A body is not required for this message.
+ * @param type $invoiceId
+ * @return type
+ */
+	public function markInvoicePaid($invoiceId) {
+		return $this->_sendRequest('PUT', '/invoice/'.$invoiceId.'/markpaid');
+	}
+/**
+ * Marks an Invoice unpaid when provided with an identifier. NOTE: A body is not required for this message.
+ * @param type $invoiceId
+ * @return type
+ */
+	public function markInvoiceUnpaid($invoiceId) {
+		return $this->_sendRequest('PUT', '/invoice/'.$invoiceId.'/markunpaid');
+	}
+/**
+ * Marks an Invoice as sent when provided with an identifier. NOTE: A body is not required for this message.
+ * @param type $invoiceId
+ * @return type
+ */
+	public function markInvoiceSent($invoiceId) {
+		return $this->_sendRequest('PUT', '/invoice/'.$invoiceId.'/marksent');
+	}
+/**
+ * Marks an Invoice as cancelled when provided with an identifier. NOTE: A body is not required for this message.
+ * @param type $invoiceId
+ * @return type
+ */
+	public function markInvoiceCancelled($invoiceId) {
+		return $this->_sendRequest('PUT', '/invoice/'.$invoiceId.'/cancel');
+	}
+/**
+ * Deletes an Invoice record when provided with an identifier. NOTE: A body is not required for this message.
+ * @param type $invoiceId
+ * @return type
+ */
+	public function deleteInvoice($invoiceId) {
+		return $this->_sendRequest('DELETE', '/invoice/'.$invoiceId);
+	}
+
+	/**
  * @param integer $customerId
  * @return boolean|array
  */
