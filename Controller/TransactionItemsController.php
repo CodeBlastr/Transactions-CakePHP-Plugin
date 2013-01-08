@@ -58,11 +58,8 @@ class TransactionItemsController extends TransactionsAppController {
 			try {
 
 
-				// determine the user's "ID"
-				$userId = $this->TransactionItem->Transaction->getCustomersId();
-
 				// determine and set the transaction id (cart id) for this user
-				$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId($userId);
+				$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId();
 
 				/** @todo check stock and cart max **/
 				$this->TransactionItem->verifyItemRequest($this->request->data);
