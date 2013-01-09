@@ -102,18 +102,18 @@ class PaysimpleComponent extends Component {
 					$paymentData = $this->createRecurringPayment($data);
 				} else {
 					// When a price is set, we charge that as a normal payment, then setup an ARB who's 1st payment is in $StartDate days.
-					$paymentData = $this->createPayment($data);
+					$paymentData = $this->createPayment($data);  
 					$paymentData = $this->createRecurringPayment($data);
 				}
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
 				$data['Transaction']['processor_response'] = $paymentData['ScheduleStatus'];
 			} else {
-				$paymentData = $this->createPayment($data);
+				$paymentData = $this->createPayment($data);   
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
 			}                        
 			if ($data['Transaction']['processor_response'] == 'Failed') {
 				throw new Exception($paymentData['ProviderAuthCode']);
-			}
+			} 
 			$data['Transaction']['Payment'] = $paymentData;
 			return $data;
 		} catch (Exception $exc) {
@@ -600,8 +600,8 @@ class PaysimpleComponent extends Component {
 			$request['body'] = json_encode($data);
 		}
 
-		$result = $this->_httpSocket->request($request);
-
+		$result = $this->_httpSocket->request($request); 
+        
 		return $this->_handleResult($result, $data);
 		
 	}
@@ -618,6 +618,8 @@ class PaysimpleComponent extends Component {
 		
 		$responseCode = $result->code;
 		$result = json_decode($result->body, TRUE);
+        
+       
 
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
 		
@@ -654,6 +656,7 @@ class PaysimpleComponent extends Component {
 			return FALSE;
 			
 		} else {
+         
 			// return entire Response packet of a valid API call
 			return $result['Response'];
 		}
