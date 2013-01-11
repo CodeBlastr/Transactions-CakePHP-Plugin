@@ -87,7 +87,12 @@ class TransactionItem extends TransactionsAppModel {
  * @param integer $userId The UUID of a current or future User, who is currently using a Transaction cart.
  * @return string Id of the cart in question
  */
-    public function setCartId($userId) {
+    public function setCartId($userId = null) {
+		
+		if(empty($userId)) {
+			$userId = $this->Transaction->getCustomersId();
+		}
+		
 	  // an item was added, check for an open shopping cart.
 	  $myCart = $this->Transaction->find('first', array(
 		  'conditions' => array('customer_id' => $userId, 'status' => 'open')
@@ -126,7 +131,10 @@ class TransactionItem extends TransactionsAppModel {
 		$itemData = Set::merge(
 				$itemData,
 				$data,
-				array('TransactionItem' => array('transaction_id' => $this->Transaction->id))
+				array('TransactionItem' => array(
+					'transaction_id' => $this->Transaction->id,
+					'customer_id' => $this->Transaction->getCustomersId()
+					))
 				);
 
 		return $itemData;
