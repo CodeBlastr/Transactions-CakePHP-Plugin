@@ -62,7 +62,7 @@ class TransactionItem extends TransactionsAppModel {
  */
 	
 /**
- * Before Find Callback
+ * After Find Callback
  * 
  */
 	public function afterFind($results, $primary = false) {
@@ -73,8 +73,8 @@ class TransactionItem extends TransactionsAppModel {
 				$model = Inflector::classify($model);
                 App::uses($model, ZuhaInflector::pluginize($model).'.Model');
                 $Model = new $model;
-                if (method_exists($Model, 'transactionItemAssociation') && is_callable(array($Model, 'transactionItemAssociation'))) {
-                    $results = $Model->transactionItemAssociation($results);
+                if (method_exists($Model, 'origin_afterFind') && is_callable(array($Model, 'origin_afterFind'))) {
+                    $results = $Model->origin_afterFind($this, $results, $primary);
                 }
             }
 		}        
