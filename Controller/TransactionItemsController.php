@@ -26,7 +26,9 @@ class TransactionItemsController extends TransactionsAppController {
  */
 	public function index() {
 		//$this->TransactionItem->recursive = 0;
+		$this->paginate['fields'] = array('TransactionItem.id', 'TransactionItem.name', 'TransactionItem.price', 'TransactionItem.created');
 		$this->set('transactionItems', $this->paginate());
+		$this->set('page_title_for_layout', 'Assigned Transaction Items');
 	}
 
 
@@ -40,7 +42,8 @@ class TransactionItemsController extends TransactionsAppController {
 		if (!$this->TransactionItem->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
 		}
-		$this->set('transactionItem', $this->TransactionItem->read(null, $id));
+		$this->set('transactionItem', $transactionItem = $this->TransactionItem->read(null, $id));
+		$this->redirect(array('controller' => 'transactions', 'action' => 'view', $transactionItem['TransactionItem']['transaction_id']));
 	}
 
 
