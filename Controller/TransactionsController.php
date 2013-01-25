@@ -28,6 +28,14 @@ class TransactionsController extends TransactionsAppController {
  */
 	public $components = array('Ssl', 'Transactions.Payments');	
 	
+	
+	public $allowedActions = array(
+		'add',
+		'cart',
+		'mergeCarts',
+		'success'
+	);
+	
 /**
  * Index method
  *
