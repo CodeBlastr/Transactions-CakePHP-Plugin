@@ -10,14 +10,14 @@ class TransactionItemsController extends TransactionsAppController {
 	public	$name = 'TransactionItems';
 	public	$uses = array('Transactions.TransactionItem');
 
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public function beforeFilter() {
 		parent::beforeFilter();
 	}
-	
+
 
 /**
  * index method
@@ -33,7 +33,7 @@ class TransactionItemsController extends TransactionsAppController {
 
 
 	/**
-	 * 
+	 *
 	 * @param string $id
 	 * @throws NotFoundException
 	 */
@@ -48,65 +48,38 @@ class TransactionItemsController extends TransactionsAppController {
 
 
 /**
- * add method
  *
- * @todo merge identical items
- * 
- * @return void
+ * @throws Exception
+ * @throws NotFoundException
  */
 	public function add() {
-         
+
 		if ($this->request->is('post')) {
-			
+
 			try {
 
 
-				// determine and set the transaction id (cart id) for this user
-				$this->TransactionItem->Transaction->id = $this->TransactionItem->setCartId();
-
-				/** @todo check stock and cart max **/
-				$this->TransactionItem->verifyItemRequest($this->request->data);
-
-
-
-				/** @todo this should go into beforeSave() with conditional check on $create **/
-				$conditions = array('TransactionItem.foreign_key' => $this->request->data['TransactionItem']['foreign_key'], 'TransactionItem.transaction_id ' => $this->TransactionItem->Transaction->id,'TransactionItem.model' => $this->request->data['TransactionItem']['model']);
-				$chkdata = $this->TransactionItem->find('all', array('conditions' => $conditions));
-
-
-				$itemData = $this->TransactionItem->mapItemData($this->request->data);
-
-				if (empty($chkdata)) {   // Check the item already added
-					// create the item internally
-					$this->TransactionItem->create($itemData);
+				if ( $this->TransactionItem->addItemToCart($this->request->data) ) {
+					$this->Session->setFlash( __d('transactions', 'The item has been added to your cart.') );
+					$this->redirect( array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart') );
 				} else {
-					$this->request->data['TransactionItem']['quantity'] = $chkdata[0]['TransactionItem']['quantity'] + $this->request->data['TransactionItem']['quantity'];
-					$this->TransactionItem->id = $chkdata[0]['TransactionItem']['id'];
+				  $this->Session->setFlash( __d('transactions', 'The item could not be added to your cart. Please, try again.') );
+				  $this->redirect( $this->referer() );
 				}
-				
-				// It puts the item in the cart.
-				if ($this->TransactionItem->save($this->request->data)) {
-					$this->Session->setFlash(__d('transactions', 'The item has been added to your cart.'));
-					$this->redirect(array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart'));
-				} else {
-				  $this->Session->setFlash(__d('transactions', 'The transaction item could not be saved. Please, try again.'));
-				  $this->redirect($this->referer());
-				}
-			
+
 			} catch (Exception $exc) {
-				throw new Exception(__d('transactions', $exc->getMessage()));
 				//$this->Session->setFlash($exc->getMessage());
+				throw new Exception( __d('transactions', $exc->getMessage()) );
 			}
 
-            
 		} else {
-		    throw new NotFoundException(__d('transactions', 'Invalid transaction request'));
+		    throw new NotFoundException( __d('transactions', 'Invalid transaction request') );
 		}
 	}
 
 
 /**
- * 
+ *
  * @param string $id
  * @throws NotFoundException
  */
@@ -138,7 +111,7 @@ class TransactionItemsController extends TransactionsAppController {
 
 
 /**
- * 
+ *
  * @param string $id
  * @throws MethodNotAllowedException
  * @throws NotFoundException
