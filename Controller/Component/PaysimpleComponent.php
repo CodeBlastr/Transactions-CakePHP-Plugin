@@ -31,9 +31,13 @@ class PaysimpleComponent extends Component {
 			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
             $this->config = Set::merge($this->config, $config, $settings);
 		}
+        
+        
         // check required config
         if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
+
             throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
+
         }
 		if (!in_array('Connections', CakePlugin::loaded())) {
             throw new Exception('Connections plugin is required, contact admin with error code : 72984359283745');
@@ -50,6 +54,7 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
+
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
@@ -67,7 +72,7 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Account']['Ach'][] = $accountData;
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Web';
-			} elseif (!empty($data['Transaction']['card_number'])) {
+			} elseif (!empty($data['Transaction']['card_number'])) {   
 				// Credit Card Account
 				$accountData = $this->addCreditCardAccount($data);
 				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $accountData;
@@ -97,18 +102,18 @@ class PaysimpleComponent extends Component {
 					$paymentData = $this->createRecurringPayment($data);
 				} else {
 					// When a price is set, we charge that as a normal payment, then setup an ARB who's 1st payment is in $StartDate days.
-					$paymentData = $this->createPayment($data);
+					$paymentData = $this->createPayment($data);  
 					$paymentData = $this->createRecurringPayment($data);
 				}
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
 				$data['Transaction']['processor_response'] = $paymentData['ScheduleStatus'];
 			} else {
-				$paymentData = $this->createPayment($data);
+				$paymentData = $this->createPayment($data);   
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
 			}                        
 			if ($data['Transaction']['processor_response'] == 'Failed') {
 				throw new Exception($paymentData['ProviderAuthCode']);
-			}
+			} 
 			$data['Transaction']['Payment'] = $paymentData;
 			return $data;
 		} catch (Exception $exc) {
@@ -595,8 +600,8 @@ class PaysimpleComponent extends Component {
 			$request['body'] = json_encode($data);
 		}
 
-		$result = $this->_httpSocket->request($request);
-
+		$result = $this->_httpSocket->request($request); 
+        
 		return $this->_handleResult($result, $data);
 		
 	}
@@ -613,6 +618,8 @@ class PaysimpleComponent extends Component {
 		
 		$responseCode = $result->code;
 		$result = json_decode($result->body, TRUE);
+        
+       
 
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
 		
@@ -649,6 +656,7 @@ class PaysimpleComponent extends Component {
 			return FALSE;
 			
 		} else {
+         
 			// return entire Response packet of a valid API call
 			return $result['Response'];
 		}

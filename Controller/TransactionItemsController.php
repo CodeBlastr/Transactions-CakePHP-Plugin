@@ -53,9 +53,11 @@ class TransactionItemsController extends TransactionsAppController {
  * @throws NotFoundException
  */
 	public function add() {
+
 		if ($this->request->is('post')) {
 
 			try {
+
 
 				if ( $this->TransactionItem->addItemToCart($this->request->data) ) {
 					$this->Session->setFlash( __d('transactions', 'The item has been added to your cart.') );

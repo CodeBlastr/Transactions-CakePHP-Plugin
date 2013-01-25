@@ -40,7 +40,11 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 	echo '<h5 id="useNewPayment">Use a new Payment Method</h5>';
 }
 
-echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode']));
+
+echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode'])); ?>
+
+<fieldset id="creditCardInfo">  
+<?php
 echo $this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc'));
 echo $this->Form->input('card_exp_month', 
 		array('label' => 'Expiration Month', 'type' => 'select',
@@ -49,12 +53,15 @@ echo $this->Form->input('card_exp_month',
 			'class' => 'paysimpleCc'
 			)
 );
-echo $this->Form->input('card_sec', array('class' => 'paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));
+echo $this->Form->input('card_sec', array('class' => 'paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));   ?>
+</fieldset><!-- #creditCardInfo -->
+<fieldset id="echeckInfo">
+<?php
 echo $this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'));
 echo $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'));
 echo $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'));
 echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck')); ?>
-
+   </fieldset><!-- #echeckInfo --> 
 <script type="text/javascript">
 $(function() {
 	// clear the new payment method inputs when they choose a previous payment method

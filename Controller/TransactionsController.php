@@ -156,11 +156,12 @@ class TransactionsController extends TransactionsAppController {
  * @throws NotFoundException
  */
     public function cart() {
-        if($this->request->is('post') || $this->request->is('put')) {
+        
+        if($this->request->is('post') || $this->request->is('put')) { 
             try {
 			    $data = $this->Transaction->beforePayment($this->request->data);
-			    $data = $this->Payments->pay($data);
-			    $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+                $data = $this->Payments->pay($data); 
+                $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
 				return $this->redirect($this->_redirect());
     		} catch (Exception $exc) {
     		    $this->Session->setFlash($exc->getMessage());
@@ -258,11 +259,11 @@ class TransactionsController extends TransactionsAppController {
  *
  * @return array $url
  */
-    protected function _redirect() {
+    protected function _redirect() { 
         if (defined('__TRANSACTIONS_CHECKOUT_REDIRECT')) {
-			extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT));
+			extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT)); 
 			if(empty($url)) {
-				$plugin = strtolower(ZuhaInflector::pluginize($model));
+				$plugin = strtolower(ZuhaInflector::pluginize($model));         
 				$controller = Inflector::tableize($model);
 				if(!empty($pass)) {
 					// get foreign key of TransactionItem using given setings
@@ -277,7 +278,7 @@ class TransactionsController extends TransactionsAppController {
 				$url = array('plugin' => $plugin, 'controller' => $controller, 'action' => $action, !empty($foreign_key['TransactionItem']['foreign_key']) ? $foreign_key['TransactionItem']['foreign_key'] : '');
 			}
 		} else {
-			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
+			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'); 
 		}
         return $url;
     }
