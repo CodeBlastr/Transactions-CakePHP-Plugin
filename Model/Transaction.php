@@ -380,7 +380,7 @@ class Transaction extends TransactionsAppModel {
 	
 /**
  * 
- * @param array $data
+ * @param array $data A payment object
  * @return array
  * @throws Exception
  */
@@ -405,7 +405,7 @@ class Transaction extends TransactionsAppModel {
 /**
  * 
  * @param boolean $isLoggedIn
- * @param array $data
+ * @param array $data A payment object
  * @throws Exception
  */
 	public function afterSuccessfulPayment($isLoggedIn, $data) {
@@ -414,41 +414,39 @@ class Transaction extends TransactionsAppModel {
 
 			$this->save($data);
             
-            $models = $data['TransactionItem'];
-            
-            foreach ($models as $val)  {
-               $model=$val['model']; 
-            }
-            
-            App::uses($model, ZuhaInflector::pluginize($model) . '.Model');  
+			// run the afterSuccessfulPayment callbacks
+            $transactionItems = $data['TransactionItem'];
+            foreach ( $transactionItems as $transactionItem ) {
+				
+				App::uses($transactionItem['model'], ZuhaInflector::pluginize($transactionItem['model']) . '.Model');
 
-            $Model = new $model; 
-            if(method_exists($Model,'afterSuccessfulPayment')) { 
-               $Model->afterSuccessfulPayment($data);
+				$Model = new $transactionItem['model'];
+				if( method_exists($Model,'afterSuccessfulPayment') && is_callable(array($Model,'afterSuccessfulPayment')) ) {
+				   $Model->afterSuccessfulPayment( $data );
+				}
             }
-          
 
-			foreach($data['TransactionItem'] as $txnItem) {
+			foreach ( $data['TransactionItem'] as $txnItem ) {
 				$txnItem['transaction_id'] = $this->id;
 				$this->TransactionItem->create();
-				$this->TransactionItem->save($txnItem);
+				$this->TransactionItem->save( $txnItem );
 			}
-			foreach($data['TransactionAddress'] as $txnAddr) {
+			foreach ( $data['TransactionAddress'] as $txnAddr ) {
 				$txnAddr['transaction_id'] = $this->id;
 				$this->TransactionAddress->create();
-				$this->TransactionAddress->save($txnAddr);
+				$this->TransactionAddress->save( $txnAddr );
 			}
 			
 			// Create OR Update their payment processor data
-			if(!empty($data['Customer']['Connection'])) {
+			if ( !empty($data['Customer']['Connection']) ) {
 				$options = $this->gatherCheckoutOptions();
 				// connection[id] should be pre-filled or empty
-				$connection['id'] = (!empty($data['Customer']['Connection'][0]['id'])) ? $data['Customer']['Connection'][0]['id'] : null;
+				$connection['id'] = ( !empty($data['Customer']['Connection'][0]['id']) ) ? $data['Customer']['Connection'][0]['id'] : null;
 				$connection['user_id'] = $data['Customer']['id'];
 				$connection['type'] = $options['paymentMode'];
 				// connection[value] should be directly from the payment processor
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
-				$this->Customer->Connection->save($connection);
+				$this->Customer->Connection->save( $connection );
 			}  
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
@@ -458,6 +456,8 @@ class Transaction extends TransactionsAppModel {
 	
 /**
  * Retrieves various stats for dashboard display
+ * 
+ * @todo This could probably be done in one query, then shaped with PHP ?
  * 
  * @param string $param
  * @return array|boolean
