@@ -33,7 +33,8 @@ class TransactionsController extends TransactionsAppController {
 		'add',
 		'cart',
 		'mergeCarts',
-		'success'
+		'success',
+		'my'
 	);
 	
 /**
