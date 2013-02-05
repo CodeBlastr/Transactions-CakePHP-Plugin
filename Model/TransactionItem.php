@@ -238,7 +238,7 @@ class TransactionItem extends TransactionsAppModel {
 	}
 
 
-	public function beforeSave($options) {
+	public function beforeSave($options = array()) {
 		// serialize ARB settings that were passed with the TransactionItem
 		if(!empty($this->data['TransactionItem']['arb_settings'])) {
 			$this->data['TransactionItem']['arb_settings'] = serialize($this->data['TransactionItem']['arb_settings']);
