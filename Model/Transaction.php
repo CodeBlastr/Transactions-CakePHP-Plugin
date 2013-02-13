@@ -306,11 +306,10 @@ class Transaction extends TransactionsAppModel {
         }
         
         // copy Payment data to Shipment data if neccessary
-        if($transaction['TransactionAddress'][0]['shipping'] == '0') {
+        if(isset($transaction['TransactionAddress'][0]['shipping']) && $transaction['TransactionAddress'][0]['shipping'] == '0') {
             $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
             $transaction['TransactionAddress'][1]['type'] = 'shipping';
         }
-        
         return $transaction;
 	}
 
@@ -330,13 +329,10 @@ class Transaction extends TransactionsAppModel {
                 }
             }
 	    }
-
         // reset the keys back to 0,1,2,3..
         $finalTransaction['TransactionItem'] = array_values($finalTransactionItems);
-        
         // reuse the Transaction data from the 1st Transaction (ideally, the newest Transaction)
         $finalTransaction['Transaction'] = $transactions[0]['Transaction'];
-        
         return $finalTransaction;
 	}
 	

@@ -131,14 +131,14 @@ class TransactionItem extends TransactionsAppModel {
 		$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
 
 		$itemData = Set::merge(
-				$itemData,
-				$data,
-				array('TransactionItem' => array(
-					'transaction_id' => $this->Transaction->id,
-					'customer_id' => $this->Transaction->getCustomersId()
-					))
-				);
-
+			$itemData,
+			$data,
+			array(
+				'TransactionItem' => array(
+				'transaction_id' => $this->Transaction->id,
+				'customer_id' => $this->Transaction->getCustomersId()
+				))
+			);
 		return $itemData;
 	}
 
@@ -203,17 +203,14 @@ class TransactionItem extends TransactionsAppModel {
  *
  * @param array $data
  * @return boolean
+ * @todo check stock and cart max 
  */
 	public function addItemToCart ( $data ) {
 		try {
 			// determine and set the transaction id (cart id) for this user
 			$this->Transaction->id = $this->setCartId();
-
-			/** @todo check stock and cart max **/
-			$this->verifyItemRequest( $data );
-
-			$itemData = $this->mapItemData( $data );
-
+			$this->verifyItemRequest($data);
+			$itemData = $this->mapItemData($data);
 			// Check if the TransactionItem already exists in this Transaction
 			$conditions = array(
 				'TransactionItem.transaction_id'	=> $this->Transaction->id,
@@ -221,7 +218,6 @@ class TransactionItem extends TransactionsAppModel {
 				'TransactionItem.foreign_key'		=> $data['TransactionItem']['foreign_key']
 			);
 			$chkdata = $this->find('all', array( 'conditions' => $conditions ));
-
 			if ( empty($chkdata) ) {
 				// create the item internally
 				$this->create( $itemData );
@@ -229,9 +225,7 @@ class TransactionItem extends TransactionsAppModel {
 				$data['TransactionItem']['quantity'] = $chkdata[0]['TransactionItem']['quantity'] + $data['TransactionItem']['quantity'];
 				$this->id = $chkdata[0]['TransactionItem']['id'];
 			}
-
 			return $this->save( $data );
-
 		} catch (Exception $exc) {
 			throw new Exception( __d('transactions', $exc->getMessage()) );
 		}

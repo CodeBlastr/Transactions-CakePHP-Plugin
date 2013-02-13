@@ -56,25 +56,19 @@ class TransactionItemsController extends TransactionsAppController {
  * @throws NotFoundException
  */
 	public function add() {
-
 		if ($this->request->is('post')) {
-
 			try {
-
-
-				if ( $this->TransactionItem->addItemToCart($this->request->data) ) {
+				if ($this->TransactionItem->addItemToCart($this->request->data) ) {
 					$this->Session->setFlash( __d('transactions', 'The item has been added to your cart.') );
 					$this->redirect( array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart') );
 				} else {
 				  $this->Session->setFlash( __d('transactions', 'The item could not be added to your cart. Please, try again.') );
 				  $this->redirect( $this->referer() );
 				}
-
 			} catch (Exception $exc) {
 				//$this->Session->setFlash($exc->getMessage());
 				throw new Exception( __d('transactions', $exc->getMessage()) );
 			}
-
 		} else {
 		    throw new NotFoundException( __d('transactions', 'Invalid transaction request') );
 		}
