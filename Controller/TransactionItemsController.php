@@ -114,14 +114,16 @@ class TransactionItemsController extends TransactionsAppController {
  * @throws NotFoundException
  */
 	public function delete($id = null) {
-		$this->TransactionItem->id = $id;
-		if (!$this->TransactionItem->exists()) {
-			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
-		}
-		if ($this->TransactionItem->delete()) {
-			$this->Session->setFlash(__d('transactions', 'Removed'));
-			$this->redirect(array('controller' => 'transactions', 'action' => 'cart'));
-		}
+        if ($this->request->is('post')) {
+    		$this->TransactionItem->id = $id;
+    		if (!$this->TransactionItem->exists()) {
+    			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
+    		}
+    		if ($this->TransactionItem->delete()) {
+    			$this->Session->setFlash(__d('transactions', 'Removed'));
+    			$this->redirect(array('controller' => 'transactions', 'action' => 'cart'));
+    		}
+        }
 		$this->Session->setFlash(__d('transactions', 'Item could not be removed'));
 		$this->redirect(array('controller' => 'transactions', 'action' => 'cart'));
 	}

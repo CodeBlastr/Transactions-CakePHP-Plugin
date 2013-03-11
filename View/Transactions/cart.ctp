@@ -70,7 +70,7 @@
 
 
 	    <div id="transactionCartRight" class="span4 pull-right">
-		    <?php echo $this->Element('trust_logos', array('plugin' => 'transactions')); ?>
+		    <?php echo $this->Element('Transactions.trust_logos'); ?>
 		    <fieldset id="transactionItems" class="transactionItems">
 			    <legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
 			    <?php 
