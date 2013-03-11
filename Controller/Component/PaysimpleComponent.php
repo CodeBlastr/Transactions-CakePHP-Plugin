@@ -605,11 +605,12 @@ class PaysimpleComponent extends Component {
 		
 		if (in_array($responseCode, $badResponseCodes)) {
 			// build error message
-			if (isset($result['Meta']['Errors']['ErrorMessages'])) {
+			$result->body = json_decode($result->body, TRUE);
+			if (isset($result->body['Meta']['Errors']['ErrorMessages'])) {
 				$message = '';
-				$result = json_decode($result->body, TRUE);
+				
 				//$message = $result['Meta']['Errors']['ErrorCode']. ' '; // this might be a redundant message
-				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
+				foreach ($result->body['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
 					$message .= '<p>'.$error['Message'].'</p>';
 				}
@@ -635,7 +636,7 @@ class PaysimpleComponent extends Component {
 			throw new Exception($message);
 			return FALSE;
 		} else {
-			break;
+			//break;
 			// return entire Response packet of a valid API call
 			return $result['Response'];
 		}
