@@ -32,7 +32,7 @@ class TransactionsController extends TransactionsAppController {
 	public $allowedActions = array(
 		'add',
 		'cart',
-		'mergeCarts',
+		'merge',
 		'success',
 		'my'
 	);
@@ -60,7 +60,6 @@ class TransactionsController extends TransactionsAppController {
 		if (!$this->Transaction->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
-        
         $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
         $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
 		//debug($transactionItems);
@@ -89,7 +88,6 @@ class TransactionsController extends TransactionsAppController {
 				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
 			}
 		}
-
 		// $transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
@@ -157,7 +155,6 @@ class TransactionsController extends TransactionsAppController {
  * @throws NotFoundException
  */
     public function cart() {
-        
         if($this->request->is('post') || $this->request->is('put')) { 
             try {
 			    $data = $this->Transaction->beforePayment($this->request->data);
@@ -180,7 +177,7 @@ class TransactionsController extends TransactionsAppController {
 		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('customer_id' => $userId, 'status' => 'open')));
 		
 		if($numberOfCarts > 1) {
-            return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'mergeCarts'));
+            return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'merge'));
 		} else {
             // get their cart and process it
             $this->request->data = $this->Transaction->processCart($userId, $this->request->data);
@@ -192,6 +189,7 @@ class TransactionsController extends TransactionsAppController {
 		}
         $this->set('title_for_layout', __('Checkout'));
         $this->set('page_title_for_layout', __('Checkout <small>Please fill in your billing details.</small>'));
+		return array_merge($this->request->data, array('options' => $options)); // for the ajax cart element
 	}
     
 /**
@@ -218,9 +216,7 @@ class TransactionsController extends TransactionsAppController {
 /**
  * Merge Carts method
  */
-	public function mergeCarts() {
-	    // find their carts.
-	    // there should only be 2
+	public function merge() {
 	    $transactions = $this->Transaction->find('all',array(
 		    'conditions' => array(
 			    'customer_id' => $this->Session->read('Auth.User.id'),
@@ -232,8 +228,7 @@ class TransactionsController extends TransactionsAppController {
 	  
 	    $this->set('transactions', $transactions);
 	  
-	    // they have made a choice.  process it.
-	    // choices are: '1', 'merge', or '2'
+	    // they have made a choice.  process it; choices are: '1', 'merge', or '2'
 	    if(isset($this->request->params['named']['choice'])) {
 		    if(in_array($this->request->params['named']['choice'], array('1', 'merge', '2'))) {
 		        switch ($this->request->params['named']['choice']) {

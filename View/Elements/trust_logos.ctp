@@ -1,5 +1,4 @@
 <?php 
-  if (!empty($trustLogos)) :
-  	echo $trustLogos;
-  endif;
-?>
+if (!empty($trustLogos)) {
+    echo $trustLogos;
+}

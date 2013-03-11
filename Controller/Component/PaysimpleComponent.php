@@ -31,18 +31,14 @@ class PaysimpleComponent extends Component {
 			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
             $this->config = Set::merge($this->config, $config, $settings);
 		}
-        
-        
+
         // check required config
         if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
-
             throw new Exception('Payment configuration NOT setup, contact admin with error code : 923804892030123');
-
         }
 		if (!in_array('Connections', CakePlugin::loaded())) {
             throw new Exception('Connections plugin is required, contact admin with error code : 72984359283745');
 		}
-        
 		$this->_httpSocket = new HttpSocket();
 	}
 
@@ -54,7 +50,6 @@ class PaysimpleComponent extends Component {
  * @throws Exception
  */
 	public function Pay($data) {
-
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
@@ -110,7 +105,7 @@ class PaysimpleComponent extends Component {
 			} else {
 				$paymentData = $this->createPayment($data);   
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
-			}                        
+			}               
 			if ($data['Transaction']['processor_response'] == 'Failed') {
 				throw new Exception($paymentData['ProviderAuthCode']);
 			} 
@@ -138,7 +133,6 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createCustomer($data) {
-		
 		$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][0]['state']);
 		$safeStateCode = str_replace('CA-', '', $safeStateCode);
 		
@@ -160,11 +154,10 @@ class PaysimpleComponent extends Component {
 			'Phone' => $data['TransactionAddress'][0]['phone'],
 		);
 
-		if (isset(($data['TransactionAddress'][0]['shipping']) && $data['TransactionAddress'][0]['shipping'] == 'checked') {
+		if (isset($data['TransactionAddress'][0]['shipping']) && $data['TransactionAddress'][0]['shipping'] == 'checked') {
 			// their shipping is not the same as their billing
 			$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][1]['state']);
 			$safeStateCode = str_replace('CA-', '', $safeStateCode);
-			
 			$params['ShippingSameAsBilling'] = false;
 			$params['BillingAddress'] = array(
 				'StreetAddress1' => $data['TransactionAddress'][1]['street_address_1'],
@@ -174,7 +167,6 @@ class PaysimpleComponent extends Component {
 				'ZipCode' => $data['TransactionAddress'][1]['zip'],
 			);
 		}
-       
 		return $this->_sendRequest('POST', '/customer', $params);
 	}
 
@@ -195,7 +187,6 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function addCreditCardAccount($data) {
-
 		// ensure that the month is in 2-digit form || last ditch validation
 		$data['Transaction']['card_exp_month'] = str_pad($data['Transaction']['card_exp_month'], 2, '0', STR_PAD_LEFT);
 		
@@ -219,7 +210,6 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function addAchAccount($data) {
-
 		if(empty($data['Transaction']['ach_is_checking_account'])) $data['Transaction']['ach_is_checking_account'] = false;
 		
 		$params = array(
@@ -244,7 +234,6 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createPayment($data) {
-
 		$params = array(
 			'AccountId' => $data['Customer']['Connection'][0]['value']['Account']['Id'],
 			'InvoiceId' => NULL,
@@ -257,7 +246,7 @@ class PaysimpleComponent extends Component {
 			'CVV' => $data['Transaction']['card_sec'],
 			'PaymentSubType' => $data['Transaction']['paymentSubType'],
 			'Id' => 0
-		);
+		);   
 		return $this->_sendRequest('POST', '/payment', $params);
 	}
 	
@@ -598,42 +587,34 @@ class PaysimpleComponent extends Component {
 			$request['header']['Content-Length'] = strlen(json_encode($data));
 			$request['body'] = json_encode($data);
 		}
-
 		$result = $this->_httpSocket->request($request); 
-        
 		return $this->_handleResult($result, $data);
-		
 	}
 	
 	
-	/**
-	 * 
-	 * @param Object $result An httpSocket response object
-	 * @param Array $data The PaySimple API Request Body packet as an array that was used for the request
-	 * @return Array The entire Response packet of a valid API call
-	 * @throws Exception The error message to display to the visitor
-	 */
+/**
+ * 
+ * @param Object $result An httpSocket response object
+ * @param Array $data The PaySimple API Request Body packet as an array that was used for the request
+ * @return Array The entire Response packet of a valid API call
+ * @throws Exception The error message to display to the visitor
+ */
 	private function _handleResult($result, $data) {
-		
 		$responseCode = $result->code;
-		$result = json_decode($result->body, TRUE);
-        
-       
-
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
 		
 		if (in_array($responseCode, $badResponseCodes)) {
-			
 			// build error message
 			if (isset($result['Meta']['Errors']['ErrorMessages'])) {
-				//$message = $result['Meta']['Errors']['ErrorCode']. ' '; // this might be a redundant message
 				$message = '';
+				$result = json_decode($result->body, TRUE);
+				//$message = $result['Meta']['Errors']['ErrorCode']. ' '; // this might be a redundant message
 				foreach ($result['Meta']['Errors']['ErrorMessages'] as $error) {
 					$this->errors[] = $error['Message'];
-					$message .= '<li>'.$error['Message'].'</li>';
+					$message .= '<p>'.$error['Message'].'</p>';
 				}
 			} else {
-				$this->errors[] = $message = $result;
+				$this->errors[] = $message = '<p>Uncaught error : 23692732470912876</p>' . ZuhaInflector::flatten($result);
 			}
 			
 //			// we need to know if this was an ARB that was declined ??
@@ -653,9 +634,8 @@ class PaysimpleComponent extends Component {
 
 			throw new Exception($message);
 			return FALSE;
-			
 		} else {
-         
+			break;
 			// return entire Response packet of a valid API call
 			return $result['Response'];
 		}
