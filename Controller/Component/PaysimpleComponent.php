@@ -160,7 +160,7 @@ class PaysimpleComponent extends Component {
 			'Phone' => $data['TransactionAddress'][0]['phone'],
 		);
 
-		if (isset(($data['TransactionAddress'][0]['shipping']) && $data['TransactionAddress'][0]['shipping'] == 'checked') {
+		if (isset($data['TransactionAddress'][0]['shipping']) && $data['TransactionAddress'][0]['shipping'] == 'checked') {
 			// their shipping is not the same as their billing
 			$safeStateCode = str_replace('US-', '', $data['TransactionAddress'][1]['state']);
 			$safeStateCode = str_replace('CA-', '', $safeStateCode);
