@@ -182,7 +182,7 @@ class TransactionsController extends TransactionsAppController {
             // get their cart and process it
             $this->request->data = $this->Transaction->processCart($userId, $this->request->data);
             // show the empty cart view
-            empty($this->request->data['TransactionItem']) ? $this->view = 'cart_empty' : null;
+            empty($this->request->data['TransactionItem']) ? $this->view = 'empty' : null;
             // set the variables to display in the cart
             $options['displayShipping'] = !empty($this->request->data['TransactionItem']) ? count($this->request->data['TransactionItem']) != array_sum(Set::extract('/is_virtual', $this->request->data['TransactionItem'])) : true;
             $this->set(compact('options'));

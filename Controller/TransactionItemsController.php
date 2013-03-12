@@ -114,7 +114,7 @@ class TransactionItemsController extends TransactionsAppController {
  * @throws NotFoundException
  */
 	public function delete($id = null) {
-        if ($this->request->is('post')) {
+        if ( $this->request->is('post') || $this->request->is('get') ) {
     		$this->TransactionItem->id = $id;
     		if (!$this->TransactionItem->exists()) {
     			throw new NotFoundException(__d('transactions', 'Invalid transaction item'));
