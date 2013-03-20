@@ -1,5 +1,5 @@
 <?php
-if ($this->request->action !== 'merge') { // transactions/transactions/merge causes an infinite redirect
+if ($this->request->action !== 'merge' && $this->request->action !== 'cart') { // transactions/transactions/merge causes an infinite redirect
     $transaction = $this->requestAction(
         array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'cart'),
         array()

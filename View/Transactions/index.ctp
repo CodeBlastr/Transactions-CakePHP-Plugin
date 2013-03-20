@@ -12,7 +12,7 @@
         <tbody>
     	<?php foreach ($transactions as $transaction) { ?>
     	<tr>
-    		<td><?php echo $this->Html->link($transaction['Customer']['full_name'], array('plugin' => 'users', 'controller' => 'users', 'action' => 'view', $transaction['Customer']['id'])); ?>&nbsp;</td>
+    		<td><?php echo !empty($transaction['Customer']['full_name']) ? $this->Html->link($transaction['Customer']['full_name'], array('plugin' => 'users', 'controller' => 'users', 'action' => 'view', $transaction['Customer']['id'])) : __('%s %s', $transaction['TransactionAddress'][0]['first_name'], $transaction['TransactionAddress'][0]['last_name']); ?>&nbsp;</td>
     		<td><?php echo ZuhaInflector::datify($transaction['Transaction']['created']); ?>&nbsp;</td>
     		<td><?php echo $transaction['Transaction']['status']; ?>&nbsp;</td>
     		<td><?php echo __('$%s', ZuhaInflector::pricify($transaction['Transaction']['total'])); ?>&nbsp;</td>

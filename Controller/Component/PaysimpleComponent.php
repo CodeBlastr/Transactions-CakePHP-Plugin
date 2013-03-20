@@ -186,7 +186,7 @@ class PaysimpleComponent extends Component {
  * @param array $data
  * @return boolean|array
  */
-	public function addCreditCardAccount($data) {
+	public function addCreditCardAccount($data) {        
 		// ensure that the month is in 2-digit form || last ditch validation
 		$data['Transaction']['card_exp_month'] = str_pad($data['Transaction']['card_exp_month'], 2, '0', STR_PAD_LEFT);
 		
@@ -198,7 +198,6 @@ class PaysimpleComponent extends Component {
 			'ExpirationDate' => $data['Transaction']['card_exp_month'] . '/' . $data['Transaction']['card_exp_year'],
 			'CustomerId' => $data['Customer']['Connection'][0]['value']['Customer']['Id'],
 		);
-
 		return $this->_sendRequest('POST', '/account/creditcard', $params);
 	}
 
@@ -251,13 +250,13 @@ class PaysimpleComponent extends Component {
 	}
 	
 	
-	/**
-	 * Creates a Payment Schedule record when provided with a Payment Schedule object
-	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#post-recurringpayment
-	 * 
-	 * @param array $data
-	 * @return boolean|array
-	 */
+/**
+ * Creates a Payment Schedule record when provided with a Payment Schedule object
+ * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#post-recurringpayment
+ * 
+ * @param array $data
+ * @return boolean|array
+ */
 	public function createRecurringPayment($data) {
 		
 		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
@@ -274,8 +273,6 @@ class PaysimpleComponent extends Component {
 		if(!empty($arbSettings['FirstPaymentDate'])) {
 			$arbSettings['FirstPaymentDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['FirstPaymentDate'].' days'));
 		}
-//		debug($arbSettings);
-//		break;
 		$params = array(
 			'PaymentAmount' => $arbSettings['PaymentAmount'], // required
 			'FirstPaymentAmount' => $arbSettings['FirstPaymentAmount'],
@@ -292,18 +289,16 @@ class PaysimpleComponent extends Component {
 			'Description' => __SYSTEM_SITE_NAME,
 			'Id' => 0
 		);
-		//debug($params);break;
 		return $this->_sendRequest('POST', '/recurringpayment', $params);
 	}
 	
-	/**
-	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment
-	 * 
-	 * @param array $data
-	 * @return boolean|array
-	 */
+/**
+ * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment
+ * 
+ * @param array $data
+ * @return boolean|array
+ */
 	public function updateRecurringPayment($data) {
-		
 		$params = array(
 			'CustomerId' => null,
 			'NextScheduleDate' => null,
@@ -327,36 +322,35 @@ class PaysimpleComponent extends Component {
 			'Description' => null,
 			'Id' => null
 		);
-		
 		return $this->_sendRequest('PUT', '/recurringpayment', $params);
 	}
 	
-	/**
-	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-pause-until-enddate
-	 * 
-	 * @param array $data
-	 * @return boolean
-	 */
+/**
+ * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-pause-until-enddate
+ * 
+ * @param array $data
+ * @return boolean
+ */
 	public function pauseRecurringPayment($data) {
 		return $this->_sendRequest('PUT', '/recurringpayment/'.$data['scheduleId'].'/pause?endDate='.$data['endDate']);
 	}
 	
-	/**
-	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-suspend
-	 * 
-	 * @param integer $scheduleId
-	 * @return boolean
-	 */
+/**
+ * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-suspend
+ * 
+ * @param integer $scheduleId
+ * @return boolean
+ */
 	public function suspendRecurringPayment($scheduleId) {
 		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/suspend');
 	}
 	
-	/**
-	 * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-resume
-	 * 
-	 * @param integer $data
-	 * @return boolean
-	 */
+/**
+ * @link https://sandbox-api.paysimple.com/v4/Help/RecurringPayment#put-recurringpayment-by-id-resume
+ * 
+ * @param integer $data
+ * @return boolean
+ */
 	public function resumeRecurringPayment($data) {
 		return $this->_sendRequest('PUT', '/recurringpayment/'.$scheduleId.'/resume');
 	}
@@ -563,8 +557,6 @@ class PaysimpleComponent extends Component {
  * @return boolean|array Returns Exception/FALSE or the "Response" array
  */
 	public function _sendRequest($method, $action, $data = NULL) {
-
-	
         if ($this->config['environment'] == 'sandbox') {
 			$endpoint = 'https://sandbox-api.paysimple.com/v4';
 		} else {
@@ -587,7 +579,7 @@ class PaysimpleComponent extends Component {
 			$request['header']['Content-Length'] = strlen(json_encode($data));
 			$request['body'] = json_encode($data);
 		}
-		$result = $this->_httpSocket->request($request); 
+		$result = $this->_httpSocket->request($request);
 		return $this->_handleResult($result, $data);
 	}
 	
@@ -602,10 +594,10 @@ class PaysimpleComponent extends Component {
 	private function _handleResult($result, $data) {
 		$responseCode = $result->code;
 		$badResponseCodes = array(400, 401, 403, 404, 405, 500);
+		// build error message
+		$result->body = json_decode($result->body, TRUE); // was in the if below;  // JOEL PLEASE CHECK IF THIS BROKE ANYTHING
 		
 		if (in_array($responseCode, $badResponseCodes)) {
-			// build error message
-			$result->body = json_decode($result->body, TRUE);
 			if (isset($result->body['Meta']['Errors']['ErrorMessages'])) {
 				$message = '';
 				
@@ -636,9 +628,8 @@ class PaysimpleComponent extends Component {
 			throw new Exception($message);
 			return FALSE;
 		} else {
-			//break;
 			// return entire Response packet of a valid API call
-			return $result['Response'];
+			return $result->body['Response']; // was $result['Response']; // JOEL PLEASE CHECK IF THIS BROKE ANYTHING
 		}
 	}
 

@@ -43,7 +43,7 @@ class TransactionsController extends TransactionsAppController {
  * @return void
  */
 	public function index() {
-		$this->Transaction->recursive = 0;
+        $this->Transaction->contain(array('TransactionAddress'));
 		$this->set('transactions', $this->paginate());
         $this->set('displayName', 'created');
 	}
@@ -62,7 +62,6 @@ class TransactionsController extends TransactionsAppController {
 		}
         $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
         $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
-		//debug($transactionItems);
         $this->Transaction->contain(array('Customer', 'Assignee'));
         $this->set('transaction', $transaction = Set::merge($this->Transaction->read(null, $id), array('TransactionItem' => $transactionItems)));
         $this->set('statuses', $this->Transaction->TransactionItem->statuses());
@@ -174,7 +173,7 @@ class TransactionsController extends TransactionsAppController {
 		      
 		// If they have two carts, we are going to ask the customer what to do with them
 		$userId = $this->Transaction->getCustomersId();
-		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('customer_id' => $userId, 'status' => 'open')));
+		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('Transaction.customer_id' => $userId, 'Transaction.status' => 'open')));
 		
 		if($numberOfCarts > 1) {
             return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'merge'));
