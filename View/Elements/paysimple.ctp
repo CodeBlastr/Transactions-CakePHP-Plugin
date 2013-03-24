@@ -2,11 +2,9 @@
 <?php
 
 if(isset($this->request->data['Customer']['Connection'][0])) {
-	//debug($this->request->data);  
 	$connectionData = unserialize($this->request->data['Customer']['Connection'][0]['value']);
-	 
 	if(isset($connectionData['Account']['CreditCard'])) {
-		echo '<h5>Use a saved Credit Card</h5>';
+		echo '<legend><h5>Use a saved Credit Card</h5></legend>';
 		foreach($connectionData['Account']['CreditCard'] as $savedCC) {
 			$ccAccounts[$savedCC['Id']] = $savedCC['Issuer'] . ' ' . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'];
 			if($savedCC['IsDefault'] == true) $defaultAccount = $savedCC['Id'];
@@ -18,7 +16,6 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 				'class' => 'savedCredit'
 			));
 		}  
-		//echo $this->Form->radio('paysimple_account', $ccAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedCredit'));
 	}
 	if(isset($connectionData['Account']['Ach'])) {
 		echo '<h5>Use a saved ACH Account</h5>';
@@ -34,17 +31,13 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 				'id' => 'savedAch_'.$savedAch['Id']
 			));
 		} 
-		//echo $this->Form->radio('paysimple_account', $achAccounts, array('style' => 'float: left;', 'hiddenField'=>false, 'class' => 'savedAch'));
-	}
-	
-	echo '<h5 id="useNewPayment">Use a new Payment Method</h5>';
+	}	
+	echo '<legend><h5 id="useNewPayment">Use a new Payment Method</h5></legend>';
 }
 
 
-echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode'])); ?>
-
-<fieldset id="creditCardInfo">  
-<?php
+echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode']));
+// credit card inputs
 echo $this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc'));
 echo $this->Form->input('card_exp_month', 
 		array('label' => 'Expiration Month', 'type' => 'select',
@@ -53,15 +46,13 @@ echo $this->Form->input('card_exp_month',
 			'class' => 'required paysimpleCc'
 			)
 );
-echo $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));   ?>
-</fieldset><!-- #creditCardInfo -->
-<fieldset id="echeckInfo">
-<?php
+echo $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));
+//echeck info
 echo $this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'));
 echo $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'));
 echo $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'));
 echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck')); ?>
-   </fieldset><!-- #echeckInfo --> 
+
 <script type="text/javascript">
 $(function() {
 	// clear the new payment method inputs when they choose a previous payment method

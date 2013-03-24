@@ -205,7 +205,7 @@ class TransactionItem extends TransactionsAppModel {
  * @return boolean
  * @todo check stock and cart max 
  */
-	public function addItemToCart ( $data ) {
+	public function addItemToCart ($data) {
 		try {
 			// determine and set the transaction id (cart id) for this user
 			$this->Transaction->id = $this->setCartId();
@@ -213,9 +213,9 @@ class TransactionItem extends TransactionsAppModel {
 			$itemData = $this->mapItemData($data);
 			// Check if the TransactionItem already exists in this Transaction
 			$conditions = array(
-				'TransactionItem.transaction_id'	=> $this->Transaction->id,
-				'TransactionItem.model'				=> $data['TransactionItem']['model'],
-				'TransactionItem.foreign_key'		=> $data['TransactionItem']['foreign_key']
+				'TransactionItem.transaction_id' => $this->Transaction->id,
+				'TransactionItem.model' => $data['TransactionItem']['model'],
+				'TransactionItem.foreign_key' => $data['TransactionItem']['foreign_key']
 			);
 			$chkdata = $this->find('all', array( 'conditions' => $conditions ));
 			if ( empty($chkdata) ) {
