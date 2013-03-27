@@ -106,8 +106,11 @@ $(function() {
 				$(this).removeClass('required');
 				$(this).removeAttr('required');
 			});
-			$('.paysimpleCc').parent().parent().hide('fast');
-			$('.paysimpleCheck').parent().parent().show('slow');
+			$('.paysimpleCc').parent().hide();
+			$('.paysimpleCheck').parent().show('slow');
+			/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
+			$('.paysimpleCc').parent().parent().hide();
+			$('.paysimpleCheck').parent().parent().show('slow'); */
 		} else {
 			$('input.paysimpleCc').each(function(){
 				$(this).addClass('required');
@@ -118,8 +121,11 @@ $(function() {
 				$(this).removeClass('required');
 				$(this).removeAttr('required');
 			});
-			$('.paysimpleCheck').parent().parent().hide('fast');
-			$('.paysimpleCc').parent().parent().show('slow');
+			$('.paysimpleCheck').parent().hide();
+			$('.paysimpleCc').parent().show('slow');
+			/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
+			$('.paysimpleCheck').parent().parent().hide();
+			$('.paysimpleCc').parent().parent().show('slow'); */
 		}
     }
     $('#TransactionMode').change(function(e){

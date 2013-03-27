@@ -407,34 +407,28 @@ class Transaction extends TransactionsAppModel {
 	public function afterSuccessfulPayment($isLoggedIn, $data) {
 		try {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
-
 			$this->save($data);
-            
 			// run the afterSuccessfulPayment callbacks
             $transactionItems = $data['TransactionItem'];
-            foreach ( $transactionItems as $transactionItem ) {
-				
+            foreach ($transactionItems as $transactionItem) {
 				App::uses($transactionItem['model'], ZuhaInflector::pluginize($transactionItem['model']) . '.Model');
-
 				$Model = new $transactionItem['model'];
 				if( method_exists($Model,'afterSuccessfulPayment') && is_callable(array($Model,'afterSuccessfulPayment')) ) {
-				   $Model->afterSuccessfulPayment( $data );
+				   $Model->afterSuccessfulPayment($data);
 				}
             }
-
-			foreach ( $data['TransactionItem'] as $txnItem ) {
+			foreach ($data['TransactionItem'] as $txnItem) {
 				$txnItem['transaction_id'] = $this->id;
 				$this->TransactionItem->create();
-				$this->TransactionItem->save( $txnItem );
+				$this->TransactionItem->save($txnItem);
 			}
-			foreach ( $data['TransactionAddress'] as $txnAddr ) {
+			foreach ($data['TransactionAddress'] as $txnAddr) {
 				$txnAddr['transaction_id'] = $this->id;
 				$this->TransactionAddress->create();
-				$this->TransactionAddress->save( $txnAddr );
+				$this->TransactionAddress->save($txnAddr);
 			}
-			
 			// Create OR Update their payment processor data
-			if ( !empty($data['Customer']['Connection']) ) {
+			if (!empty($data['Customer']['Connection'])) {
 				$options = $this->gatherCheckoutOptions();
 				// connection[id] should be pre-filled or empty
 				$connection['id'] = ( !empty($data['Customer']['Connection'][0]['id']) ) ? $data['Customer']['Connection'][0]['id'] : null;
@@ -442,13 +436,36 @@ class Transaction extends TransactionsAppModel {
 				$connection['type'] = $options['paymentMode'];
 				// connection[value] should be directly from the payment processor
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
-				$this->Customer->Connection->save( $connection );
-			}  
+				$this->Customer->Connection->save($connection);
+			}
+			$this->__sendMail($data);
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
 	}
 	
+/**
+ * Send transaction email
+ * 
+ * @param array $data
+ */
+ 	public function __sendMail($data = array()) {
+ 		$subject = 'Thank You for Your Puchase';
+		$message = '<p><strong>Thank you for your purchase</strong></p>';
+		$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
+		foreach ($data['TransactionItem'] as $item) {
+			$items .= __('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
+		}
+		$items .= '</table>';
+		$message = $message . $items;
+ 		if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
+ 			$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
+ 			$subject = stripcslashes($email['subject']);
+ 			$message = str_replace('{element: transactionItems}', $items, stripcslashes($email['body']));
+ 		}
+		// this probably doesn't throw an exception if it fails
+		parent::__sendMail($data['TransactionAddress'][0]['email'], $subject, $message);	
+ 	}
 	
 /**
  * Retrieves various stats for dashboard display
@@ -458,46 +475,45 @@ class Transaction extends TransactionsAppModel {
  * @param string $param
  * @return array|boolean
  */
-        public function salesStats($period) {
-            // configure period
-            switch ($period) {
-                case 'today':
-                    $rangeStart = date('Y-m-d', strtotime('today'));
-                    break;
-                case 'thisWeek':
-                    $rangeStart = date('Y-m-d', strtotime('last sunday'));
-                    break;
-                case 'thisMonth':
-                    $rangeStart = date('Y-m-d', strtotime('first day of this month'));
-                    break;
-                case 'thisYear':
-                    $rangeStart = date('Y') . '-01-01';
-                    break;
-                case 'allTime':
-                    $rangeStart = '0000-00-00';
-                    break;
-                default:
-                    break;
-            }
-			$rangeStart .= ' 00:00:00';
-            
-            // calculate data
-            $data = $this->find('all', array(
-                'conditions' => array(
-                    'OR' => array(
-                        "created >= '$rangeStart'",
-                        "modified >= '$rangeStart'",
-                        ),
-                    'status' => 'paid'
-                    )
-            ));
-            $data['count'] = count($data);
-            $data['value'] = 0;
-            foreach ($data as $order) {
-                $data['value'] += $order['Transaction']['total'];
-            }
-            return ($data) ? $data : false;
+	public function salesStats($period) {
+        // configure period
+        switch ($period) {
+            case 'today':
+                $rangeStart = date('Y-m-d', strtotime('today'));
+                break;
+            case 'thisWeek':
+                $rangeStart = date('Y-m-d', strtotime('last sunday'));
+                break;
+            case 'thisMonth':
+                $rangeStart = date('Y-m-d', strtotime('first day of this month'));
+                break;
+            case 'thisYear':
+                $rangeStart = date('Y') . '-01-01';
+                break;
+            case 'allTime':
+                $rangeStart = '0000-00-00';
+                break;
+            default:
+                break;
+		}
+		$rangeStart .= ' 00:00:00';
+        // calculate data
+        $data = $this->find('all', array(
+            'conditions' => array(
+                'OR' => array(
+                    "created >= '$rangeStart'",
+                    "modified >= '$rangeStart'",
+                    ),
+                'status' => 'paid'
+                )
+        ));
+        $data['count'] = count($data);
+        $data['value'] = 0;
+        foreach ($data as $order) {
+            $data['value'] += $order['Transaction']['total'];
         }
+        return ($data) ? $data : false;
+    }
 	
 /**
  * An array of options for select inputs
@@ -510,6 +526,5 @@ class Transaction extends TransactionsAppModel {
 	    }
 	    return Set::merge(array('failed' => 'Failed', 'paid' => 'Paid', 'shipped' => 'Shipped'), $statuses);
 	}
-	
-	
+
 }

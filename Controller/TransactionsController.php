@@ -154,7 +154,7 @@ class TransactionsController extends TransactionsAppController {
  * @throws NotFoundException
  */
     public function cart() {
-        if($this->request->is('post') || $this->request->is('put')) { 
+        if($this->request->is('post') || $this->request->is('put')) {
             try {
 			    $data = $this->Transaction->beforePayment($this->request->data);
                 $data = $this->Payments->pay($data); 
@@ -248,6 +248,19 @@ class TransactionsController extends TransactionsAppController {
             }
 	    }
 	}
+
+/**
+ * Settings method
+ * 
+ */
+ 	public function settings() {
+ 		// data gets submitted to /settings/add
+ 		if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
+ 			$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
+ 			$this->request->data['Setting']['value']['subject'] = stripcslashes($email['subject']);
+ 			$this->request->data['Setting']['value']['body'] = stripcslashes($email['body']);
+ 		}
+ 	}
     
 /**
  * Redirect method
