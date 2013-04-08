@@ -298,8 +298,8 @@ class Transaction extends TransactionsAppModel {
             $transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
             $transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
             
-            // generate a temporary password: ANNNN
-            $transaction['Customer']['password'] = chr(97 + mt_rand(0, 25)) . rand(1000, 9999); // required
+            // generate a temporary password: Aaa9999 (then shuffled)
+            $transaction['Customer']['password'] = str_shuffle('*$' . chr(97 + mt_rand(0, 25)) . chr(97 + mt_rand(0, 25)) . strtoupper(chr(97 + mt_rand(0, 25))) . rand(1000, 9999)); // required
             
             // set their User Role Id
             $transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
@@ -348,15 +348,16 @@ class Transaction extends TransactionsAppModel {
 	public function completeUserAndTransactionData($isLoggedIn, $data) {
 		try {
 			$data['Transaction']['status'] = 'paid';
-
 			if (!$isLoggedIn) {
-				$this->Customer->save($data);
-				// Refactor their $data with their new Customer.id
-				$data['Transaction']['customer_id'] = $this->Customer->id;
-				$data['Customer']['id'] = $this->Customer->id;
+				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
+				$this->Customer->add($data);
+				// Refactor their $data with their new Customer.id  (it's kind of odd how you get $this->Contact here, but its because Customer is User and User uses Contact first then adds a User -- if that helps :)
+				$userId = !empty($this->Contact->User->id) ? $this->Contact->User->id : $this->Customer->id;
+				$data['Transaction']['customer_id'] = $userId;
+				$data['Customer']['id'] = $userId;
 				foreach ($data['TransactionAddress'] as &$transactionAddress) {
 					$transactionAddress['transaction_id'] = $this->id;
-					$transactionAddress['user_id'] = $this->Customer->id;
+					$transactionAddress['user_id'] = $userId;
 				}
 			} else {
 				$data['Transaction']['customer_id'] = CakeSession::read('Auth.User.id');

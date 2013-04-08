@@ -84,7 +84,7 @@ class PaymentsComponent extends Object {
  * @return array
  * @throws Exception
  */
-	function Pay($data = null) {
+	public function Pay($data = null) {
 		try {
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
@@ -108,13 +108,16 @@ class PaymentsComponent extends Object {
  * profileId: id of recurrence, can be profile id of payer
  * action: suspended or cancelled
  */
-	function ManageRecurringPaymentsProfileStatus($data = null) {
+	public function ManageRecurringPaymentsProfileStatus($data = null) {
 		$this->loadComponent(ucfirst(strtolower($data['Mode'])));
 		$this->paymentComponent->ManageRecurringPaymentsProfileStatus($data['profileId'], $data['action']);
 
 		return $this->paymentComponent->response;
 	}
 
+/**
+ * @todo Probably not used and could be deleted if we do a site search for it and verify (4/8/2013 - RK)
+ */
 	public function createAccount($data) {
 		return $this->paymentComponent->createAccount($data);
 	}

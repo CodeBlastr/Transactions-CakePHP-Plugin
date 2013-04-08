@@ -1,7 +1,7 @@
 <div class="transaction view row-fluid">
     <div class="well well-large clearfix">
     	<div class="span3 pull-left">
-	        <h3><?php echo __('%s<small> Customer </small>', $this->Html->link($transaction['Customer']['full_name'], array('plugin' => 'users', 'controller' => 'users', 'action' => 'view', $transaction['Customer']['id']))); ?></h3>
+	        <h3><?php echo __('%s<small> Customer %s</small>', $this->Html->link($transaction['Customer']['full_name'], array('plugin' => 'users', 'controller' => 'users', 'action' => 'view', $transaction['Customer']['id'])), $this->Html->link(__('<i class="icon-info-sign">info</i>'), array('admin' => true, 'plugin' => 'contacts', 'controller' => 'contacts', 'action' => 'view', $transaction['Customer']['Contact']['id']), array('escape' => false))); ?></h3>
 	        <div class="alert alert-success pull-left">
 	        	<p><span class="label label-success">Order Total</span> <?php echo __('$%s', ZuhaInflector::pricify($transaction['Transaction']['total'])); ?> <span class="label label-success">Status</span> <?php echo $transaction['Transaction']['status']; ?></p>
 	        	<?php echo __('<div class="row-fluid"><h1 class="pull-left span3">%s </h1><h5 class="pull-right span9">Number of times %s has ordered from you.</h5></div>', $orderCount, $transaction['Customer']['full_name']); ?>

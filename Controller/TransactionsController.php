@@ -62,7 +62,7 @@ class TransactionsController extends TransactionsAppController {
 		}
         $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
         $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
-        $this->Transaction->contain(array('Customer', 'Assignee'));
+        $this->Transaction->contain(array('Customer' => array('Contact'), 'Assignee'));
         $this->set('transaction', $transaction = Set::merge($this->Transaction->read(null, $id), array('TransactionItem' => $transactionItems)));
         $this->set('statuses', $this->Transaction->TransactionItem->statuses());
 		$this->set('assignees', $assignees = $this->Transaction->Assignee->find('list'));
