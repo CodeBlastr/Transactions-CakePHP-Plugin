@@ -230,7 +230,7 @@ class TransactionModelTestCase extends CakeTestCase {
 	}
     
     
-     /**
+/**
  * testBeforePayment method
  *
  * @return void
@@ -289,6 +289,17 @@ class TransactionModelTestCase extends CakeTestCase {
         $data = $this->Transaction->TransactionCoupon->verify($data);
         $this->assertTrue(!empty($data['TransactionCoupon']));
     }
+
+
+/**
+ * testAfterSuccessfulPayment
+ * 
+ * @return void
+ * @todo Test that the TransactionAddress is filled when you have a previous transaction.
+ */
+	public function testAfterSuccessfulPayment($isLoggedIn, $data) {
+		
+	}
     
     
 /**

@@ -202,13 +202,38 @@ class Transaction extends TransactionsAppModel {
 				     )
 			    )
 		    )), $data);
+		$cart = $this->_prefillAddresses($cart);
 
 	    if (empty($cart)) {
             return false;
         }
 	    return $this->calculateTotal($cart);
 	}
-	
+
+
+/**
+ * Prefill Adresses
+ * 
+ * If the customer has checked out before we get their address and merge it into the cart data
+ * 
+ * @param array $cart 
+ */
+	protected function _prefillAddresses($data) {
+		// get the last used address of the logged in user, if this transaction doesn't already have one
+		if (empty($data['TransactionAddress']) && CakeSession::read('Auth.User.id')) {
+			// billing first
+			$transactionBilling = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'billing'));
+			if (!empty($transactionBilling)) {
+				$data['TransactionAddress'][] = $transactionBilling['TransactionAddress'];
+			}
+			// billing first
+			$transactionShipping = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'shipping'));
+			if (!empty($transactionBilling)) {
+				$data['TransactionAddress'][] = $transactionBilling['TransactionAddress'];
+			}
+		}
+		return $data;
+	}
 	
 /**
  * Combine the pre-checkout and post-checkout Transactions.
@@ -425,8 +450,11 @@ class Transaction extends TransactionsAppModel {
 			}
 			foreach ($data['TransactionAddress'] as $txnAddr) {
 				$txnAddr['transaction_id'] = $this->id;
-				$this->TransactionAddress->create();
-				$this->TransactionAddress->save($txnAddr);
+				$txnAddr['user_id'] = empty($txnAddr['user_id']) ? CakeSession::read('Auth.User.id') : $txnAddr['user_id'];
+				if (!empty($txnAddr['street_address_1'])) {
+					$this->TransactionAddress->create();
+					$this->TransactionAddress->save($txnAddr);
+				}
 			}
 			// Create OR Update their payment processor data
 			if (!empty($data['Customer']['Connection'])) {
