@@ -83,6 +83,7 @@
             <tr>
     			<th><?php echo $this->Paginator->sort('TransactionItem.name', 'Item');?></th>
         		<th><?php echo $this->Paginator->sort('TransactionItem.price', 'Price');?></th>
+        		<th><?php echo $this->Paginator->sort('TransactionItem.quantity', 'Qty');?></th>
     			<th><?php echo $this->Paginator->sort('TransactionItem.tracking_no', 'Tracking #');?></th>
         		<th><?php echo $this->Paginator->sort('TransactionItem.status', 'Status');?></th>
         		<?php if (in_array('Tasks', CakePlugin::loaded())) { ?>
@@ -97,6 +98,7 @@
         	    <tr>
             		<td><?php echo $this->Html->link($item['name'], array('plugin' => Inflector::tableize(ZuhaInflector::pluginize($item['model'])), 'controller' => Inflector::tableize($item['model']), 'action' => 'view', $item['foreign_key'])); ?></td>
                 	<td><?php echo __('$%s', ZuhaInflector::pricify($item['price'])); ?></td>
+                	<td><?php echo $item['quantity']; ?></td>
                 	<td><?php echo $this->Form->input('TransactionItem.'.$i.'.tracking_no', array('value' => $item['tracking_no'], 'label' => false, 'class' => 'span')); ?></td>
                     <td><?php echo $this->Form->input('TransactionItem.'.$i.'.status', array('value' => $item['status'], 'label' => false, 'class' => 'span')); ?></td>
                     <?php if (in_array('Tasks', CakePlugin::loaded())) { ?>

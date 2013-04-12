@@ -19,13 +19,14 @@
     		<td class="actions">
     			<?php echo $this->Html->link(__('View'), array('action' => 'view', $transaction['Transaction']['id'])); ?>
     			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $transaction['Transaction']['id'])); ?>
-    			<?php echo $this->Html->link(__('Delete'), array('action' => 'delete', $transaction['Transaction']['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $transaction['Transaction']['id'])); ?>
+    			<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $transaction['Transaction']['id']), null, __('Are you sure you want to delete # %s?', $transaction['Transaction']['id'])); ?>
     		</td>
 	    </tr>
-    <?php } 
-    echo $this->Element('paging'); ?>
+	    <?php
+	    } ?>
         </tbody>
     </table>
+    <?php echo $this->Element('paging'); ?>
 </div>
 
 <?php
