@@ -38,7 +38,7 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 
 echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode']));
 // credit card inputs
-echo $this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc'));
+echo $this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc creditcard', 'maxLength' => 16, 'pattern' => '...', 'inputmode' => 'numeric', 'autocomplete' => 'cc-number'));
 echo $this->Form->input('card_exp_month', 
 		array('label' => 'Expiration Month', 'type' => 'select',
 			'options' => array_combine(range(1, 12, 1), range(1, 12, 1)),
