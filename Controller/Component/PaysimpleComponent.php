@@ -525,13 +525,13 @@ class PaysimpleComponent extends Component {
 	public function getIssuer($cardNumber) {
 
 		App::uses('Validation', 'Utility');
-		if (Validation::cc($cardNumber, 'visa')) {
+		if ( Validation::cc($cardNumber, array('visa')) ) {
 			$cardType = 'Visa';
-		} elseif (Validation::cc($cardNumber, 'amex')) {
+		} elseif ( Validation::cc($cardNumber, array('amex')) ) {
 			$cardType = 'Amex';
-		} elseif (Validation::cc($cardNumber, 'mc')) {
+		} elseif ( Validation::cc($cardNumber, array('mc')) ) {
 			$cardType = 'Master';
-		} elseif (Validation::cc($cardNumber, 'disc')) {
+		} elseif ( Validation::cc($cardNumber, array('disc')) ) {
 			$cardType = 'Discover';
 		} else {
 			$cardType = 'Unsupported';
