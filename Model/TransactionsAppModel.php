@@ -1,5 +1,8 @@
 <?php
 App::uses('AppModel', 'Model');
+/**
+ * TransactionsAppModel
+ */
 class TransactionsAppModel extends AppModel {
 
 
@@ -14,14 +17,14 @@ class TransactionsAppModel extends AppModel {
  * @throws Exception
  */
 	public function reassignGuestCart($fromId, $toId, $field = 'customer_id') {
-	  if($fromId && $toId) {
-		if ($this->updateAll(array($field => $toId), array($field => $fromId))) {
-		  CakeSession::write('Transaction._guestId', $fromId);
-		  return true;
-		} else {
-		  throw new Exception(__d('transactions', 'Guest cart merge failed'));
+	  	if($fromId && $toId) {
+			if ($this->updateAll(array($field => $toId), array($field => $fromId))) {
+				CakeSession::write('Transaction._guestId', $fromId);
+				return true;
+			} else {
+				throw new Exception(__d('transactions', 'Guest cart merge failed'));
+			}
 		}
-	  }
 	}
 
 }

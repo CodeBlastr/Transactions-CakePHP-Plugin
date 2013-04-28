@@ -12,7 +12,12 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @todo Add LoggableBehavior and track who the referrer was from the stats in the session $this->triggerLog() in the model, if done right.
  */
 class Transaction extends TransactionsAppModel {
- public $name = 'Transaction';
+ 		
+ 	public $name = 'Transaction';
+
+	public $actsAs = array(
+		'Transactions.Buyable'
+        );
 
 /**
  * belongsTo associations
@@ -408,7 +413,6 @@ class Transaction extends TransactionsAppModel {
  */
 	public function beforePayment($data) {
 		try {
-           
             $data = $this->finalizeTransactionData($data); 
          
             //Check Transaction Coupon code empty or not

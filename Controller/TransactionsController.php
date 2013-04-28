@@ -43,8 +43,11 @@ class TransactionsController extends TransactionsAppController {
  * @return void
  */
 	public function index() {
-        $this->Transaction->contain(array('TransactionAddress'));
+        $this->Transaction->contain(array('TransactionAddress', 'TransactionItem')); // contained items for the csv output
 		$this->set('transactions', $this->paginate());
+		$type = !empty($this->request->named['filter']) ? str_replace('status:', '', $this->request->named['filter']) : 'All';
+		$this->set('title_for_layout', __('%s Transactions', Inflector::humanize($type)));
+		$this->set('page_title_for_layout', __('%s Transactions', Inflector::humanize($type)));
         $this->set('displayName', 'created');
 	}
 
@@ -152,13 +155,16 @@ class TransactionsController extends TransactionsAppController {
  * Cart method
  * 
  * @throws NotFoundException
+ * @todo Convert to Transaction->buy()
  */
     public function cart() {
         if($this->request->is('post') || $this->request->is('put')) {
             try {
-			    $data = $this->Transaction->beforePayment($this->request->data);
+				$data = $this->Transaction->beforePayment($this->request->data);
                 $data = $this->Payments->pay($data); 
                 $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+				// use this (instead of the three lines above) as soon as authorize.net is converted
+                //$this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
     		} catch (Exception $exc) {
     		    $this->Session->setFlash($exc->getMessage());

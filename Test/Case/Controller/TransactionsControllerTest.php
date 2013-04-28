@@ -48,15 +48,26 @@ class TransactionsControllerTestCase extends ControllerTestCase {
  * @var array
  */
 	public $fixtures = array(
-		'plugin.transactions.transaction',
-		'plugin.users.user',
-		'plugin.transactions.transaction_item',
-		'plugin.transactions.transaction_address',
-		'plugin.users.customer',
-		'plugin.contacts.contact',
-		'plugin.users.used',
-		'plugin.transactions.transaction_coupon',
-		'plugin.connections.connection'
+		'app.ArosAco',
+		'app.Aro',
+		'app.Meta',
+		
+		'plugin.Transactions.TransactionAco',
+		'plugin.Transactions.Transaction',
+		'plugin.Transactions.TransactionItem',
+		'plugin.Transactions.TransactionAddress',
+		'plugin.Transactions.TransactionCoupon',
+		'plugin.Transactions.TransactionTax',
+		
+		'plugin.Products.Product',
+		'plugin.Products.ProductOption',
+		'plugin.Products.ProductsProductOption',
+		
+		'plugin.Users.User',
+		'plugin.Users.Customer',
+		'plugin.Contacts.Contact',
+		'plugin.Users.Used',
+		'plugin.Connections.Connection'
 		);
 
 /**
@@ -90,7 +101,7 @@ class TransactionsControllerTestCase extends ControllerTestCase {
  */
 	public function testIndex() {
 	    $result = $this->testAction('/transactions/transactions/index');
-	    debug($result);
+	    //debug($result);
 	}
 /**
  * testView method
@@ -292,7 +303,7 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 		$submittedTransaction = array(
 			'TransactionAddress' => array(
 				array(
-					'email' => 'joel@razorit.com',
+					'email' => 'unit-test@razorit.com',
 					'first_name' => 'Arb',
 					'last_name' => 'Tester',
 					'street_address_1' => '123 Test Drive',
