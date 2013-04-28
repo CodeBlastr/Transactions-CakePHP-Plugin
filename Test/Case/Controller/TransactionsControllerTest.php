@@ -303,7 +303,7 @@ class TransactionsControllerTestCase extends ControllerTestCase {
 		$submittedTransaction = array(
 			'TransactionAddress' => array(
 				array(
-					'email' => 'joel@razorit.com',
+					'email' => 'unit-test@razorit.com',
 					'first_name' => 'Arb',
 					'last_name' => 'Tester',
 					'street_address_1' => '123 Test Drive',

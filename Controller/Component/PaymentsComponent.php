@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Payment Gateways integrated 
  */
@@ -54,9 +53,7 @@ class PaymentsComponent extends Object {
     			if (isset($this->Controller->{$componentName})) {
     				continue;
     			}
-    
     			$component = 'Transactions.' . $component;
-    
     			App::import('Component', $component);
     			$componentFullName = $componentName . 'Component';
     			$component = new $componentFullName(new ComponentCollection(), $config);

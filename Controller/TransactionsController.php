@@ -156,9 +156,11 @@ class TransactionsController extends TransactionsAppController {
     public function cart() {
         if($this->request->is('post') || $this->request->is('put')) {
             try {
-			    $data = $this->Transaction->beforePayment($this->request->data);
-                $data = $this->Payments->pay($data); 
-                $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+            	//moved to Model/Processor/ProcessorName.php
+			    //$data = $this->Transaction->beforePayment($this->request->data);
+                //$data = $this->Payments->pay($data); 
+                //$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+                $this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
     		} catch (Exception $exc) {
     		    $this->Session->setFlash($exc->getMessage());
