@@ -33,11 +33,14 @@
 
 
 // set the contextual menu items
+$named =  array('limit' => $this->Paginator->counter('{:count}')) + array_reverse($this->request->named);
 $this->set('context_menu', array('menus' => array(
     array(
 		'heading' => 'Products',
 		'items' => array(
 			$this->Html->link(__('Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
+			//http://discoverywoods.buildrr.com/admin/transactions/transactions/index/sort:Transaction.created/direction:desc/limit:1000/filter:status%3Apaid.csv
+			$this->Html->link(__('Download %s Transactions', $this->Paginator->counter('{:count}')), array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'ext' =>'csv') + $named),
 			)
 		),
 	))); ?>
