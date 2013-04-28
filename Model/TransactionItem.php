@@ -51,6 +51,14 @@ class TransactionItem extends TransactionsAppModel {
 			'fields' => '',
 			'order' => ''
 		),
+		'Customer' => array(
+			//'className' => 'Users.Assignee',
+			'className' => 'Users.User',
+			'foreignKey' => 'customer_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
     );
 
 /**
