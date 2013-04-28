@@ -30,7 +30,11 @@
 </div>
 
 <?php
-
+// set the contextual breadcrumb items
+$this->set('context_crumbs', array('crumbs' => array(
+	$this->Html->link(__('Ecommerce Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
+	$page_title_for_layout,
+)));
 
 // set the contextual menu items
 $named =  array('limit' => $this->Paginator->counter('{:count}')) + array_reverse($this->request->named);
