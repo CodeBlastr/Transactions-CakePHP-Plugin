@@ -258,7 +258,7 @@ class PaysimpleComponent extends Component {
  * @return boolean|array
  */
 	public function createRecurringPayment($data) {
-		
+
 		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
 		
 		// determine & format StartDate
@@ -266,11 +266,11 @@ class PaysimpleComponent extends Component {
 		$arbSettings['StartDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['StartDate'].' days'));
 
 		// determine & format EndDate
-		if(!empty($arbSettings['EndDate'])) {
+		if ( !empty($arbSettings['EndDate']) ) {
 			$arbSettings['EndDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['EndDate'].' days'));
 		}
 		// determine & format FirstPaymentDate
-		if(!empty($arbSettings['FirstPaymentDate'])) {
+		if ( !empty($arbSettings['FirstPaymentDate']) ) {
 			$arbSettings['FirstPaymentDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['FirstPaymentDate'].' days'));
 		}
 		$params = array(

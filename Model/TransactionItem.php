@@ -242,7 +242,10 @@ class TransactionItem extends TransactionsAppModel {
 
 	public function beforeSave($options = array()) {
 		// serialize ARB settings that were passed with the TransactionItem
-		if(!empty($this->data['TransactionItem']['arb_settings'])) {
+		if ( !is_array($this->data['TransactionItem']['arb_settings']) && !empty($this->data['TransactionItem']['arb_settings']) ) {
+			$this->data['TransactionItem']['arb_settings'] = unserialize($this->data['TransactionItem']['arb_settings']);
+		}
+		if( !empty($this->data['TransactionItem']['arb_settings']) && is_array($this->data['TransactionItem']['arb_settings']) ) {
 			if ( empty($this->data['TransactionItem']['arb_settings']['PaymentAmount']) ) {
 				$this->data['TransactionItem']['arb_settings']['PaymentAmount'] = $this->data['TransactionItem']['price'];
 			}
