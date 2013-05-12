@@ -80,10 +80,6 @@ class BuyableBehavior extends ModelBehavior {
     	$this->settings = array_merge($this->defaults, $config);
 		$this->modelName = !empty($this->settings['modelAlias']) ? $this->settings['modelAlias'] : $Model->alias;
 		$this->foreignKey =  !empty($this->settings['foreignKeyName']) ? $this->settings['foreignKeyName'] : $Model->primaryKey;
-		
-        if (!defined('__TRANSACTIONS_DEFAULT_PAYMENT')) {
-        	throw new Exception('Payment configuration required', 1);
-        }
     	return true;
 	}
 
@@ -119,7 +115,10 @@ class BuyableBehavior extends ModelBehavior {
  * @return array
  * @throws Exception
  */
-	public function buy(Model $Model, $data = null) {		
+	public function buy(Model $Model, $data = null) {
+		if (!defined('__TRANSACTIONS_DEFAULT_PAYMENT')) {
+        	throw new Exception('Payment configuration required', 1);
+        }	
 		try {
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
