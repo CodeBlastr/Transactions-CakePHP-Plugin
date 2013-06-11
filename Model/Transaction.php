@@ -483,7 +483,7 @@ class Transaction extends TransactionsAppModel {
  * @param array $data
  */
  	public function __sendMail($data = array()) {
- 		$subject = 'Thank You for Your Puchase';
+ 		$subject = 'Thank You for Your Purchase';
 		$message = '<p><strong>Thank you for your purchase</strong></p>';
 		$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
 		foreach ($data['TransactionItem'] as $item) {
