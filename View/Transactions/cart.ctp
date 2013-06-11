@@ -134,11 +134,10 @@ $(function() {
     }
     
     $('#TransactionAddress0Shipping').change(function(e){
-	  if ( $('#TransactionAddress0Shipping').attr("checked") == undefined) {
-		  $('#shippingAddress').hide('slow');
-	  }
-	  if ( $('#TransactionAddress0Shipping').attr("checked") == 'checked') {
+	  if ( $('#TransactionAddress0Shipping').prop("checked") ) {
 		  $('#shippingAddress').show('slow');
+	  } else {
+		  $('#shippingAddress').hide('slow');
 	  }
     });
 
@@ -159,7 +158,7 @@ $(function() {
 			        $('#TransactionTotal').text('$'+data['data']['Transaction']['sub_total']);
                     $('#TransactionTotal').val(data['data']['Transaction']['sub_total']);
                     $("#TransactionDiscount").val(discount.toFixed(2));
-                    if(data['data']['TransactionCoupon']['discount_type']=='fixed') {
+                    if ( data['data']['TransactionCoupon']['discount_type'] === 'fixed' ) {
                         symbol='$';  
                         $("#TransactionDiscount").text('- '+ symbol + data['data']['TransactionCoupon']['discount']);
                     } else { 
@@ -196,7 +195,7 @@ $(function() {
     });
 	
 	function updateItemTotals(itemQty) {
-		var transactionItemX = itemQty.attr('id').replace('Quantity', '');
+		var transactionItemX = itemQty.prop('id').replace('Quantity', '');
 		if($.isNumeric(itemQty.val()) === false) itemQty.val('0');
 		// calculate the item total
 		var itemTotal = $('#' + transactionItemX + ' .priceOfOne').text() * itemQty.val();

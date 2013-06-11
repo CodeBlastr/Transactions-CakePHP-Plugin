@@ -1,13 +1,13 @@
 <!-- PaySimple -->
 <?php
 
-if(isset($this->request->data['Customer']['Connection'][0])) {
+if ( isset($this->request->data['Customer']['Connection'][0]) ) {
 	$connectionData = unserialize($this->request->data['Customer']['Connection'][0]['value']);
-	if(isset($connectionData['Account']['CreditCard'])) {
+	if ( isset($connectionData['Account']['CreditCard']) ) {
 		echo '<legend><h5>Use a saved Credit Card</h5></legend>';
-		foreach($connectionData['Account']['CreditCard'] as $savedCC) {
+		foreach ( $connectionData['Account']['CreditCard'] as $savedCC ) {
 			$ccAccounts[$savedCC['Id']] = $savedCC['Issuer'] . ' ' . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'];
-			if($savedCC['IsDefault'] == true) $defaultAccount = $savedCC['Id'];
+			if ( $savedCC['IsDefault'] == true ) $defaultAccount = $savedCC['Id'];
 			echo $this->Form->input('paysimple_account', array(
 				'value' => $savedCC['Id'],
 				'label' => $savedCC['Issuer'] . ' ' . $savedCC['CreditCardNumber'] . ' exp. ' . $savedCC['ExpirationDate'],
@@ -17,11 +17,11 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 			));
 		}  
 	}
-	if(isset($connectionData['Account']['Ach'])) {
+	if ( isset($connectionData['Account']['Ach']) ) {
 		echo '<h5>Use a saved ACH Account</h5>';
-		foreach($connectionData['Account']['Ach'] as $savedAch) {
+		foreach ( $connectionData['Account']['Ach'] as $savedAch ) {
 			$achAccounts[$savedAch['Id']] = $savedAch['BankName'] . $savedAch['AccountNumber'];
-			if($savedAch['IsDefault'] == true) $defaultAccount = $savedAch['Id'];
+			if ( $savedAch['IsDefault'] == true ) $defaultAccount = $savedAch['Id'];
 			echo $this->Form->input('paysimple_account', array(
 				'value' => $savedAch['Id'],
 				'label' => $savedAch['BankName'] . ": " . $savedAch['AccountNumber'],
@@ -38,20 +38,25 @@ if(isset($this->request->data['Customer']['Connection'][0])) {
 
 echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode']));
 // credit card inputs
-echo $this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc creditcard', 'maxLength' => 16, 'pattern' => '...', 'inputmode' => 'numeric', 'autocomplete' => 'cc-number'));
-echo $this->Form->input('card_exp_month', 
+echo $this->Html->tag('div',
+		$this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc creditcard', 'maxLength' => 16, 'pattern' => '...', 'inputmode' => 'numeric', 'autocomplete' => 'cc-number'))
+		. $this->Form->input('card_exp_month', 
 		array('label' => 'Expiration Month', 'type' => 'select',
 			'options' => array_combine(range(1, 12, 1), range(1, 12, 1)),
 			'after' => $this->Form->input('card_exp_year', array('class' => 'required paysimpleCc', 'label' => 'Exp Year', 'type' => 'select', 'options' => array_combine(range(date('Y'), date('Y', strtotime('+ 10 years')), 1), range(date('Y'), date('Y', strtotime('+ 10 years')), 1)), 'dateFormat' => 'Y')),
 			'class' => 'required paysimpleCc'
 			)
-);
+		)
+		, array('id' => 'creditCardInfo'));
 echo $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));
 //echeck info
-echo $this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'));
-echo $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'));
-echo $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'));
-echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck')); ?>
+echo $this->Html->tag('div',
+		$this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'))
+		. $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'))
+		. $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'))
+		. $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck'))
+		, array('id' => 'echeckInfo'));
+?>
 
 <script type="text/javascript">
 $(function() {
@@ -60,7 +65,7 @@ $(function() {
 
 		var clickedCheckboxId = $(this).attr('id');
 				
-		if($('#'+clickedCheckboxId).prop('checked') == false) {
+		if ( $('#'+clickedCheckboxId).prop('checked') === false ) {
 			// they are deselecting a saved payment method
 			$('#useNewPayment').show('slow');
 			$('#TransactionMode').parent().parent().show('slow');
@@ -94,7 +99,7 @@ $(function() {
 	
     function changePaymentInputs() {
 		$(".savedCredit, .savedAch").prop('checked', false);
-		if ($('#TransactionMode').val() == 'PAYSIMPLE.CHECK') {
+		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CHECK' ) {
 			$('input.paysimpleCheck').each(function(){
 				if($(this).attr('id') !== 'TransactionAchIsCheckingAccount') {
 					$(this).addClass('required');
@@ -106,8 +111,8 @@ $(function() {
 				$(this).removeClass('required');
 				$(this).removeAttr('required');
 			});
-			$('.paysimpleCc').parent().hide();
-			$('.paysimpleCheck').parent().show('slow');
+			$('.paysimpleCc').parent().parent().hide();
+			$('.paysimpleCheck').parent().parent().show('slow');
 			/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
 			$('.paysimpleCc').parent().parent().hide();
 			$('.paysimpleCheck').parent().parent().show('slow'); */
@@ -121,8 +126,8 @@ $(function() {
 				$(this).removeClass('required');
 				$(this).removeAttr('required');
 			});
-			$('.paysimpleCheck').parent().hide();
-			$('.paysimpleCc').parent().show('slow');
+			$('.paysimpleCheck').parent().parent().hide();
+			$('.paysimpleCc').parent().parent().show('slow');
 			/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
 			$('.paysimpleCheck').parent().parent().hide();
 			$('.paysimpleCc').parent().parent().show('slow'); */
