@@ -26,7 +26,7 @@ class TransactionTaxesController extends TransactionsAppController {
  * 
  * @var string $uses
  */
-	public $allowedActions = array('calculate');
+	public $allowedActions = array('rate');
 	
 /**
  * index method
