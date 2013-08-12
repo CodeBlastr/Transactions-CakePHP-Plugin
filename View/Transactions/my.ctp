@@ -22,10 +22,16 @@ foreach ($transactions as $transaction) {
 	<?php
 	$expand = 'collapsed';
 	unset($items);
-} ?>
+}
 
+if ( empty($transactions) ) {
+?>
+
+<div class="well">No previous orders found.</div>
 
 <?php
+}
+
 // set the contextual menu items
 $this->set('context_menu', array('menus' => array(
     array(
@@ -34,4 +40,4 @@ $this->set('context_menu', array('menus' => array(
 			$this->Html->link(__('Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
 			)
 		),
-	))); ?>
+	)));

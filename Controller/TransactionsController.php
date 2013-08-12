@@ -204,6 +204,7 @@ class TransactionsController extends TransactionsAppController {
  * @return void
  */
     public function my() {
+		$this->set('title_for_layout', __('Order History | ' . __SYSTEM_SITE_NAME));
         $this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
         $this->paginate['contain'] = 'TransactionItem';
         //$this->Transaction->recursive = 2;
