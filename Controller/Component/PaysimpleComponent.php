@@ -51,7 +51,10 @@ class PaysimpleComponent extends Component {
  */
 	public function Pay($data) {
 		try {      
-			// Do we need to save a New Customer or are we using an Existing Customer     
+			/**
+			 *	Prepare the Customer data
+			 *  Do we need to save a New Customer or are we using an Existing Customer
+			 */
 			if ( empty($data['Customer']['Connection']) ) {
 				// create their Customer
 				$userData = $this->createCustomer($data);  
@@ -59,8 +62,12 @@ class PaysimpleComponent extends Component {
 			} else {
 				// we have their customer, unserialize the data
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
-			}   
-			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
+			}
+
+			/**
+			 *  Prepare their chosen Payment Method for use.
+			 *  Do we need to save a New Payment Method, or are they using a Saved Payment Method
+			 */
 			if ( !empty($data['Transaction']['ach_account_number']) ) {
 				// ACH Account
 				$accountData = $this->addAchAccount($data);
@@ -74,6 +81,7 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Moto';
 			} else {
+				// Saved Payment Methods
                 $ach_count = count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
                 $cc_count = count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
                 if ( $ach_count > 0 ) {
@@ -93,7 +101,11 @@ class PaysimpleComponent extends Component {
 				// they are using a Saved Payment Method; defined by an Id
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
 			}
-            // make the actual payment
+
+            /**
+			 * make the actual payment
+			 */
+			// ARB Payments
 			if ( $data['Transaction']['is_arb'] ) {
 				if ( empty($data['TransactionItem'][0]['price']) ) {
 					// When price is empty, there is a free trial. In this case, set up an ARB payment as usual.
@@ -106,14 +118,19 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
 				$data['Transaction']['processor_response'] = $paymentData['ScheduleStatus'];
 			} else {
+				// ACH or Credit Card Payments
 				$paymentData = $this->createPayment($data);   
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
-			}               
+			}
+
 			if ( $data['Transaction']['processor_response'] == 'Failed' ) {
 				throw new Exception($paymentData['ProviderAuthCode']);
-			} 
+			}
+
 			$data['Transaction']['Payment'] = $paymentData;
+
 			return $data;
+
 		} catch (Exception $exc) {
 			throw new Exception($exc->getMessage());
 		}
