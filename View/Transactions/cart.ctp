@@ -132,7 +132,8 @@ $(function() {
     if (!$("#TransactionDiscount").val()) {
 	  $("#TransactionDiscount").parent().hide();
     }
-    
+
+	// toggle Shipping Address fields
     $('#TransactionAddress0Shipping').change(function(e){
 	  if ( $('#TransactionAddress0Shipping').prop("checked") ) {
 		  $('#shippingAddress').show('slow');
@@ -141,7 +142,6 @@ $(function() {
 	  }
     });
 
-   
     // handle a submitted code for verification (update total)
     $("#applyCode").click(function(e){
    	    e.preventDefault(); 
@@ -258,6 +258,24 @@ $(function() {
 		$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
 		
 	}
+
+    document.changePaymentInputs = function () {
+
+		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CC' ) {
+			document.changeToPaysimpleCC();
+		}
+		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CHECK' ) {
+			document.changeToPaysimpleCheck();
+		}
+		if ( $('#TransactionMode').val() === 'PURCHASEORDER' ) {
+			document.changeToPurchaseOrder();
+		}
+    };
+    $('#TransactionMode').change(function(e){
+		document.changePaymentInputs();
+    });
+    document.changePaymentInputs();
+
 });
 </script>
 
