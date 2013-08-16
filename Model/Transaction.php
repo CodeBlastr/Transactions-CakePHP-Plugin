@@ -377,7 +377,7 @@ class Transaction extends TransactionsAppModel {
  */
 	public function completeUserAndTransactionData($isLoggedIn, $data) {
 		try {
-			$data['Transaction']['status'] = 'paid';
+			//$data['Transaction']['status'] = 'paid';
 			if (!$isLoggedIn) {
 				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
 				$this->Customer->add($data);

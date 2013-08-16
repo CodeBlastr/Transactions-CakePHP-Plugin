@@ -46,7 +46,7 @@ class PaysimpleComponent extends Component {
 /**
  * 
  * @param array $data
- * @return type
+ * @return array
  * @throws Exception
  */
 	public function Pay($data) {
@@ -128,6 +128,8 @@ class PaysimpleComponent extends Component {
 			}
 
 			$data['Transaction']['Payment'] = $paymentData;
+
+			$data['Transaction']['status'] = 'paid';
 
 			return $data;
 
