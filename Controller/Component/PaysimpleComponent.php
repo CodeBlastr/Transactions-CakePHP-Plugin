@@ -52,7 +52,7 @@ class PaysimpleComponent extends Component {
 	public function Pay($data) {
 		try {      
 			// Do we need to save a New Customer or are we using an Existing Customer     
-			if (empty($data['Customer']['Connection'])) {
+			if ( empty($data['Customer']['Connection']) ) {
 				// create their Customer
 				$userData = $this->createCustomer($data);  
               	$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData['Id'];
@@ -61,38 +61,41 @@ class PaysimpleComponent extends Component {
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
 			}   
 			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
-			if (!empty($data['Transaction']['ach_account_number'])) {
+			if ( !empty($data['Transaction']['ach_account_number']) ) {
 				// ACH Account
 				$accountData = $this->addAchAccount($data);
 				$data['Customer']['Connection'][0]['value']['Account']['Ach'][] = $accountData;
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Web';
-			} elseif (!empty($data['Transaction']['card_number'])) {   
+			} elseif ( !empty($data['Transaction']['card_number']) ) {
 				// Credit Card Account
 				$accountData = $this->addCreditCardAccount($data);
 				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $accountData;
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data['Transaction']['paymentSubType'] = 'Moto';
 			} else {
-                $ach_count=count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
-                $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
-                if($ach_count > 0) {
-                   for($i=0;$i<$ach_count;$i++) {
-                       if($data['Transaction']['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data['Transaction']['paymentSubType'] = 'Web';  }
-                     
+                $ach_count = count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
+                $cc_count = count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
+                if ( $ach_count > 0 ) {
+                   for ( $i = 0; $i < $ach_count; $i++ ) {
+                       if ( $data['Transaction']['paysimple_account'] == $data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id'] ) {
+						   $data['Transaction']['paymentSubType'] = 'Web';
+					   }
                    } 
                 }
-                if($cc_count > 0) {
-                   for($i=0;$i<$cc_count;$i++) {
-                        if($data['Transaction']['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data['Transaction']['paymentSubType'] = 'Moto';  } 
+                if ( $cc_count > 0 ) {
+                   for ( $i = 0; $i < $cc_count; $i++ ) {
+                        if ( $data['Transaction']['paysimple_account'] == $data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id'] ) {
+							$data['Transaction']['paymentSubType'] = 'Moto';
+						}
                    } 
                 }
 				// they are using a Saved Payment Method; defined by an Id
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data['Transaction']['paysimple_account'];
 			}
             // make the actual payment
-			if($data['Transaction']['is_arb']) {
-				if(empty($data['TransactionItem'][0]['price'])) {
+			if ( $data['Transaction']['is_arb'] ) {
+				if ( empty($data['TransactionItem'][0]['price']) ) {
 					// When price is empty, there is a free trial. In this case, set up an ARB payment as usual.
 					$paymentData = $this->createRecurringPayment($data);
 				} else {
@@ -106,7 +109,7 @@ class PaysimpleComponent extends Component {
 				$paymentData = $this->createPayment($data);   
 				$data['Transaction']['processor_response'] = $paymentData['Status'];
 			}               
-			if ($data['Transaction']['processor_response'] == 'Failed') {
+			if ( $data['Transaction']['processor_response'] == 'Failed' ) {
 				throw new Exception($paymentData['ProviderAuthCode']);
 			} 
 			$data['Transaction']['Payment'] = $paymentData;
