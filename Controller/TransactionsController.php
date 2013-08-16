@@ -5,7 +5,7 @@ App::uses('TransactionsAppController', 'Transactions.Controller');
  *
  * @property Transaction $Transaction
  */
-class TransactionsController extends TransactionsAppController {
+class _TransactionsController extends TransactionsAppController {
 
 /**
  * Name
@@ -298,4 +298,8 @@ class TransactionsController extends TransactionsAppController {
         return $url;
     }
 	
+}
+
+if (!isset($refuseInit)) {
+    class TransactionsController extends _TransactionsController {}
 }
