@@ -47,15 +47,16 @@ echo $this->Html->tag('div',
 			'class' => 'required paysimpleCc'
 			)
 		)
-		, array('id' => 'creditCardInfo'));
-echo $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));
+		. $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4))
+		, array('id' => 'creditCardInfo', 'class' => 'paymentOption'));
+
 //echeck info
 echo $this->Html->tag('div',
 		$this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'))
 		. $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'))
 		. $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'))
 		. $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck'))
-		, array('id' => 'echeckInfo'));
+		, array('id' => 'echeckInfo', 'class' => 'paymentOption'));
 ?>
 
 <script type="text/javascript">
@@ -69,7 +70,7 @@ $(function() {
 			// they are deselecting a saved payment method
 			$('#useNewPayment').show('slow');
 			$('#TransactionMode').parent().parent().show('slow');
-			changePaymentInputs();
+			document.changePaymentInputs();
 			return ;
 		}
 		
@@ -89,53 +90,53 @@ $(function() {
 		$('#TransactionMode').parent().parent().hide('slow');
 		$('.paysimpleCc').parent().parent().hide('slow');
 		$('.paysimpleCheck').parent().parent().hide('slow');
+		$('#purchaseOrder').hide();
 	});
 	
 	// delect saved payment account when they type in a new account
 	$('input.paysimpleCc, input.paysimpleCheck').keypress(function(){
 		$(".savedCredit, .savedAch").prop('checked', false);
-		changePaymentInputs();
+		document.changePaymentInputs();
 	});
-	
-    function changePaymentInputs() {
+
+	document.changeToPaysimpleCC = function () {
+		$('input.paysimpleCc').each(function(){
+			$(this).addClass('required');
+			$(this).attr('required', 'required');
+		});
+		$('input.paysimpleCheck').each(function(){
+			$(this).val('');
+			$(this).removeClass('required');
+			$(this).removeAttr('required');
+		});
+		$('.paysimpleCheck').parent().parent().hide();
+		$('.paysimpleCc').parent().parent().show('slow');
+		$('#purchaseOrder').hide();
+		/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
+		$('.paysimpleCheck').parent().parent().hide();
+		$('.paysimpleCc').parent().parent().show('slow'); */
+	};
+
+	document.changeToPaysimpleCheck = function () {
 		$(".savedCredit, .savedAch").prop('checked', false);
-		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CHECK' ) {
-			$('input.paysimpleCheck').each(function(){
-				if($(this).attr('id') !== 'TransactionAchIsCheckingAccount') {
-					$(this).addClass('required');
-					$(this).attr('required', 'required');
-				}
-			});
-			$('input.paysimpleCc').each(function(){
-				$(this).val('');
-				$(this).removeClass('required');
-				$(this).removeAttr('required');
-			});
-			$('.paysimpleCc').parent().parent().hide();
-			$('.paysimpleCheck').parent().parent().show('slow');
-			/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
-			$('.paysimpleCc').parent().parent().hide();
-			$('.paysimpleCheck').parent().parent().show('slow'); */
-		} else {
-			$('input.paysimpleCc').each(function(){
+		$('input.paysimpleCheck').each(function(){
+			if($(this).attr('id') !== 'TransactionAchIsCheckingAccount') {
 				$(this).addClass('required');
 				$(this).attr('required', 'required');
-			});
-			$('input.paysimpleCheck').each(function(){
-				$(this).val('');
-				$(this).removeClass('required');
-				$(this).removeAttr('required');
-			});
-			$('.paysimpleCheck').parent().parent().hide();
-			$('.paysimpleCc').parent().parent().show('slow');
-			/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
-			$('.paysimpleCheck').parent().parent().hide();
-			$('.paysimpleCc').parent().parent().show('slow'); */
-		}
-    }
-    $('#TransactionMode').change(function(e){
-		changePaymentInputs();
-    });
-    changePaymentInputs();
+			}
+		});
+		$('input.paysimpleCc').each(function(){
+			$(this).val('');
+			$(this).removeClass('required');
+			$(this).removeAttr('required');
+		});
+		$('.paysimpleCc').parent().parent().hide();
+		$('.paysimpleCheck').parent().parent().show('slow');
+		$('#purchaseOrder').hide();
+		/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
+		$('.paysimpleCc').parent().parent().hide();
+		$('.paysimpleCheck').parent().parent().show('slow'); */
+	};
+
 });
 </script>
