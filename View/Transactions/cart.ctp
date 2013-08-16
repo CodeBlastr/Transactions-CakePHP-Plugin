@@ -64,7 +64,17 @@
 
 		    <fieldset id="paymentInformation" class="control-group">
 			    <legend><?php echo __d('transactions', 'Payment Information'); ?></legend>
-			    <?php echo $this->Element(strtolower($options['paymentMode'])); ?>
+			    <?php
+				// unFlatten the paymentOptions
+				$paymentOptions = array();
+				foreach ($options['paymentOptions'] as $k => $v) {
+					$paymentOptions = Set::insert($paymentOptions, $k, $v);
+				}
+				// display each payment option's element
+				foreach ( $paymentOptions as $k => $v ) {
+					echo $this->Element(strtolower($k));
+				}
+				?>
 		    </fieldset>
 	    </div>
 
