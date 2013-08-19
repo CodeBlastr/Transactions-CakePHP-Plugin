@@ -13,7 +13,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property Creator $Creator
  * @property Modifier $Modifier
  */
-class TransactionItem extends TransactionsAppModel {
+class _TransactionItem extends TransactionsAppModel {
 
     public $name = 'TransactionItem';
 
@@ -263,4 +263,8 @@ class TransactionItem extends TransactionsAppModel {
         return Set::merge(array('incart' => 'In Cart', 'paid' => 'Paid', 'shipped' => 'Shipped'), $statuses);
     }
 
+}
+
+if ( !isset($refuseInit) ) {
+	class TransactionItem extends _TransactionItem {}
 }
