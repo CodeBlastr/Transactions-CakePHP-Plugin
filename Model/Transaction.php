@@ -476,7 +476,13 @@ class Transaction extends TransactionsAppModel {
 			throw new Exception($e->getMessage());
 		}
 	}
-	
+
+
+	public function generateTransactionNumber() {
+		return str_pad($this->find('count') + 1, 7, '0', STR_PAD_LEFT);
+	}
+
+
 /**
  * Send transaction email
  * 
