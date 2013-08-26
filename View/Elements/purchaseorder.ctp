@@ -1,5 +1,5 @@
 <div id="purchaseOrder" class="paymentOption">
-	<?php echo $this->Form->input('po_number', array('label' => 'PO Number')); ?>
+	<?php echo $this->Form->input('Transaction.po_number', array('label' => 'PO Number')); ?>
 	<?php echo $this->Html->link('<i class="icon-print"></i> Print Invoice', array(), array('class' => 'btn', 'escape' => false)); ?>
 </div>
 
