@@ -91,6 +91,7 @@ $(function() {
 		$('.paysimpleCc').parent().parent().hide('slow');
 		$('.paysimpleCheck').parent().parent().hide('slow');
 		$('#purchaseOrder').hide();
+		$('#payByCheck').hide();
 	});
 	
 	// delect saved payment account when they type in a new account
@@ -112,6 +113,7 @@ $(function() {
 		$('.paysimpleCheck').parent().parent().hide();
 		$('.paysimpleCc').parent().parent().show('slow');
 		$('#purchaseOrder').hide();
+		$('#payByCheck').hide();
 		/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
 		$('.paysimpleCheck').parent().parent().hide();
 		$('.paysimpleCc').parent().parent().show('slow'); */
@@ -133,6 +135,7 @@ $(function() {
 		$('.paysimpleCc').parent().parent().hide();
 		$('.paysimpleCheck').parent().parent().show('slow');
 		$('#purchaseOrder').hide();
+		$('#payByCheck').hide();
 		/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
 		$('.paysimpleCc').parent().parent().hide();
 		$('.paysimpleCheck').parent().parent().show('slow'); */
