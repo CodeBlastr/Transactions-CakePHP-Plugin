@@ -138,6 +138,11 @@ class _TransactionItem extends TransactionsAppModel {
 		$Model = new $model;
 		$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
 
+		 if (empty($data['TransactionItem']['price'])){
+			 
+		 	$data['TransactionItem']['price'] = $itemData['TransactionItem']['price'];
+		 }
+
 		$itemData = Set::merge(
 			$itemData,
 			$data,
@@ -147,7 +152,9 @@ class _TransactionItem extends TransactionsAppModel {
 				'customer_id' => $this->Transaction->getCustomersId()
 				))
 			);
+			
 		return $itemData;
+		
 	}
 
 
