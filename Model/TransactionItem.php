@@ -79,11 +79,16 @@ class _TransactionItem extends TransactionsAppModel {
 			$models = Set::extract('/TransactionItem/model', $results);
             foreach ($models as $model) {
 				$model = Inflector::classify($model);
-                App::uses($model, ZuhaInflector::pluginize($model).'.Model');
-                $Model = new $model;
-                if (method_exists($Model, 'origin_afterFind') && is_callable(array($Model, 'origin_afterFind'))) {
-                    $results = $Model->origin_afterFind($this, $results, $primary);
-                }
+				try {
+	                App::uses($model, ZuhaInflector::pluginize($model).'.Model');
+	                $Model = new $model;
+	                if (method_exists($Model, 'origin_afterFind') && is_callable(array($Model, 'origin_afterFind'))) {
+	                    $results = $Model->origin_afterFind($this, $results, $primary);
+	                }
+				} catch (Exception $e) {
+					// we get here sometimes if the plugin doesn't exist (virtual / test plugins)
+					// do nothing, we just don't fire the "origin_afterFind" method
+				}
             }
 		}
 	    return $results;
