@@ -158,7 +158,7 @@ class _TransactionsController extends TransactionsAppController {
  * @todo Convert to Transaction->buy()
  */
     public function cart() {
-        if($this->request->is('post') || $this->request->is('put')) {
+        if ($this->request->is('post') || $this->request->is('put')) {
             try {
 				$data = $this->Transaction->beforePayment($this->request->data);
                 $data = $this->Payments->pay($data); 
@@ -181,11 +181,13 @@ class _TransactionsController extends TransactionsAppController {
 		$userId = $this->Transaction->getCustomersId();
 		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('Transaction.customer_id' => $userId, 'Transaction.status' => 'open')));
 		
-		if($numberOfCarts > 1) {
+		if ($numberOfCarts > 1) {
             return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'merge'));
 		} else {
             // get their cart and process it
             $this->request->data = $this->Transaction->processCart($userId, $this->request->data);
+            // save the updated cart
+            $this->Transaction->save($this->request->data);
             // show the empty cart view
             empty($this->request->data['TransactionItem']) ? $this->view = 'empty' : null;
             // set the variables to display in the cart
