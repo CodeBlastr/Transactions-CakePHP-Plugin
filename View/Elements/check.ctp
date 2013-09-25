@@ -1,7 +1,7 @@
-<div id="payByCheck" class="paymentOption">
+<!--div id="payByCheck" class="paymentOption"-->
 	<?php //echo $this->Form->input('Transaction.po_number', array('label' => 'PO Number')); ?>
-	<?php echo $this->Html->link('<i class="icon-print"></i> Print Invoice', array('action' => 'pdfInvoice', $this->request->data['Transaction']['id']), array('class' => 'btn btn-info', 'escape' => false)); ?>
-</div>
+	<?php echo $this->Html->link('<i class="icon-print"></i> Print Invoice', array('action' => 'pdfInvoice', $this->request->data['Transaction']['id']), array('class' => 'btn btn-info payByCheck', 'escape' => false)); ?>
+<!--/div-->
 
 <script type="text/javascript">
 	$(document).ready(function() {
@@ -10,8 +10,9 @@
 			$("#creditCardInfo, #echeckInfo").children().removeClass('required');
 			$('.paysimpleCc').parent().parent().hide();
 			$('.paysimpleCheck').parent().parent().hide();
-			$('#purchaseOrder').hide();
-			$('#payByCheck').show();
+			$('.purchaseOrder').parent().parent().hide();
+			$('.pdfInvoice').hide();
+			$('.payByCheck.pdfInvoice').show();
 		};
 
 	});

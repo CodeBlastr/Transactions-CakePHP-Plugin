@@ -248,9 +248,10 @@ class Transaction extends TransactionsAppModel {
  * @return type
  */
 	public function finalizeTransactionData($submittedTransaction) {
+		
 		$userId = $this->getCustomersId();
 		$options = $this->gatherCheckoutOptions();
-         
+		debug($userId);
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
 		    'conditions' => array(
@@ -266,7 +267,7 @@ class Transaction extends TransactionsAppModel {
                         )
                     )
                 )
-            )); 
+            ));
          
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
@@ -308,6 +309,14 @@ class Transaction extends TransactionsAppModel {
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
             
+         
+        //Check Transaction Coupon code empty or not
+        if($officialTransaction['TransactionCoupon']['code']!=''){
+           $officialTransaction = $this->TransactionCoupon->verify($officialTransaction); 
+        }
+		
+   		$officialTransaction = $this->finalizeUserData($officialTransaction);
+		
 		// return the official transaction
 		return $officialTransaction;
 	}
@@ -334,12 +343,18 @@ class Transaction extends TransactionsAppModel {
             // set their User Role Id
             $transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
         }
+		
+		if (!empty($transaction['TransactionAddress'][0]['phone'])) {
+			// make sure the phone is just numbers
+			$transaction['TransactionAddress'][0]['phone'] = ZuhaInflector::numerate($transaction['TransactionAddress'][0]['phone']);
+		}
         
         // copy Payment data to Shipment data if neccessary
         if(isset($transaction['TransactionAddress'][0]['shipping']) && $transaction['TransactionAddress'][0]['shipping'] == '0') {
             $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
             $transaction['TransactionAddress'][1]['type'] = 'shipping';
         }
+		
         return $transaction;
 	}
 
@@ -414,12 +429,6 @@ class Transaction extends TransactionsAppModel {
 	public function beforePayment($data) {
 		try {
             $data = $this->finalizeTransactionData($data); 
-         
-            //Check Transaction Coupon code empty or not
-            if($data['TransactionCoupon']['code']!=''){
-               $data = $this->TransactionCoupon->verify($data); 
-            }
-       		$data = $this->finalizeUserData($data);
             
 			return $data;
 		} catch (Exception $e) {

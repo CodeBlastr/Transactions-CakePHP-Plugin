@@ -138,15 +138,21 @@ class _TransactionItem extends TransactionsAppModel {
 			throw new InternalErrorException(__('Invalid transaction item'));
 		}
 		$model = Inflector::classify($data['TransactionItem']['model']);
-        $m = ZuhaInflector::pluginize($model) . '.Model' ;
-		App::uses($model, ZuhaInflector::pluginize($model) . '.Model');
-		$Model = new $model;
-		$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
-
-		 if (empty($data['TransactionItem']['price'])){
-			 
-		 	$data['TransactionItem']['price'] = $itemData['TransactionItem']['price'];
-		 }
+		
+		try {
+			App::uses($model, ZuhaInflector::pluginize($model) . '.Model');
+			$Model = new $model;
+			if (method_exists($Model, 'mapTransactionItem') && is_callable(array($Model, 'mapTransactionItem'))) {
+				$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
+			}
+		} catch (Exception $e) {
+			// we get here sometimes if the plugin doesn't exist (virtual / test plugins)
+			// do nothing, we just don't fire the "origin_afterFind" method
+		}
+		
+		if (empty($data['TransactionItem']['price'])) {
+			$data['TransactionItem']['price'] = $itemData['TransactionItem']['price'];
+		}
 
 		$itemData = Set::merge(
 			$itemData,

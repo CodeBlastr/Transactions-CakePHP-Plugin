@@ -45,7 +45,7 @@
     				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required'));
     				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2'));
     				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'data-mask' => '99999')) ));
-    				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'data-mask' => '9999999999'));
+    				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'data-mask' => '(999) 999-9999'));
                     echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
     				echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your billing address.')) : null; ?>
 			    </fieldset>
@@ -86,7 +86,9 @@
 			    <?php 
 			    foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				    echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
-                    echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $this->Element('Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i), array('plugin' => ZuhaInflector::pluginize($transactionItem['model']))));
+					$plugin = ZuhaInflector::pluginize($transactionItem['model']).'.';
+					$item = $this->_getElementFilename($plugin.'Transactions/cart_item') ? $this->Element($plugin.'Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i)) : $this->Element('Transactions.cart_item', array('transactionItem' => $transactionItem, 'i' => $i));
+                    echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $item);
 			    } ?>
 		    </fieldset>
 
