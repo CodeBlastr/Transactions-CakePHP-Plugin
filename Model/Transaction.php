@@ -248,10 +248,8 @@ class Transaction extends TransactionsAppModel {
  * @return type
  */
 	public function finalizeTransactionData($submittedTransaction) {
-		
 		$userId = $this->getCustomersId();
 		$options = $this->gatherCheckoutOptions();
-		debug($userId);
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
 		    'conditions' => array(

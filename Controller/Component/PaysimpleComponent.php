@@ -306,8 +306,8 @@ class PaysimpleComponent extends Component {
 			'StartDate' => $arbSettings['StartDate'], // required
 			'EndDate' => $arbSettings['EndDate'],
 			'ScheduleStatus' => 'Active', // required
-			'ExecutionFrequencyType' => $arbSettings['ExecutionFrequencyType'], // required
-			'ExecutionFrequencyParameter' => $arbSettings['ExecutionFrequencyParameter'],
+			'ExecutionFrequencyType' => $arbSettings['ExecutionFrequencyType'] == 'Monthly' ? 'SpecificDayofMonth' : $arbSettings['ExecutionFrequencyType'], // required
+			'ExecutionFrequencyParameter' => $arbSettings['ExecutionFrequencyType'] == 'Monthly' ? date('j') : $arbSettings['ExecutionFrequencyParameter'],
 			'Description' => __SYSTEM_SITE_NAME,
 			'Id' => 0
 		);

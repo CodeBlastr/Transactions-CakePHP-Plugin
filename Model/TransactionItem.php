@@ -231,7 +231,7 @@ class _TransactionItem extends TransactionsAppModel {
  * @return boolean
  * @todo check stock and cart max 
  */
-	public function addItemToCart ($data) {
+	public function addItemToCart($data) {
 		try {
 			// determine and set the transaction id (cart id) for this user
 			$this->Transaction->id = $this->setCartId();
@@ -243,42 +243,53 @@ class _TransactionItem extends TransactionsAppModel {
 				'TransactionItem.model' => $data['TransactionItem']['model'],
 				'TransactionItem.foreign_key' => $data['TransactionItem']['foreign_key']
 			);
-			$chkdata = $this->find('all', array( 'conditions' => $conditions ));
-			if ( empty($chkdata) ) {
+			$chkdata = $this->find('all', array('conditions' => $conditions));
+			if (empty($chkdata)) {
 				// create the item internally
-				$this->create( $itemData );
+				$this->create($itemData);
 			} else {
 				$data['TransactionItem']['quantity'] = $chkdata[0]['TransactionItem']['quantity'] + $data['TransactionItem']['quantity'];
+				$data['TransactionItem']['quantity'] = $data['TransactionItem']['quantity'] > $data['TransactionItem']['cart_max'] ? $data['TransactionItem']['cart_max'] : $data['TransactionItem']['quantity'];
+				$data['TransactionItem']['quantity'] = $data['TransactionItem']['quantity'] < $data['TransactionItem']['cart_min'] ? $data['TransactionItem']['cart_min'] : $data['TransactionItem']['quantity']; 
 				$this->id = $chkdata[0]['TransactionItem']['id'];
 			}
-			return $this->save( $data );
-		} catch (Exception $exc) {
-			throw new Exception( __d('transactions', $exc->getMessage()) );
+			return $this->save($data);
+		} catch (Exception $e) {
+			throw new Exception(__d('transactions', $e->getMessage()));
 		}
 	}
 
-
+/**
+ * Before save callback
+ * 
+ */
 	public function beforeSave($options = array()) {
-		// serialize ARB settings that were passed with the TransactionItem
-		if ( !is_array($this->data['TransactionItem']['arb_settings']) && !empty($this->data['TransactionItem']['arb_settings']) ) {
+		// make sure we have an arb payment amount if arb is set
+		if (!empty($this->data['TransactionItem']['arb_settings']) && unserialize($this->data['TransactionItem']['arb_settings'])) {
 			$this->data['TransactionItem']['arb_settings'] = unserialize($this->data['TransactionItem']['arb_settings']);
 		}
-		if( !empty($this->data['TransactionItem']['arb_settings']) && is_array($this->data['TransactionItem']['arb_settings']) ) {
-			if ( empty($this->data['TransactionItem']['arb_settings']['PaymentAmount']) ) {
+		if(!empty($this->data['TransactionItem']['arb_settings']) && is_array($this->data['TransactionItem']['arb_settings'])) {
+			if (empty($this->data['TransactionItem']['arb_settings']['PaymentAmount'])) {
 				$this->data['TransactionItem']['arb_settings']['PaymentAmount'] = $this->data['TransactionItem']['price'];
 			}
 			$this->data['TransactionItem']['arb_settings'] = serialize($this->data['TransactionItem']['arb_settings']);
 		}
+
 		return parent::beforeSave($options);
 	}
 
-
+/**
+ * Statuses method
+ * A list of pre-defined, and user created transaction item statuses
+ * 
+ * @return array
+ */
     public function statuses() {
         $statuses = array();
         foreach (Zuha::enum('ORDER_ITEM_STATUS') as $status) {
             $statuses[Inflector::underscore($status)] = $status;
         }
-        return Set::merge(array('incart' => 'In Cart', 'paid' => 'Paid', 'shipped' => 'Shipped'), $statuses);
+        return Set::merge(array('incart' => 'In Cart', 'paid' => 'Paid', 'shipped' => 'Shipped', 'used' => 'Used'), $statuses);
     }
 
 }
