@@ -478,7 +478,9 @@ class _Transaction extends TransactionsAppModel {
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
 				$this->Customer->Connection->save($connection);
 			}
-			$this->__sendMail($data);
+			
+			return $data;
+
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
@@ -489,29 +491,6 @@ class _Transaction extends TransactionsAppModel {
 		return str_pad($this->find('count') + 1, 7, '0', STR_PAD_LEFT);
 	}
 
-
-/**
- * Send transaction email
- * 
- * @param array $data
- */
- 	public function __sendMail($data = array()) {
- 		$subject = 'Thank You for Your Purchase';
-		$message = '<p><strong>Thank you for your purchase</strong></p>';
-		$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
-		foreach ($data['TransactionItem'] as $item) {
-			$items .= __('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
-		}
-		$items .= '</table>';
-		$message = $message . $items;
- 		if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
- 			$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
- 			$subject = stripcslashes($email['subject']);
- 			$message = str_replace('{element: transactionItems}', $items, stripcslashes($email['body']));
- 		}
-		// this probably doesn't throw an exception if it fails
-		parent::__sendMail($data['TransactionAddress'][0]['email'], $subject, $message);	
- 	}
 	
 /**
  * Retrieves various stats for dashboard display

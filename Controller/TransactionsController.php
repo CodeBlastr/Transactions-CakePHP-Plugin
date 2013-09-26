@@ -162,7 +162,8 @@ class _TransactionsController extends TransactionsAppController {
             try {
 				$data = $this->Transaction->beforePayment($this->request->data);
                 $data = $this->Payments->pay($data); 
-                $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+                $data = $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+                $this->_sendReceipt($data);
 				// use this (instead of the three lines above) as soon as authorize.net is converted
                 //$this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
@@ -299,7 +300,31 @@ class _TransactionsController extends TransactionsAppController {
 		}
         return $url;
     }
-	
+
+    
+    /**
+     * Send transaction email
+     *
+     * @param array $data
+     */
+    protected function _sendReceipt($data = array()) {
+    	$subject = 'Thank You for Your Purchase';
+    	$message = '<p><strong>Thank you for your purchase</strong></p>';
+    	$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
+    	foreach ($data['TransactionItem'] as $item) {
+    		$items .= __('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
+    	}
+    	$items .= '</table>';
+    	$message = $message . $items;
+    	if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
+    		$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
+    		$subject = stripcslashes($email['subject']);
+    		$message = str_replace('{element: transactionItems}', $items, stripcslashes($email['body']));
+    	}
+    	// this probably doesn't throw an exception if it fails
+    	$this->__sendMail($data['TransactionAddress'][0]['email'], $subject, $message);
+    }
+    
 }
 
 if (!isset($refuseInit)) {
