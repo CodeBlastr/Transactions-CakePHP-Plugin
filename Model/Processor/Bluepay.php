@@ -5,9 +5,9 @@ App::uses('HttpSocket', 'Network/Http');
  * P
  */
 
-class Paysimple extends AppModel {
+class Bluepay extends AppModel {
 
-	public $name = 'Paysimple';
+	public $name = 'Bluepay';
 	
 	public $config = array(
 		'environment' => 'sandbox',
@@ -34,8 +34,8 @@ class Paysimple extends AppModel {
 	
 	public function __construct($id = false, $table = null, $ds = null) {
     	parent::__construct($id, $table, $ds);
-		if (defined('__TRANSACTIONS_PAYSIMPLE')) {
-			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
+		if (defined('__TRANSACTIONS_PAYSIMPLE')) {   //Might change to TRANSACTIONS_BLUEPAY instead of simpelPay
+			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE); //Might change to TRANSACTIONS_BLUEPAY instead of simpelPay
             $this->config = Set::merge($this->config, $config, $settings);
 		}
 
@@ -88,17 +88,17 @@ class Paysimple extends AppModel {
                 $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
                 if($ach_count > 0) {
                    for($i=0;$i<$ach_count;$i++) {
-                       if($data[$this->modelName]['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Web';  }
+                       if($data[$this->modelName]['bluepay_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Web';  }
                      
                    } 
                 }
                 if($cc_count > 0) {
                    for($i=0;$i<$cc_count;$i++) {
-                        if($data[$this->modelName]['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Moto';  } 
+                        if($data[$this->modelName]['bluepay_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Moto';  } 
                    } 
                 }
 				// they are using a Saved Payment Method; defined by an Id
-				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['paysimple_account'];
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['bluepay_account'];
 			}
             // make the actual payment
 			if($data[$this->modelName]['is_arb']) {
@@ -560,7 +560,7 @@ class Paysimple extends AppModel {
 			$cardType = 'Unsupported';
 		}
 
-		$paySimpleCodes = array(
+		$paySimpleCodes = array(  //might change to blue pay instead of paySimple
 			'Unsupported' => FALSE,
 			'Visa' => 12,
 			'Discover' => 15,
@@ -568,7 +568,7 @@ class Paysimple extends AppModel {
 			'Amex' => 14,
 		);
 
-		return $paySimpleCodes[$cardType];
+		return $paySimpleCodes[$cardType];  //Might also change to bluePayCodes instead of paySimple Codes
 	}
 
 /**

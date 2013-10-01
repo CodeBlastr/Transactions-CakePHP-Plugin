@@ -20,7 +20,7 @@ class CreditComponent extends Object{
 		}
 	}
 	
-	function Pay($data){
+	function pay($data){
 		$user_id = AuthComponent::user('id');		
 		$userObject = ClassRegistry::init('User');
 		$creditData = $userObject->find('first' , array('conditions' => 

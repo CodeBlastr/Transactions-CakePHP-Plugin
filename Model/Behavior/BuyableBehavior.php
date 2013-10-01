@@ -46,7 +46,24 @@ class BuyableBehavior extends ModelBehavior {
  * @access private
  * @var array
  */
-    protected $defaults = array(  // was $paysettings in the component version
+    protected $defaults = array(
+    	'buyModel' => ''
+		);
+
+/**
+ * Status List
+ * Processors should use this list in order map processor response types to our own
+ * internal processor response types.  So that every processor's response can
+ * be matched to our internal response types
+ * 
+ * @access public
+ * @var array
+ */
+	public $statusTypes = array(
+		'paid' => 'paid',
+		'open' => 'open',
+		'pending' => 'pending',
+		'used' => 'used'
 		);
 
 /**
@@ -97,8 +114,8 @@ class BuyableBehavior extends ModelBehavior {
         if (!empty($processor)) {
 			App::uses($processor, 'Transactions.Model/Processor');
 			$this->Processor = new $processor;
-    		// there was a foreach here, in the payments component but it seemed to always end up with
-    		// one component anyway, so I simplified this to just load the single processor asked for
+			$this->Processor->modelName = !empty($this->settings['buyModel']) ? $this->settings['buyModel'] : 'Transaction';
+			$this->Processor->statusTypes = $this->statusTypes;
         } else {
             throw new NotFoundException('Site payment settings have not been configured.');
         }
@@ -120,16 +137,20 @@ class BuyableBehavior extends ModelBehavior {
         	throw new Exception('Payment configuration required', 1);
         }	
 		try {
-			if (method_exists($Model, 'beforePayment') && is_callable('beforePayment')) {
-				$data = $Model->beforePayment($Model->data);
-			}
-			
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
 			$paymentProcessor = $paymentProcessor[0]; 
 
 			$this->loadProcessor($paymentProcessor);
 			
+			if (method_exists($Model, 'beforePayment') && is_callable('beforePayment')) {
+				$data = $Model->beforePayment($data);
+			} else {
+				App::uses('Transaction' , 'Transactions.Model');
+				$Transaction = new Transaction;
+				$data = $Transaction->beforePayment($data);
+			}
+						
 			if ($this->recurring) {
 				$this->Processor->recurring = true;	
 			}
@@ -137,6 +158,10 @@ class BuyableBehavior extends ModelBehavior {
 			
 			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
 				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			} else {
+				App::uses('Transaction' , 'Transactions.Model');
+				$Transaction = new Transaction;
+				$Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
 			}
 			
             return $data;
