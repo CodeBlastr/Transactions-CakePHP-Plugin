@@ -30,33 +30,29 @@ if ( isset($this->request->data['Customer']['Connection'][0]) ) {
 				'class' => 'savedAch',
 				'id' => 'savedAch_'.$savedAch['Id']
 			));
-		} 
-	}	
+		}
+	}
 	echo '<legend><h5 id="useNewPayment">Use a new Payment Method</h5></legend>';
 }
 
 
 echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode']));
 // credit card inputs
-echo $this->Html->tag('div',
-		$this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc creditcard', 'maxLength' => 16, 'pattern' => '...', 'inputmode' => 'numeric', 'autocomplete' => 'cc-number'))
-		. $this->Form->input('card_exp_month', 
+echo $this->Form->input('card_number', array('label' => 'Card Number', 'class' => 'required paysimpleCc creditcard', 'maxLength' => 16, 'pattern' => '...', 'inputmode' => 'numeric', 'autocomplete' => 'cc-number'));
+echo $this->Form->input('card_exp_month', 
 		array('label' => 'Expiration Month', 'type' => 'select',
 			'options' => array_combine(range(1, 12, 1), range(1, 12, 1)),
 			'after' => $this->Form->input('card_exp_year', array('class' => 'required paysimpleCc', 'label' => 'Exp Year', 'type' => 'select', 'options' => array_combine(range(date('Y'), date('Y', strtotime('+ 10 years')), 1), range(date('Y'), date('Y', strtotime('+ 10 years')), 1)), 'dateFormat' => 'Y')),
 			'class' => 'required paysimpleCc'
 			)
-		)
-		. $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4))
-		, array('id' => 'creditCardInfo', 'class' => 'paymentOption'));
+		);
+echo $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4));
 
 //echeck info
-echo $this->Html->tag('div',
-		$this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'))
-		. $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'))
-		. $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'))
-		. $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck'))
-		, array('id' => 'echeckInfo', 'class' => 'paymentOption'));
+echo $this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck'));
+echo $this->Form->input('ach_account_number', array('label' => 'Account Number', 'class' => 'required paysimpleCheck'));
+echo $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' => 'required paysimpleCheck'));
+echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'paysimpleCheck'));
 ?>
 
 <script type="text/javascript">
@@ -90,7 +86,8 @@ $(function() {
 		$('#TransactionMode').parent().parent().hide('slow');
 		$('.paysimpleCc').parent().parent().hide('slow');
 		$('.paysimpleCheck').parent().parent().hide('slow');
-		$('#purchaseOrder').hide();
+		$('.purchaseOrder').parent().parent().hide();
+		$('.pdfInvoice').hide();
 	});
 	
 	// delect saved payment account when they type in a new account
@@ -111,7 +108,8 @@ $(function() {
 		});
 		$('.paysimpleCheck').parent().parent().hide();
 		$('.paysimpleCc').parent().parent().show('slow');
-		$('#purchaseOrder').hide();
+		$('.purchaseOrder').parent().parent().hide();
+		$('.pdfInvoice').hide();
 		/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
 		$('.paysimpleCheck').parent().parent().hide();
 		$('.paysimpleCc').parent().parent().show('slow'); */
@@ -132,7 +130,8 @@ $(function() {
 		});
 		$('.paysimpleCc').parent().parent().hide();
 		$('.paysimpleCheck').parent().parent().show('slow');
-		$('#purchaseOrder').hide();
+		$('.purchaseOrder').parent().parent().hide();
+		$('.pdfInvoice').hide();
 		/* ^ was this, but removed the parent() and is working on discoverywoods.buildrr.com/transactions/transactions/cart
 		$('.paysimpleCc').parent().parent().hide();
 		$('.paysimpleCheck').parent().parent().show('slow'); */

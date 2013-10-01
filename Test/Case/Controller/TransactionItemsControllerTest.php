@@ -38,6 +38,7 @@ class TransactionItemsControllerTestCase extends ControllerTestCase  {
 	public $fixtures = array(
 	    'plugin.transactions.transaction_item',
 	    'plugin.transactions.transaction',
+	    'plugin.products.product',
 	    'plugin.users.user',
 	    'plugin.transactions.transaction_coupon',
 	    'plugin.users.customer',
@@ -95,8 +96,8 @@ class TransactionItemsControllerTestCase extends ControllerTestCase  {
 		
 		//CakeSession::write('Auth.User.id', 1);
 		
-		$result = $this->testAction('/transactions/transaction_items');
-		debug($result);
+		// $result = $this->testAction('/transactions/transaction_items');
+		// debug($result);
 	}
 /**
  * testView method

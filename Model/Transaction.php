@@ -11,7 +11,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property TransactionAddress $TransactionAddress
  * @todo Add LoggableBehavior and track who the referrer was from the stats in the session $this->triggerLog() in the model, if done right.
  */
-class Transaction extends TransactionsAppModel {
+class _Transaction extends TransactionsAppModel {
  		
  	public $name = 'Transaction';
 
@@ -250,7 +250,6 @@ class Transaction extends TransactionsAppModel {
 	public function finalizeTransactionData($submittedTransaction) {
 		$userId = $this->getCustomersId();
 		$options = $this->gatherCheckoutOptions();
-         
 		// get their current transaction (pre checkout page)
 		$currentTransaction = $this->find('first', array(
 		    'conditions' => array(
@@ -266,7 +265,7 @@ class Transaction extends TransactionsAppModel {
                         )
                     )
                 )
-            )); 
+            ));
          
 		if(!$currentTransaction) {
 			throw new Exception('Transaction missing.');
@@ -308,6 +307,14 @@ class Transaction extends TransactionsAppModel {
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
             
+         
+        //Check Transaction Coupon code empty or not
+        if($officialTransaction['TransactionCoupon']['code']!=''){
+           $officialTransaction = $this->TransactionCoupon->verify($officialTransaction); 
+        }
+		
+   		$officialTransaction = $this->finalizeUserData($officialTransaction);
+		
 		// return the official transaction
 		return $officialTransaction;
 	}
@@ -334,12 +341,18 @@ class Transaction extends TransactionsAppModel {
             // set their User Role Id
             $transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
         }
+		
+		if (!empty($transaction['TransactionAddress'][0]['phone'])) {
+			// make sure the phone is just numbers
+			$transaction['TransactionAddress'][0]['phone'] = ZuhaInflector::numerate($transaction['TransactionAddress'][0]['phone']);
+		}
         
         // copy Payment data to Shipment data if neccessary
         if(isset($transaction['TransactionAddress'][0]['shipping']) && $transaction['TransactionAddress'][0]['shipping'] == '0') {
             $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
             $transaction['TransactionAddress'][1]['type'] = 'shipping';
         }
+		
         return $transaction;
 	}
 
@@ -414,12 +427,6 @@ class Transaction extends TransactionsAppModel {
 	public function beforePayment($data) {
 		try {
             $data = $this->finalizeTransactionData($data); 
-         
-            //Check Transaction Coupon code empty or not
-            if($data['TransactionCoupon']['code']!=''){
-               $data = $this->TransactionCoupon->verify($data); 
-            }
-       		$data = $this->finalizeUserData($data);
             
 			return $data;
 		} catch (Exception $e) {
@@ -471,40 +478,45 @@ class Transaction extends TransactionsAppModel {
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
 				$this->Customer->Connection->save($connection);
 			}
-			$this->__sendMail($data);
+			
+            $this->_sendReceipt($data);
+			return $data;
+
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
 	}
 
 
+    
+/**
+ * Send transaction email
+ *
+ * @param array $data
+ */
+    protected function _sendReceipt($data = array()) {
+    	$subject = 'Thank You for Your Purchase';
+    	$message = '<p><strong>Thank you for your purchase</strong></p>';
+    	$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
+    	foreach ($data['TransactionItem'] as $item) {
+    		$items .= __('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
+    	}
+    	$items .= '</table>';
+    	$message = $message . $items;
+    	if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
+    		$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
+    		$subject = stripcslashes($email['subject']);
+    		$message = str_replace('{element: transactionItems}', $items, stripcslashes($email['body']));
+    	}
+    	// this probably doesn't throw an exception if it fails
+    	$this->__sendMail($data['TransactionAddress'][0]['email'], $subject, $message);
+    }
+	
+
 	public function generateTransactionNumber() {
 		return str_pad($this->find('count') + 1, 7, '0', STR_PAD_LEFT);
 	}
 
-
-/**
- * Send transaction email
- * 
- * @param array $data
- */
- 	public function __sendMail($data = array()) {
- 		$subject = 'Thank You for Your Purchase';
-		$message = '<p><strong>Thank you for your purchase</strong></p>';
-		$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
-		foreach ($data['TransactionItem'] as $item) {
-			$items .= __('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
-		}
-		$items .= '</table>';
-		$message = $message . $items;
- 		if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
- 			$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
- 			$subject = stripcslashes($email['subject']);
- 			$message = str_replace('{element: transactionItems}', $items, stripcslashes($email['body']));
- 		}
-		// this probably doesn't throw an exception if it fails
-		parent::__sendMail($data['TransactionAddress'][0]['email'], $subject, $message);	
- 	}
 	
 /**
  * Retrieves various stats for dashboard display
@@ -566,4 +578,8 @@ class Transaction extends TransactionsAppModel {
 	    return Set::merge(array('failed' => 'Failed', 'paid' => 'Paid', 'shipped' => 'Shipped'), $statuses);
 	}
 
+}
+
+if ( !isset($refuseInit) ) {
+	class Transaction extends _Transaction {}
 }
