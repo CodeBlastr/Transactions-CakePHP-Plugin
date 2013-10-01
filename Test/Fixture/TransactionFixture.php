@@ -30,7 +30,7 @@ class TransactionFixture extends CakeTestFixture {
 			'total' => 1,
 			'is_virtual' => 0,
 			'is_arb' => 0,
-			'customer_id' => '5738299d-9040-43c9-85b1-22d400000000',
+			'customer_id' => '69',
 			'contact_id' => '1',
 			'assignee_id' => '1',
 			'creator_id' => '1',

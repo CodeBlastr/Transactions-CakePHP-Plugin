@@ -79,10 +79,10 @@ class TransactionModelTestCase extends CakeTestCase {
 	}
 
 	public function testReassignGuestCart() {
-        $conditions = array('conditions' => array('Transaction.customer_id' => '5738299d-9040-43c9-85b1-22d400000000'));
+        $conditions = array('conditions' => array('Transaction.customer_id' => '69'));
 		$result = $this->Transaction->find('first', $conditions);
         $this->assertTrue(!empty($result)); // guest cart exists
-		$this->Transaction->reassignGuestCart('5738299d-9040-43c9-85b1-22d400000000', 1);
+		$this->Transaction->reassignGuestCart('69', 1);
         $result = $this->Transaction->find('first', $conditions);
         $this->assertTrue(empty($result)); // guest cart is re-assigned.
 	}
@@ -145,7 +145,7 @@ class TransactionModelTestCase extends CakeTestCase {
 		App::uses('CakeSession', 'Model');
 		$this->Session = new CakeSession;
 
-		$this->Session->write('Transaction._guestId', '5738299d-9040-43c9-85b1-22d400000000');
+		$this->Session->write('Transaction._guestId', '69');
         
 		//$result = $this->Transaction->finalizeTransactionData($submittedTransaction);
 		#debug($result);break;
@@ -212,7 +212,7 @@ class TransactionModelTestCase extends CakeTestCase {
 		App::uses('CakeSession', 'Model');
 		$this->Session = new CakeSession;
 
-		$this->Session->write('Transaction._guestId', '5738299d-9040-43c9-85b1-22d400000000');
+		$this->Session->write('Transaction._guestId', '69');
 
 		  // echo "<pre>";
           // print_r($submittedTransaction);

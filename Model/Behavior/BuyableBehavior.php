@@ -120,6 +120,10 @@ class BuyableBehavior extends ModelBehavior {
         	throw new Exception('Payment configuration required', 1);
         }	
 		try {
+			if (method_exists($Model, 'beforePayment') && is_callable('beforePayment')) {
+				$data = $Model->beforePayment($Model->data);
+			}
+			
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
 			$paymentProcessor = $paymentProcessor[0]; 
@@ -129,8 +133,13 @@ class BuyableBehavior extends ModelBehavior {
 			if ($this->recurring) {
 				$this->Processor->recurring = true;	
 			}
+			$data = $this->Processor->pay($data);
 			
-            return $this->Processor->pay($data);
+			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
+				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			}
+			
+            return $data;
 			//return $this->paymentComponent->response;
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());

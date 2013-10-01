@@ -26,7 +26,8 @@ class _TransactionsController extends TransactionsAppController {
  * 
  * @var array
  */
-	public $components = array('Ssl', 'Transactions.Payments');	
+	//public $components = array('Ssl', 'Transactions.Payments');
+	public $components = array('Ssl');	
 	
 	
 	public $allowedActions = array(
@@ -160,11 +161,11 @@ class _TransactionsController extends TransactionsAppController {
     public function cart() {
         if($this->request->is('post') || $this->request->is('put')) {
             try {
-				$data = $this->Transaction->beforePayment($this->request->data);
-                $data = $this->Payments->pay($data); 
-                $this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
-				// use this (instead of the three lines above) as soon as authorize.net is converted
-                //$this->Transaction->buy($this->request->data);
+            	// remove these three lines soon (10-1-2013 RK)
+				//$data = $this->Transaction->beforePayment($this->request->data);
+                //$data = $this->Payments->pay($data); 
+                //$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
+                $this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
     		} catch (Exception $exc) {
     		    $this->Session->setFlash($exc->getMessage());
