@@ -174,27 +174,28 @@ class Bluepay extends AppModel {
     //method function pay attribute $data = null
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
-	debug($data);
-	break;
+	//debug($data);
+	//break;
 		
 		
 		$this->setCustInfo(
 			$data['Transaction']['card_number'], // $this->account
 			$data['Transaction']['card_sec'], // $this->cvv2 
+			//$data['Transaction']['auth_code'], //$this->authCode = $AUTH_CODE;
 			sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2), // $this->expire
-			$data['TransactionAddress'][0][['first_name'], // $this->name1
-			$data['TransactionAddress'][0][['last_name'], // $this->name2 
-			//$addr1, 
-			$city, 
-			$state, 
-			$zip, 
-			$country, 
-			$phone, 
-			$email, 
-			$customid1 = null, 
-			$customid2 = null, 
-			$addr2 = null, 
-			$memo = null
+			$data['TransactionAddress'][0]['first_name'], // $this->name1
+			$data['TransactionAddress'][0]['last_name'], // $this->name2 
+			$data['TransactionAddress']['street_address_1'], //$this->addr1 
+			$data['TransactionAddress']['city'], //$this->city
+			$data['TransactionAddress']['state'], //$this->state 
+			$data['TransactionAddress']['zip'], //$this->zip
+			$data['TransactionAddress']['country'], //$this->country
+			$data['TransactionAddress']['phone'], //$this->phone
+			$data['TransactionAddress']['email'], //$this->email 
+			$data['Transaction']['customid1' == null], //$this->customid1 = null 
+			$data['Transaction']['customid2' == null], //$this->customid2 = null 
+			$data['TransactionAddress']['street_adress_2' == null], //$this->addr2 = null 
+			$data['Transaction']['memo'] //$this->memo = null
 			);
 		$this->sale($data['Transaction']['total']);
 		$this->process();
