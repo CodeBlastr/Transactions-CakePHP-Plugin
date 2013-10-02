@@ -9,7 +9,7 @@ class PurchaseOrderComponent extends Component {
 
 	public $components = array();
 
-	public function Pay($data) {
+	public function pay($data) {
 		$data['Transaction']['status'] = 'pending';
 		return $data;
 	}

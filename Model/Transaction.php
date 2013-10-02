@@ -390,7 +390,7 @@ class _Transaction extends TransactionsAppModel {
  */
 	public function completeUserAndTransactionData($isLoggedIn, $data) {
 		try {
-			//$data['Transaction']['status'] = 'paid';
+			//$data['Transaction']['status'] = 'paid'; // this really belongs here, but we have an issue with processors 
 			if (!$isLoggedIn) {
 				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
 				$this->Customer->add($data);
@@ -409,7 +409,7 @@ class _Transaction extends TransactionsAppModel {
 			foreach ($data['TransactionItem'] as &$transactionItem) {
 				$transactionItem['status'] = 'paid';
 			}
-
+			
 			return $data;
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
@@ -444,6 +444,8 @@ class _Transaction extends TransactionsAppModel {
 	public function afterSuccessfulPayment($isLoggedIn, $data) {
 		try {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
+			
+			$data[$this->modelName]['status'] = 'paid';
 			$this->save($data);
 			// run the afterSuccessfulPayment callbacks
             $transactionItems = $data['TransactionItem'];
@@ -467,7 +469,6 @@ class _Transaction extends TransactionsAppModel {
 					$this->TransactionAddress->save($txnAddr);
 				}
 			}
-			// Create OR Update their payment processor data
 			if (!empty($data['Customer']['Connection'])) {
 				$options = $this->gatherCheckoutOptions();
 				// connection[id] should be pre-filled or empty
@@ -478,11 +479,11 @@ class _Transaction extends TransactionsAppModel {
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
 				$this->Customer->Connection->save($connection);
 			}
-			
             $this->_sendReceipt($data);
 			return $data;
 
 		} catch (Exception $e) {
+			break;
 			throw new Exception($e->getMessage());
 		}
 	}
