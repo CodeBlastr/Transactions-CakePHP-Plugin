@@ -177,29 +177,10 @@ class Bluepay extends AppModel {
 	debug($data);
 	
 		
-	$this->setCustInfo(
-		$data['Transaction']['card_number'], // $this->account
-		$data['Transaction']['card_sec'], // $this->cvv2 
-		//$data['Transaction']['auth_code'], //$this->authCode = $AUTH_CODE;
-		sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2), // $this->expire
-		$data['TransactionAddress'][0]['first_name'], // $this->name1
-		$data['TransactionAddress'][0]['last_name'], // $this->name2 
-		$data['TransactionAddress'][0]['street_address_1'], //$this->addr1 
-		$data['TransactionAddress'][0]['city'], //$this->city
-		$data['TransactionAddress'][0]['state'], //$this->state 
-		$data['TransactionAddress'][0]['zip'], //$this->zip
-		$data['TransactionAddress'][0]['country'], //$this->country
-		$data['TransactionAddress'][0]['phone'], //$this->phone
-		$data['TransactionAddress'][0]['email'], //$this->email 
-		$data['Transaction']['customid1' == null], //$this->customid1 = null 
-		$data['Transaction']['customid2' == null], //$this->customid2 = null 
-		$data['TransactionAddress'][0]['street_adress_2' == null], //$this->addr2 = null 
-		$data['Transaction']['memo'] //$this->memo = null
-		);
+		$this->setCustInfo($data);
 		
 		$this->rebAdd($data); // checks for and sets variables if it is an ARB / Rebilling Transaction Type
 		$this->sale('1.00'); // sets the amount for both sales, and trial period of ARB's / Rebilling
-	
 		$this->process();
 		
 		debug($this->response);
@@ -212,7 +193,7 @@ class Bluepay extends AppModel {
 		debug($this->message);
 		debug($this->rebid);
 
-break;
+		break;
 		
 		try {
 				      
@@ -469,14 +450,26 @@ break;
 	 *
 	 * Sets the customer specified info.
 	 */
-	public function setCustInfo($account, $cvv2, $expire, $name1, $name2, $addr1, $city, $state, $zip, $country, $phone, $email, $customid1 = null, $customid2 = null, $addr2 = null, $memo = null) {
+	public function setCustInfo($data) {
 
-		$this->account = $account;
-		$this->cvv2 = $cvv2;
-		$this->expire = $expire;
-		$this->name1 = $name1;
-		$this->name2 = $name2;
-		$this->addr1 = $addr1;
+			$data['TransactionAddress'][0]['city'], //$this->city
+			$data['TransactionAddress'][0]['state'], //$this->state 
+			$data['TransactionAddress'][0]['zip'], //$this->zip
+			$data['TransactionAddress'][0]['country'], //$this->country
+			$data['TransactionAddress'][0]['phone'], //$this->phone
+			$data['TransactionAddress'][0]['email'], //$this->email 
+			$data['Transaction']['customid1' == null], //$this->customid1 = null 
+			$data['Transaction']['customid2' == null], //$this->customid2 = null 
+			$data['TransactionAddress'][0]['street_adress_2' == null], //$this->addr2 = null 
+			$data['Transaction']['memo'] //$this->memo = null
+			
+			
+		$this->account = $data['Transaction']['card_number']; // $this->account
+		$this->cvv2 = $data['Transaction']['card_sec']; // $this->cvv2 
+		$this->expire = sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2); // $this->expire
+		$this->name1 = $data['TransactionAddress'][0]['first_name'];
+		$this->name2 = $data['TransactionAddress'][0]['last_name'];
+		$this->addr1 = $data['TransactionAddress'][0]['street_address_1'];
 		$this->addr2 = $addr2;
 		$this->city = $city;
 		$this->state = $state;
