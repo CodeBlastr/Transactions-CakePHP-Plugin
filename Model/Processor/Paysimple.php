@@ -59,8 +59,10 @@ class Paysimple extends AppModel {
  */
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
+		debug($data);
 		
-		try {      
+		try {
+				      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
@@ -69,7 +71,9 @@ class Paysimple extends AppModel {
 			} else {
 				// we have their customer, unserialize the data
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
-			}   
+			}
+			
+			
 			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
 			if (!empty($data[$this->modelName]['ach_account_number'])) {
 				// ACH Account
@@ -84,12 +88,14 @@ class Paysimple extends AppModel {
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data[$this->modelName]['paymentSubType'] = 'Moto';
 			} else {
+				// they are using a Saved Payment Method; defined by an Id
                 $ach_count=count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
                 $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
                 if($ach_count > 0) {
-                   for($i=0;$i<$ach_count;$i++) {
-                       if($data[$this->modelName]['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Web';  }
-                     
+					for($i=0;$i<$ach_count;$i++) {
+                   		if($data[$this->modelName]['paysimple_account'] == $data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) {
+                       		$data[$this->modelName]['paymentSubType'] = 'Web';  
+						}
                    } 
                 }
                 if($cc_count > 0) {
@@ -97,23 +103,31 @@ class Paysimple extends AppModel {
                         if($data[$this->modelName]['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Moto';  } 
                    } 
                 }
-				// they are using a Saved Payment Method; defined by an Id
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['paysimple_account'];
 			}
+
+
             // make the actual payment
 			if($data[$this->modelName]['is_arb']) {
+            	// first one is ARB
 				$paymentData = $this->createRecurringPayment($data);
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
 				$data[$this->modelName]['processor_response'] = $paymentData['ScheduleStatus'];
 			} else {
+				// this is a regular sale
 				$paymentData = $this->createPayment($data);   
 				$data[$this->modelName]['processor_response'] = $paymentData['Status'];
-			}               
+			}
+			
+			             
 			if ($data[$this->modelName]['processor_response'] == 'Failed') {
 				throw new Exception($paymentData['ProviderAuthCode']);
-			} 
+			}
+			
 			$data[$this->modelName]['Payment'] = $paymentData;
 			$data[$this->modelName]['status'] = $this->statusTypes['paid'];
+			debug($data);
+			break;
 			
             return $data;
 			

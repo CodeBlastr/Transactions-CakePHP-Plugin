@@ -142,9 +142,9 @@ class Bluepay extends AppModel {
 	// either TEST or LIVE
 	const POST_URL = 'https://secure.bluepay.com/interfaces/bp20post';
 	// the url to post to
-	const ACCOUNT_ID = '100150573798';
+	const ACCOUNT_ID = '100150385973';
 	// the default account id
-	const SECRET_KEY = 'B.TR.Y6QP2S4INDAEPEB/XXOSXG1ZZQM';
+	const SECRET_KEY = '2ZJJA1KI4QCACVHTKLCUPVJGCPYYE93B';
 		
 	// the default secret key
 
@@ -174,32 +174,33 @@ class Bluepay extends AppModel {
     //method function pay attribute $data = null
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
-	//debug($data);
-	//break;
+	debug($data);
+	
 		
+	$this->setCustInfo(
+		$data['Transaction']['card_number'], // $this->account
+		$data['Transaction']['card_sec'], // $this->cvv2 
+		//$data['Transaction']['auth_code'], //$this->authCode = $AUTH_CODE;
+		sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2), // $this->expire
+		$data['TransactionAddress'][0]['first_name'], // $this->name1
+		$data['TransactionAddress'][0]['last_name'], // $this->name2 
+		$data['TransactionAddress'][0]['street_address_1'], //$this->addr1 
+		$data['TransactionAddress'][0]['city'], //$this->city
+		$data['TransactionAddress'][0]['state'], //$this->state 
+		$data['TransactionAddress'][0]['zip'], //$this->zip
+		$data['TransactionAddress'][0]['country'], //$this->country
+		$data['TransactionAddress'][0]['phone'], //$this->phone
+		$data['TransactionAddress'][0]['email'], //$this->email 
+		$data['Transaction']['customid1' == null], //$this->customid1 = null 
+		$data['Transaction']['customid2' == null], //$this->customid2 = null 
+		$data['TransactionAddress'][0]['street_adress_2' == null], //$this->addr2 = null 
+		$data['Transaction']['memo'] //$this->memo = null
+		);
 		
-		$this->setCustInfo(
-			$data['Transaction']['card_number'], // $this->account
-			$data['Transaction']['card_sec'], // $this->cvv2 
-			//$data['Transaction']['auth_code'], //$this->authCode = $AUTH_CODE;
-			sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2), // $this->expire
-			$data['TransactionAddress'][0]['first_name'], // $this->name1
-			$data['TransactionAddress'][0]['last_name'], // $this->name2 
-			$data['TransactionAddress'][0]['street_address_1'], //$this->addr1 
-			$data['TransactionAddress'][0]['city'], //$this->city
-			$data['TransactionAddress'][0]['state'], //$this->state 
-			$data['TransactionAddress'][0]['zip'], //$this->zip
-			$data['TransactionAddress'][0]['country'], //$this->country
-			$data['TransactionAddress'][0]['phone'], //$this->phone
-			$data['TransactionAddress'][0]['email'], //$this->email 
-			$data['Transaction']['customid1' == null], //$this->customid1 = null 
-			$data['Transaction']['customid2' == null], //$this->customid2 = null 
-			$data['TransactionAddress'][0]['street_adress_2' == null], //$this->addr2 = null 
-			$data['Transaction']['memo'] //$this->memo = null
-			);
-		$this->sale('1.00');
+		$this->rebAdd($data); // checks for and sets variables if it is an ARB / Rebilling Transaction Type
+		$this->sale('1.00'); // sets the amount for both sales, and trial period of ARB's / Rebilling
+	
 		$this->process();
-		
 		
 		debug($this->response);
 		
@@ -210,10 +211,11 @@ class Bluepay extends AppModel {
 		debug($this->authCode); // confirmation / authorization code
 		debug($this->message);
 		debug($this->rebid);
-		break;
+
+break;
 		
-		
-		try {      
+		try {
+				      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
@@ -222,7 +224,9 @@ class Bluepay extends AppModel {
 			} else {
 				// we have their customer, unserialize the data
 				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
-			}   
+			}
+			
+			
 			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
 			if (!empty($data[$this->modelName]['ach_account_number'])) {
 				// ACH Account
@@ -237,41 +241,56 @@ class Bluepay extends AppModel {
 				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
 				$data[$this->modelName]['paymentSubType'] = 'Moto';
 			} else {
+				// they are using a Saved Payment Method; defined by an Id
                 $ach_count=count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
                 $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
                 if($ach_count > 0) {
-                   for($i=0;$i<$ach_count;$i++) {
-                       if($data[$this->modelName]['bluepay_account']==$data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Web';  }
-                     
+					for($i=0;$i<$ach_count;$i++) {
+                   		if($data[$this->modelName]['paysimple_account'] == $data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) {
+                       		$data[$this->modelName]['paymentSubType'] = 'Web';  
+						}
                    } 
                 }
                 if($cc_count > 0) {
                    for($i=0;$i<$cc_count;$i++) {
-                        if($data[$this->modelName]['bluepay_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Moto';  } 
+                        if($data[$this->modelName]['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Moto';  } 
                    } 
                 }
-				// they are using a Saved Payment Method; defined by an Id
-				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['bluepay_account'];
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['paysimple_account'];
 			}
+
+
             // make the actual payment
 			if($data[$this->modelName]['is_arb']) {
+            	// first one is ARB
 				$paymentData = $this->createRecurringPayment($data);
 				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
 				$data[$this->modelName]['processor_response'] = $paymentData['ScheduleStatus'];
 			} else {
+				// this is a regular sale
 				$paymentData = $this->createPayment($data);   
 				$data[$this->modelName]['processor_response'] = $paymentData['Status'];
-			}               
+			}
+			
+			             
 			if ($data[$this->modelName]['processor_response'] == 'Failed') {
 				throw new Exception($paymentData['ProviderAuthCode']);
-			} 
+			}
+			
 			$data[$this->modelName]['Payment'] = $paymentData;
 			$data[$this->modelName]['status'] = $this->statusTypes['paid'];
 			
+		
+		debug($data);
+		break;
+			
+		
+		
+			
             return $data;
 			
-		} catch (Exception $e) {
-			throw new Exception($e->getMessage());
+		} catch (Exception $exc) {
+			throw new Exception($exc->getMessage());
 		}
 
 	}
@@ -367,14 +386,25 @@ class Bluepay extends AppModel {
 	 * rebAdd()
 	 *
 	 * Will add a rebilling cycle.
+	 * @todo we need a list of incoming frequency types to map
 	 */
-	public function rebAdd($amount, $date, $expr, $cycles) {
-
-		$this->doRebill = '1';
-		$this->rebAmount = self::formatAmount($amount);
-		$this->rebDate = $date;
-		$this->rebExpr = $expr;
-		$this->rebCycles = $cycles;
+	public function rebAdd($data) {
+		if (!empty($data['Transaction']['is_arb']) && !empty($data['TransactionItem'][0]['arb_settings'])) {
+			$arbData = unserialize($data['TransactionItem'][0]['arb_settings']);
+					
+			// required : "3 DAY" to run every three days, "1 MONTH" to run monthly, "1 YEAR" to run yearly, "2 WEEK" to run bi-weekly, etc.
+			$frequencyType = $arbData['ExecutionFrequencyType'] == 'Annually' ? '1 YEAR' : null;
+			$frequencyType = $arbData['ExecutionFrequencyType'] == 'Monthly' ? '1 MONTH' : null;
+			$frequencyType = $arbData['ExecutionFrequencyType'] == 'BiWeekly' ? '2 WEEK' : null;
+			$frequencyType = empty($frequencyType) ? '1 MONTH' : null;
+			
+			
+			$this->doRebill = '1';
+			$this->rebAmount = self::formatAmount($arbData['PaymentAmount']);
+			$this->rebDate = !empty($arbData['FirstPaymentDate']) ? $arbData['FirstPaymentDate'] : date('Y-m-d h:i:s');
+			$this->rebExpr = $frequencyType; 
+			$this->rebCycles = $arbData['ExecutionFrequencyParameter'];
+		}
 	}
 
 	/***
