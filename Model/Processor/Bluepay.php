@@ -5,9 +5,9 @@ App::uses('HttpSocket', 'Network/Http');
  * P
  */
 
-class Bluepay extends AppModel {
-
-	public $name = 'Bluepay';
+class Bluepay extends AppModel { //class bluepay is an extenstion of AppModel
+	//list properties of class
+	public $name = 'Bluepay';  
 	
 	public $config = array(
 		'environment' => 'sandbox',
@@ -32,7 +32,7 @@ class Bluepay extends AppModel {
 	public $itemModel = '';
 
 	
-	public function __construct($id = false, $table = null, $ds = null) {
+	public function __construct($id = false, $table = null, $ds = null) {  //constructor method
     	parent::__construct($id, $table, $ds);
 		if (defined('__TRANSACTIONS_PAYSIMPLE')) {   //Might change to TRANSACTIONS_BLUEPAY instead of simpelPay
 			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE); //Might change to TRANSACTIONS_BLUEPAY instead of simpelPay
@@ -57,6 +57,8 @@ class Bluepay extends AppModel {
  * @return type
  * @throws Exception
  */
+ 
+    //method function pay attribute $data = null
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
 		
