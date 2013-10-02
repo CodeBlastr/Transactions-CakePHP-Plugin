@@ -166,8 +166,8 @@ class _TransactionsController extends TransactionsAppController {
                 //$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
                 $this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
-    		} catch (Exception $exc) {
-    		    $this->Session->setFlash($exc->getMessage());
+    		} catch (Exception $e) {
+    		    $this->Session->setFlash($e->getMessage());
     		}
 	    }
         

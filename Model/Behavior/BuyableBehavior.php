@@ -122,6 +122,10 @@ class BuyableBehavior extends ModelBehavior {
 		try {
 			if (method_exists($Model, 'beforePayment') && is_callable('beforePayment')) {
 				$data = $Model->beforePayment($Model->data);
+			} else {
+				App::uses('Transaction', 'Transactions.Model');
+				$Transaction = new Transaction;
+				$data = $Transaction->beforePayment($Model->data);
 			}
 			
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
@@ -137,6 +141,10 @@ class BuyableBehavior extends ModelBehavior {
 			
 			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
 				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			} else {
+				App::uses('Transaction', 'Transactions.Model');
+				$Transaction = new Transaction;
+				$Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
 			}
 			
             return $data;
