@@ -54,7 +54,7 @@ if (!class_exists('MockSession')) {
  * BuyableBehavior Test Case
  *
  */
-class BuyableBehaviorTestCase extends CakeTestCase {
+class BluepayTestCase extends CakeTestCase {
 /**
  * Fixtures
  *
@@ -118,11 +118,62 @@ class BuyableBehaviorTestCase extends CakeTestCase {
 		$this->assertTrue(is_a($this->Article->Behaviors->Buyable, 'BuyableBehavior'));
 	}
 
-
-/**
- * Test finding 
- */ 
-	public function testFinding() {
+	public function testBluepay() {
+		CakeSession::write('Auth.User.id', '2');
+		$data = array(
+			'TransactionAddress' => array(
+				array(
+					'email' => 'unit-test@razorit.com',
+					'first_name' => 'Arb',
+					'last_name' => 'Tester',
+					'street_address_1' => '123 Test Drive',
+					'street_address_2' => '',
+					'city' => 'North Syracuse',
+					'state' => 'NY',
+					'zip' => '13212',
+					'country' => 'US',
+					'phone' => '1234567890',
+					'shipping' => '0',
+					'type' => 'billing'
+				),
+				array(
+					'street_address_1' => '',
+					'street_address_2' => '',
+					'city' => '',
+					'state' => '',
+					'zip' => '',
+					'country' => 'US',
+					'type' => 'shipping'
+				)
+			),
+			'Transaction' => array(
+				'mode' => 'BLUEPAY.CC',
+				'card_number' => '4111111111111111',
+				'card_exp_month' => '1',
+				'card_exp_year' => '2014',
+				'card_sec' => '999',
+				'ach_routing_number' => '',
+				'ach_account_number' => '',
+				'ach_bank_name' => '',
+				'ach_is_checking_account' => '',
+				'quantity' => '1',
+				'total' => '5.00'
+			),
+			'TransactionItem' => array(
+				array(
+					'id' => '50773d75-cab4-40dd-b34c-187800000005',
+					'quantity' => '1'
+				)
+			),
+			'TransactionCoupon' => array(
+				'code' => ''
+			)
+		);
+		
+		$result = $this->Product->buy($data);
+		$transaction = $this->Transaction->find('first', array('conditions' => array('Transaction.Id' => $result['Transaction']['id'])));
+		// transaction was bought and paid for
+		$this->assertTrue($transaction['Transaction']['status'] == 'paid');
 	}
 
 }
