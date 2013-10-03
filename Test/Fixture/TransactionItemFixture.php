@@ -144,7 +144,7 @@ class TransactionItemFixture extends CakeTestFixture {
 			'name' => 'ARB Test Item #4',
 			'transaction_id' => '5043572d-9040-43c9-85b1-22d400000004',
 			'quantity' => 1,
-			'price' => 6,
+			'price' => 2.10,
 			'weight' => 1,
 			'height' => 1,
 			'width' => 1,

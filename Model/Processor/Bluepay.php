@@ -48,7 +48,7 @@ class Bluepay extends AppModel {
 	protected $tps;
 	// TAMPER_PROOF_SEAL
 	protected $transType;
-	// TRANS_TYPE (AUTH, SALE, REFUND, or CAPTURE)
+	// TRANS_TYPE (AUTH, SALE, REFUND, or CAPTURE)   
 	protected $payType;
 	// PAYMENT_TYPE (CREDIT or ACH)
 	protected $mode;
@@ -174,106 +174,96 @@ class Bluepay extends AppModel {
     //method function pay attribute $data = null
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
-	debug($data);
-	
-		
-		$this->setCustInfo($data);
-		
-		$this->rebAdd($data); // checks for and sets variables if it is an ARB / Rebilling Transaction Type
-		$this->sale('1.00'); // sets the amount for both sales, and trial period of ARB's / Rebilling
-		$this->process();
-		
-		debug($this->response);
-		
-		debug($this->transId);
-		debug($this->status);
-		debug($this->avsResp);
-		debug($this->cvv2Resp);
-		debug($this->authCode); // confirmation / authorization code
-		debug($this->message);
-		debug($this->rebid);
 
-		break;
-		
 		try {
-				      
-			// Do we need to save a New Customer or are we using an Existing Customer     
-			if (empty($data['Customer']['Connection'])) {
-				// create their Customer
-				$userData = $this->createCustomer($data);  
-              	$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData['Id'];
-			} else {
-				// we have their customer, unserialize the data
-				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
-			}
-			
-			
-			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
-			if (!empty($data[$this->modelName]['ach_account_number'])) {
-				// ACH Account
-				$accountData = $this->addAchAccount($data);
-				$data['Customer']['Connection'][0]['value']['Account']['Ach'][] = $accountData;
-				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
-				$data[$this->modelName]['paymentSubType'] = 'Web';
-			} elseif (!empty($data[$this->modelName]['card_number'])) {   
-				// Credit Card Account
-				$accountData = $this->addCreditCardAccount($data);
-				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $accountData;
-				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
-				$data[$this->modelName]['paymentSubType'] = 'Moto';
-			} else {
-				// they are using a Saved Payment Method; defined by an Id
-                $ach_count=count($data['Customer']['Connection'][0]['value']['Account']['Ach']);
-                $cc_count=count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
-                if($ach_count > 0) {
-					for($i=0;$i<$ach_count;$i++) {
-                   		if($data[$this->modelName]['paysimple_account'] == $data['Customer']['Connection'][0]['value']['Account']['Ach'][$i]['Id']) {
-                       		$data[$this->modelName]['paymentSubType'] = 'Web';  
-						}
-                   } 
-                }
-                if($cc_count > 0) {
-                   for($i=0;$i<$cc_count;$i++) {
-                        if($data[$this->modelName]['paysimple_account']==$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) { $data[$this->modelName]['paymentSubType'] = 'Moto';  } 
-                   } 
-                }
-				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['paysimple_account'];
-			}
 
-
-            // make the actual payment
-			if($data[$this->modelName]['is_arb']) {
-            	// first one is ARB
-				$paymentData = $this->createRecurringPayment($data);
-				$data['Customer']['Connection'][0]['value']['Arb']['scheduleId'] = $paymentData['Id'];
-				$data[$this->modelName]['processor_response'] = $paymentData['ScheduleStatus'];
-			} else {
-				// this is a regular sale
-				$paymentData = $this->createPayment($data);   
-				$data[$this->modelName]['processor_response'] = $paymentData['Status'];
-			}
+			// SET FINAL TRANSACTION DATA 
+			$this->finalizeData($data);
 			
-			             
-			if ($data[$this->modelName]['processor_response'] == 'Failed') {
-				throw new Exception($paymentData['ProviderAuthCode']);
-			}
+			// run the transaction 
+			$this->sendTransaction($data);
 			
-			$data[$this->modelName]['Payment'] = $paymentData;
-			$data[$this->modelName]['status'] = $this->statusTypes['paid'];
-			
-		
-		debug($data);
+			// get the data to return
+			$data = $this->returnData($data);
+		debug(get_object_vars($this));
 		break;
-			
-		
-		
-			
             return $data;
 			
-		} catch (Exception $exc) {
-			throw new Exception($exc->getMessage());
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
 		}
+		
+	}
 
+
+/**
+ * Finalize the data we'll return from the pay function
+ * 
+ * @param array $data
+ * @return array $data
+ */
+	public function returnData($data) {
+		// check if Customer Connection already exists AGAIN
+		if(empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId'])){
+			// if no
+				// Set $data Customer Connection info 
+					// check if it's a credit card or ach AGAIN to see which $data fields to set
+						// if ACH 
+							// set ACH field data
+						// else (default to Credit Card)
+		} else {			
+			// else (default to Credit Card)
+							$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0] = array(
+							 	'CreditCardNumber' => $data['Transaction']['card_number'],
+								'ExpirationDate' => sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2),
+								'BillingZipCode' => $data['Transaction']['zip'],
+								'TransactionId' => $this->transId,
+							);
+		}
+						
+			
+	
+	
+		//Set data processor response value
+		$data[$this->modelName]['processor_response'] = $this->mesage;
+		// set status			  	  			 						
+		$data[$this->modelName]['status'] = $this->statusTypes['paid'];
+		
+		return $data;
+	} 	
+
+/**
+ * Fire the transaction
+ */
+ 	public function sendTransaction($data) {
+		$this->rebAdd($data);
+		$this->sale($data['Transaction']['total']); // sets the amount for both sales, and trial period of ARB's / Rebilling
+						
+		$this->process();
+		
+		//if response is not 1 then throw new error msg to user using processor response msg		 
+	  	if($this->status != 1) {
+	  		throw new Exception($this->message); //throw msg using the message method	  
+	  	}
+		return $data;
+ 	}
+
+/**
+ * This is where we set all the right transaction data
+ */
+	public function finalizeData($data) {
+		// check if Customer Connection already exists from the incoming data 
+		if(!empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId'])){
+			// if yes  use rebSale($transId) with transactionId, NOTE : get the transaction Id from the Customer Connection
+			$this->rebSale($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId']);
+		}				
+		// see if this is an ACH or a Credit Card transaction				
+		if($data['Transaction']['mode'] == 'BLUEPAY.ACH'){
+			$this->setCustACHInfo($data);
+		} else {			
+			$this->setCustInfo($data);
+		}
+		return $data;
 	}
 
 
@@ -284,7 +274,6 @@ class Bluepay extends AppModel {
 	 * specified.
 	 */
 	public function sale($amount) {
-
 		$this->transType = "SALE";
 		$this->amount = self::formatAmount($amount);
 	}
@@ -296,10 +285,8 @@ class Bluepay extends AppModel {
 	 * If the amount is not specified, then it will use
 	 * the amount of the previous transaction.
 	 */
-	public function rebSale($transId, $amount = null) {
-
+	public function rebSale($transId) {
 		$this->masterId = $transId;
-		$this->sale($amount);
 	}
 
 	/***
@@ -426,23 +413,29 @@ class Bluepay extends AppModel {
 	 *
 	 * Sets the customer specified info.
 	 */
-	public function setCustACHInfo($routenum, $accntnum, $accttype, $name1, $name2, $addr1, $city, $state, $zip, $country, $phone, $email, $customid1 = null, $customid2 = null, $addr2 = null, $memo = null) {
-
-		$this->account = $accttype . ":" . $routenum . ":" . $accntnum;
-		$this->payType = 'ACH';
-		$this->name1 = $name1;
-		$this->name2 = $name2;
-		$this->addr1 = $addr1;
-		$this->addr2 = $addr2;
-		$this->city = $city;
-		$this->state = $state;
-		$this->zip = $zip;
-		$this->country = "USA";
-		$this->phone = $phone;
-		$this->email = $email;
-		$this->customid1 = $customid1;
-		$this->customid2 = $customid2;
-		$this->memo = $memo;
+	public function setCustACHInfo($data) {
+		// parameters were : $routenum, $accntnum, $accttype, $name1, $name2, $addr1, $city, $state, $zip, $country, $phone, $email, $customid1 = null, $customid2 = null, $addr2 = null, $memo = null
+		if (empty($this->masterId)) {
+			$accttype = $data['Transaction']['ach_is_checking_account'] == '1' ? 'C' : 'S' ;  //if ach_is_checking_account = 1 'C' else 'S'
+			$routenum = $data['Transaction']['ach_routing_number'];
+			$acctnum = $data['Transaction']['ach_account_number'];
+			$this->account = $accttype . ":" . $routenum . ":" . $accntnum;
+			$this->payType = 'ACH';
+		}
+		
+		$this->name1 = $data['TransactionAddress'][0]['first_name']; //$name1;
+		$this->name2 = $data['TransactionAddress'][0]['last_name']; //$name2;
+		$this->addr1 = $data['TransactionAddress'][0]['street_address_1']; //$addr1;
+		$this->addr2 = $data['TransactionAddress'][0]['street_address_2']; //$addr2;
+		$this->city = $$data['TransactionAddress'][0]['city']; //city;
+		$this->state = $data['TransactionAddress'][0]['state']; //$state;
+		$this->zip = $data['TransactionAddress'][0]['zip']; //$zip;
+		$this->country = $data['TransactionAddress'][0]['country']; //"USA";
+		$this->phone = $data['TransactionAddress'][0]['phone']; //$phone;
+		$this->email = $data['TransactionAddress'][0]['email']; //$email;
+		$this->customid1 = null;
+		$this->customid2 = null;
+		$this->memo = null;
 	}
 
 	/***
@@ -451,35 +444,24 @@ class Bluepay extends AppModel {
 	 * Sets the customer specified info.
 	 */
 	public function setCustInfo($data) {
-
-			$data['TransactionAddress'][0]['city'], //$this->city
-			$data['TransactionAddress'][0]['state'], //$this->state 
-			$data['TransactionAddress'][0]['zip'], //$this->zip
-			$data['TransactionAddress'][0]['country'], //$this->country
-			$data['TransactionAddress'][0]['phone'], //$this->phone
-			$data['TransactionAddress'][0]['email'], //$this->email 
-			$data['Transaction']['customid1' == null], //$this->customid1 = null 
-			$data['Transaction']['customid2' == null], //$this->customid2 = null 
-			$data['TransactionAddress'][0]['street_adress_2' == null], //$this->addr2 = null 
-			$data['Transaction']['memo'] //$this->memo = null
-			
-			
-		$this->account = $data['Transaction']['card_number']; // $this->account
-		$this->cvv2 = $data['Transaction']['card_sec']; // $this->cvv2 
-		$this->expire = sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2); // $this->expire
+		if (empty($this->masterId)) {
+			$this->account = $data['Transaction']['card_number']; // $this->account
+			$this->cvv2 = $data['Transaction']['card_sec']; // $this->cvv2 
+			$this->expire = sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2); // $this->expire
+		}
 		$this->name1 = $data['TransactionAddress'][0]['first_name'];
 		$this->name2 = $data['TransactionAddress'][0]['last_name'];
 		$this->addr1 = $data['TransactionAddress'][0]['street_address_1'];
-		$this->addr2 = $addr2;
-		$this->city = $city;
-		$this->state = $state;
-		$this->zip = $zip;
-		$this->country = "USA";
-		$this->phone = $phone;
-		$this->email = $email;
-		$this->customid1 = $customid1;
-		$this->customid2 = $customid2;
-		$this->memo = $memo;
+		$this->addr2 = $data['TransactionAddress'][0]['street_address_2'];
+		$this->city = $data['TransactionAddress'][0]['city']; //$this->city
+		$this->state = $data['TransactionAddress'][0]['state']; //$this->state
+		$this->zip = $data['TransactionAddress'][0]['zip']; //$this->zip
+		$this->country = $data['TransactionAddress'][0]['country']; //$this->country = "USA"
+		$this->phone = $data['TransactionAddress'][0]['phone']; //$this->phone
+		$this->email = $data['TransactionAddress'][0]['email']; //$this->email
+		$this->customid1 = null; //$data['Transaction']['customid1']; //$this->customid1
+		$this->customid2 = null; //$data['Transaction']['customid2' == null]; //$this->customid2
+		$this->memo = null; //$data['Transacton']['memo']; 
 	}
 
 	/***
