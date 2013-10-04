@@ -110,14 +110,77 @@ class BluepayTestCase extends CakeTestCase {
 		parent::tearDown();
 	}
 	
+	// 
+	
 
 /**
  * Test behavior instance
  *
  * @return void
+ * @todo create rebill tests for all of the different types of rebilling
+ * @todo monthly, annually, weekly, bi-weekly, 
+ * @todo both credit and ach for each one
  */
 	public function testBehaviorInstance() {
 		$this->assertTrue(is_a($this->Article->Behaviors->Buyable, 'BuyableBehavior'));
+	}
+	public function testSendTransactionRebillCredit() {
+		CakeSession::write('Auth.User.id', '2');
+		$data = array(
+			'TransactionAddress' => array(
+				array(
+					'email' => 'unit-test@razorit.com',
+					'first_name' => 'Arb',
+					'last_name' => 'Tester',
+					'street_address_1' => '123 Test Drive',
+					'street_address_2' => '',
+					'city' => 'North Syracuse',
+					'state' => 'NY',
+					'zip' => '13212',
+					'country' => 'US',
+					'phone' => '1234567890',
+					'shipping' => '0',
+					'type' => 'billing'
+				),
+				array(
+					'street_address_1' => '',
+					'street_address_2' => '',
+					'city' => '',
+					'state' => '',
+					'zip' => '',
+					'country' => 'US',
+					'type' => 'shipping'
+				)
+			),
+			'Transaction' => array(
+				'mode' => 'BLUEPAY.CC',
+				'card_number' => '4111111111111111',
+				'card_exp_month' => '1',
+				'card_exp_year' => '2014',
+				'card_sec' => '999',
+				'ach_routing_number' => '',
+				'ach_account_number' => '',
+				'ach_bank_name' => '',
+				'ach_is_checking_account' => '',
+				'quantity' => '1',
+				'total' => '5.34' // randomize the last two numbers between 0 and 99
+			),
+			'TransactionItem' => array(
+				array(
+					'id' => '50773d75-cab4-40dd-b34c-187800000005',
+					'quantity' => '1'
+				)
+			),
+			'TransactionCoupon' => array(
+				'code' => ''
+			)
+		);
+		$result = $this->Buyable->buy($this->Transaction, $data);
+		debug($result);
+		break;
+		
+		$this->assertTrue(!empty($result['Customer']['Connection'][0]['value']));
+		$this->assertTrue(!empty($result['Transaction']['processor_response']));
 	}
 
 	public function testSendTransactionCredit() {
@@ -159,7 +222,7 @@ class BluepayTestCase extends CakeTestCase {
 				'ach_bank_name' => '',
 				'ach_is_checking_account' => '',
 				'quantity' => '1',
-				'total' => '5.00'
+				'total' => '5.28'
 			),
 			'TransactionItem' => array(
 				array(
@@ -171,12 +234,14 @@ class BluepayTestCase extends CakeTestCase {
 				'code' => ''
 			)
 		);
-		$this->Bluepay->pay($data);
-		debug(get_object_vars($this->Bluepay));
-		break;
+		$result = $this->Bluepay->pay($data);
+		$this->assertTrue(!empty($result['Customer']['Connection'][0]['value']));
+		$this->assertTrue(!empty($result['Transaction']['processor_response']));
 	}
 
-
+/**
+ * test send transaction ach
+ */
 	public function testSendTransactionAch() {
 		CakeSession::write('Auth.User.id', '2');
 		$data = array(
@@ -206,16 +271,17 @@ class BluepayTestCase extends CakeTestCase {
 				)
 			),
 			'Transaction' => array(
-				'mode' => 'BLUEPAY.CC',
-				'card_number' => '4111111111111111',
-				'card_exp_month' => '1',
-				'card_exp_year' => '2014',
-				'card_sec' => '999',
-				'ach_routing_number' => '',
-				'ach_account_number' => '',
-				'ach_bank_name' => '',
-				'ach_is_checking_account' => ''
-				
+				'mode' => 'BLUEPAY.ACH',
+				'card_number' => '',
+				'card_exp_month' => '',
+				'card_exp_year' => '',
+				'card_sec' => '',
+				'ach_routing_number' => '122287675',
+				'ach_account_number' => '1234123412341234',
+				'ach_bank_name' => 'HSBC',
+				'ach_is_checking_account' => '1',
+				'quantity' => '1',
+				'total' => '5.26' // randomize the last two numbers between 0 and 99
 			),
 			'TransactionItem' => array(
 				array(
@@ -227,7 +293,9 @@ class BluepayTestCase extends CakeTestCase {
 				'code' => ''
 			)
 		);
-		$this->sendTransaction($data);
+		$result = $this->Bluepay->pay($data);
+		$this->assertTrue(!empty($result['Customer']['Connection'][0]['value']));
+		$this->assertTrue(!empty($result['Transaction']['processor_response']));
 	}
 
 
@@ -242,7 +310,6 @@ class BluepayTestCase extends CakeTestCase {
 				'card_sec' => '999',
 			)
 		);
-		
 		$this->Bluepay->finalizeData($data);
 		$this->assertEqual($this->Bluepay->cvv2, $data['Transaction']['card_sec']);
 	}
@@ -269,68 +336,7 @@ class BluepayTestCase extends CakeTestCase {
 			)
 		);
 		$this->Bluepay->finalizeData($data);
-		$this->assertEqual($this->Bluepay->payType, 'ACH'); //$data['Transaction']['ACH']);
-		//break;
-		
-	}
-	
-	
-	
-	public function testBluepay() {
-		// CakeSession::write('Auth.User.id', '2');
-		// $data = array(
-			// 'TransactionAddress' => array(
-				// array(
-					// 'email' => 'unit-test@razorit.com',
-					// 'first_name' => 'Arb',
-					// 'last_name' => 'Tester',
-					// 'street_address_1' => '123 Test Drive',
-					// 'street_address_2' => '',
-					// 'city' => 'North Syracuse',
-					// 'state' => 'NY',
-					// 'zip' => '13212',
-					// 'country' => 'US',
-					// 'phone' => '1234567890',
-					// 'shipping' => '0',
-					// 'type' => 'billing'
-				// ),
-				// array(
-					// 'street_address_1' => '',
-					// 'street_address_2' => '',
-					// 'city' => '',
-					// 'state' => '',
-					// 'zip' => '',
-					// 'country' => 'US',
-					// 'type' => 'shipping'
-				// )
-			// ),
-			// 'Transaction' => array(
-				// 'mode' => 'BLUEPAY.CC',
-				// 'card_number' => '4111111111111111',
-				// 'card_exp_month' => '1',
-				// 'card_exp_year' => '2014',
-				// 'card_sec' => '999',
-				// 'ach_routing_number' => '',
-				// 'ach_account_number' => '',
-				// 'ach_bank_name' => '',
-				// 'ach_is_checking_account' => ''
-// 				
-			// ),
-			// 'TransactionItem' => array(
-				// array(
-					// 'id' => '50773d75-cab4-40dd-b34c-187800000005',
-					// 'quantity' => '1'
-				// )
-			// ),
-			// 'TransactionCoupon' => array(
-				// 'code' => ''
-			// )
-		// );
-// 		
-		// $result = $this->Product->buy($data);
-		// $transaction = $this->Transaction->find('first', array('conditions' => array('Transaction.Id' => $result['Transaction']['id'])));
-		// // transaction was bought and paid for
-		// $this->assertTrue($transaction['Transaction']['status'] == 'paid');
+		$this->assertEqual($this->Bluepay->payType, 'ACH'); 
 	}
 
 }

@@ -136,6 +136,19 @@ class Bluepay extends AppModel {
 	protected $authCode;
 	protected $message;
 	protected $rebid;
+	
+/**
+ * Required var, sent from BuyableBehavior (duplicated here for Unit Tests to work)
+ * 
+ * @access public
+ * @var array
+ */
+	public $statusTypes = array(
+		'paid' => 'paid',
+		'open' => 'open',
+		'pending' => 'pending',
+		'used' => 'used'
+	); 
 
 	/* constants */
 	const MODE = 'TEST';
@@ -186,7 +199,7 @@ class Bluepay extends AppModel {
 			// get the data to return
 			$data = $this->returnData($data);
 		debug(get_object_vars($this));
-		break;
+		
             return $data;
 			
 		} catch (Exception $e) {
@@ -202,33 +215,41 @@ class Bluepay extends AppModel {
  * @param array $data
  * @return array $data
  */
-	public function returnData($data) {
+	public function returnData($data) {		
 		// check if Customer Connection already exists AGAIN
-		if(empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId'])){
-			// if no
-				// Set $data Customer Connection info 
-					// check if it's a credit card or ach AGAIN to see which $data fields to set
-						// if ACH 
-							// set ACH field data
-						// else (default to Credit Card)
-		} else {			
-			// else (default to Credit Card)
-							$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0] = array(
-							 	'CreditCardNumber' => $data['Transaction']['card_number'],
-								'ExpirationDate' => sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2),
-								'BillingZipCode' => $data['Transaction']['zip'],
-								'TransactionId' => $this->transId,
-							);
+		if(empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId'])){	
+			// if it doesn't, set it			
+			if($data['Transaction']['mode'] == 'BLUEPAY.ACH') {
+				// check if it's a credit card or ach AGAIN to see which $data fields to set
+				// set ACH field data
+				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0] = array(
+				 	'RoutingNumber' => $data['Transaction']['ach_routing_number'],
+				 	'AccountNumber' => '************' . substr($data['Transaction']['ach_account_number'], -4),
+					'BankName' => $data['Transaction']['ach_bank_name'],
+					'IsCheckingAccount' => $data['Transaction']['ach_is_checking_account'],
+					'BillingZipCode' => $data['TransactionAddress'][0]['zip'],
+					'IsDefault' => 1,
+					'CreatedOn' => date('Y-m-d h:i:s'),
+					'TransactionId' => $this->transId,
+				);
+			} else {
+				// else (default to Credit Card)
+				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0] = array(
+				 	'CreditCardNumber' => '************' . substr($data['Transaction']['card_number'], -4),
+					'ExpirationDate' => sprintf('%02d', $data['Transaction']['card_exp_month']) . '/20' . substr($data['Transaction']['card_exp_year'], 2),
+					'BillingZipCode' => $data['TransactionAddress'][0]['zip'],
+					'IsDefault' => 1,
+					'CreatedOn' => date('Y-m-d h:i:s'),
+					'TransactionId' => $this->transId,
+				);
+			}
 		}
-						
-			
-	
-	
+		
 		//Set data processor response value
-		$data[$this->modelName]['processor_response'] = $this->mesage;
+		$data[$this->modelName]['processor_response'] = $this->message;
 		// set status			  	  			 						
 		$data[$this->modelName]['status'] = $this->statusTypes['paid'];
-		
+				
 		return $data;
 	} 	
 
@@ -237,8 +258,7 @@ class Bluepay extends AppModel {
  */
  	public function sendTransaction($data) {
 		$this->rebAdd($data);
-		$this->sale($data['Transaction']['total']); // sets the amount for both sales, and trial period of ARB's / Rebilling
-						
+		$this->sale($data['Transaction']['total']); // sets the amount for both sales, and trial period of ARB's / Rebilling		
 		$this->process();
 		
 		//if response is not 1 then throw new error msg to user using processor response msg		 
@@ -419,7 +439,7 @@ class Bluepay extends AppModel {
 			$accttype = $data['Transaction']['ach_is_checking_account'] == '1' ? 'C' : 'S' ;  //if ach_is_checking_account = 1 'C' else 'S'
 			$routenum = $data['Transaction']['ach_routing_number'];
 			$acctnum = $data['Transaction']['ach_account_number'];
-			$this->account = $accttype . ":" . $routenum . ":" . $accntnum;
+			$this->account = $accttype . ":" . $routenum . ":" . $acctnum;
 			$this->payType = 'ACH';
 		}
 		
@@ -427,7 +447,7 @@ class Bluepay extends AppModel {
 		$this->name2 = $data['TransactionAddress'][0]['last_name']; //$name2;
 		$this->addr1 = $data['TransactionAddress'][0]['street_address_1']; //$addr1;
 		$this->addr2 = $data['TransactionAddress'][0]['street_address_2']; //$addr2;
-		$this->city = $$data['TransactionAddress'][0]['city']; //city;
+		$this->city = $data['TransactionAddress'][0]['city']; //city;
 		$this->state = $data['TransactionAddress'][0]['state']; //$state;
 		$this->zip = $data['TransactionAddress'][0]['zip']; //$zip;
 		$this->country = $data['TransactionAddress'][0]['country']; //"USA";
