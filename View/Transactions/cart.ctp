@@ -72,7 +72,7 @@
 				}
 				// display each payment option's element
 				foreach ( $paymentOptions as $k => $v ) {
-					echo $this->Element(strtolower($k));
+					echo $this->Element(strtolower($k), array('var1' => 'value1'));
 				}
 				?>
 		    </fieldset>
@@ -279,10 +279,17 @@ $(function() {
 		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CHECK' ) {
 			document.changeToPaysimpleCheck();
 		}
+		if ( $('#TransactionMode').val() === 'BLUEPAY.CC' ) {
+			document.changeToBluepayCC();
+		}
+		if ( $('#TransactionMode').val() === 'BLUEPAY.CHECK' ) {
+			document.changeToBluepayCheck();
+		}
 		if ( $('#TransactionMode').val() === 'PURCHASEORDER' ) {
 			document.changeToPurchaseOrder();
 		}
     };
+    
     $('#TransactionMode').change(function(e){
 		document.changePaymentInputs();
     });

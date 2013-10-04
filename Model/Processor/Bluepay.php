@@ -155,9 +155,9 @@ class Bluepay extends AppModel {
 	// either TEST or LIVE
 	const POST_URL = 'https://secure.bluepay.com/interfaces/bp20post';
 	// the url to post to
-	const ACCOUNT_ID = '100150385973';
+	const ACCOUNT_ID = '';
 	// the default account id
-	const SECRET_KEY = '2ZJJA1KI4QCACVHTKLCUPVJGCPYYE93B';
+	const SECRET_KEY = '';
 		
 	// the default secret key
 
@@ -176,11 +176,16 @@ class Bluepay extends AppModel {
 	 * and the mode properties. These will default to
 	 * the constant values if not specified.
 	 */
-	public function __construct($account = self::ACCOUNT_ID, $key = self::SECRET_KEY, $mode = self::MODE) {
-
-		$this->accountId = $account;
-		$this->secretKey = $key;
-		$this->mode = $mode;
+	public function __construct() {
+		if (defined('__TRANSACTIONS_BLUEPAY')) {
+			$config = unserialize(__TRANSACTIONS_BLUEPAY);
+			$this->accountId = '100150573798'; // $config['accountId'];
+			$this->secretKey = 'NC3GVP783ZPBIHAX2H7IVZ1DMCKELNGG'; //$config['secretKey'];
+			$this->mode = !empty($config['mode']) ? $config['mode'] : self::MODE;
+		} else {
+			throw new Exception(__('Bluepay configuration not setup.'));
+			break;
+		}
 	}
 	
 	
@@ -189,7 +194,6 @@ class Bluepay extends AppModel {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
 
 		try {
-
 			// SET FINAL TRANSACTION DATA 
 			$this->finalizeData($data);
 			
@@ -198,7 +202,6 @@ class Bluepay extends AppModel {
 			
 			// get the data to return
 			$data = $this->returnData($data);
-		debug(get_object_vars($this));
 		
             return $data;
 			
@@ -661,9 +664,10 @@ class Bluepay extends AppModel {
 			'DO_AUTOCAP' => $this->doAutocap, 
 			'AVS_ALLOWED' => $this->avsAllowed, 
 			'CVV2_ALLOWED' => $this->cvv2Allowed, 
-			'CUSTOMER_IP' => $_SERVER['REMOTE_ADDR']
+			'CUSTOMER_IP' => $_SERVER['REMOTE_ADDR'],
+			'DUPLICATE_OVERRIDE' => 1
 			);
-
+			
 		/* perform the transaction */
 		$ch = curl_init();
 

@@ -160,6 +160,7 @@ class _TransactionsController extends TransactionsAppController {
  */
     public function cart() {
         if ($this->request->is('post') || $this->request->is('put')) {
+        	try {
             	// remove these three lines soon (10-1-2013 RK)
 				//$data = $this->Transaction->beforePayment($this->request->data);
                 //$data = $this->Payments->pay($data); 
