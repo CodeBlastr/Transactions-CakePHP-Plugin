@@ -220,12 +220,12 @@ class Bluepay extends AppModel {
  */
 	public function returnData($data) {		
 		// check if Customer Connection already exists AGAIN
-		if(empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId'])){	
+		if(empty($data['Customer']['Connection'][0]['value'])){	
 			// if it doesn't, set it			
 			if($data['Transaction']['mode'] == 'BLUEPAY.ACH') {
 				// check if it's a credit card or ach AGAIN to see which $data fields to set
 				// set ACH field data
-				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0] = array(
+				$data['Customer']['Connection'][0]['value']['Account']['BankAccount'][0] = array(
 				 	'RoutingNumber' => $data['Transaction']['ach_routing_number'],
 				 	'AccountNumber' => '************' . substr($data['Transaction']['ach_account_number'], -4),
 					'BankName' => $data['Transaction']['ach_bank_name'],
@@ -276,9 +276,14 @@ class Bluepay extends AppModel {
  */
 	public function finalizeData($data) {
 		// check if Customer Connection already exists from the incoming data 
-		if(!empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId'])){
+		if(!empty($data['Customer']['Connection'][0]['value'])){
+			$value = unserialize($data['Customer']['Connection'][0]['value']);
+			// get key (could be CreditCard could be BankAccount)
+			$key = key($value['Account']);
 			// if yes  use rebSale($transId) with transactionId, NOTE : get the transaction Id from the Customer Connection
-			$this->rebSale($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['TransactionId']);
+			if (!empty($value['Account'][$key][0]['TransactionId'])) {
+				$this->rebSale($value['Account'][$key][0]['TransactionId']);
+			}
 		}				
 		// see if this is an ACH or a Credit Card transaction				
 		if($data['Transaction']['mode'] == 'BLUEPAY.ACH'){
