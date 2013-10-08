@@ -272,7 +272,6 @@ $(function() {
 	}
 
     document.changePaymentInputs = function () {
-
 		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CC' ) {
 			document.changeToPaysimpleCC();
 		}
@@ -282,8 +281,8 @@ $(function() {
 		if ( $('#TransactionMode').val() === 'BLUEPAY.CC' ) {
 			document.changeToBluepayCC();
 		}
-		if ( $('#TransactionMode').val() === 'BLUEPAY.CHECK' ) {
-			document.changeToBluepayCheck();
+		if ( $('#TransactionMode').val() === 'BLUEPAY.ACH' ) {
+			document.changeToBluepayAch();
 		}
 		if ( $('#TransactionMode').val() === 'PURCHASEORDER' ) {
 			document.changeToPurchaseOrder();
