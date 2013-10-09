@@ -114,7 +114,7 @@ $(function() {
 		$('.bluepayCc').parent().parent().show('slow'); */
 	};
 
-	document.changeToBluepayCheck = function () {
+	document.changeToBluepayAch = function () {
 		$(".savedCredit, .savedAch").prop('checked', false);
 		$('input.bluepayCheck').each(function(){
 			if($(this).attr('id') !== 'TransactionAchIsCheckingAccount') {

@@ -273,7 +273,6 @@ $(function() {
 	}
 	
     document.changePaymentInputs = function () {
-
 		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CC' ) {
 			document.changeToPaysimpleCC();
 		}
@@ -283,8 +282,9 @@ $(function() {
 		if ( $('#TransactionMode').val() === 'BLUEPAY.CC' ) {
 			document.changeToBluepayCC();
 		}
-		if ( $('#TransactionMode').val() === 'BLUEPAY.ACH' ) {  //changed from BLUEPAY.CREDIT......didnt work becuase its callign ACH. console.log(); = ACH
-			document.changeToBluepayCheck();
+
+		if ( $('#TransactionMode').val() === 'BLUEPAY.ACH' ) {
+			document.changeToBluepayAch();
 		}
 		if ( $('#TransactionMode').val() === 'PURCHASEORDER' ) {
 			document.changeToPurchaseOrder();
