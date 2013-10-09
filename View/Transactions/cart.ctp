@@ -130,6 +130,7 @@
 
 
 <script type="text/javascript">
+console.log('test');
 $(function() {
     // hide / show the coupon code input dependent on value
     if (!$("#TransactionCouponCode").val()) {
@@ -270,7 +271,7 @@ $(function() {
 		$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
 		
 	}
-
+	
     document.changePaymentInputs = function () {
 
 		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CC' ) {
@@ -282,7 +283,7 @@ $(function() {
 		if ( $('#TransactionMode').val() === 'BLUEPAY.CC' ) {
 			document.changeToBluepayCC();
 		}
-		if ( $('#TransactionMode').val() === 'BLUEPAY.CHECK' ) {
+		if ( $('#TransactionMode').val() === 'BLUEPAY.ACH' ) {  //changed from BLUEPAY.CREDIT......didnt work becuase its callign ACH. console.log(); = ACH
 			document.changeToBluepayCheck();
 		}
 		if ( $('#TransactionMode').val() === 'PURCHASEORDER' ) {

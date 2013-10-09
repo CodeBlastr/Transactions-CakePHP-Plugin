@@ -54,7 +54,7 @@ echo $this->Form->input('ach_bank_name', array('label' => 'Bank Name', 'class' =
 echo $this->Form->input('ach_is_checking_account', array('type' => 'checkbox', 'label' => 'Is this a checking account?', 'class' => 'bluepayCheck'));
 ?>
 
-<script type="text/javascript">
+<script type="text/javascript">console.log('test');
 $(function() {
 	// clear the new payment method inputs when they choose a previous payment method
 	$(".savedCredit, .savedAch").click(function(){
