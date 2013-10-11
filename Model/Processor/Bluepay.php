@@ -179,8 +179,8 @@ class Bluepay extends AppModel {
 	public function __construct() {
 		if (defined('__TRANSACTIONS_BLUEPAY')) {
 			$config = unserialize(__TRANSACTIONS_BLUEPAY);
-			$this->accountId = '100150573798'; // $config['accountId'];
-			$this->secretKey = 'NC3GVP783ZPBIHAX2H7IVZ1DMCKELNGG'; //$config['secretKey'];
+			$this->accountId = $config['accountId'];
+			$this->secretKey = $config['secretKey'];
 			$this->mode = !empty($config['mode']) ? $config['mode'] : self::MODE;
 		} else {
 			throw new Exception(__('Bluepay configuration not setup.'));
@@ -237,9 +237,10 @@ class Bluepay extends AppModel {
 				);
 			} else {
 				// else (default to Credit Card)
+				$expireDate = empty($data['Transaction']['card_expire']) ? sprintf('%02d', $data['Transaction']['card_exp_month']) . '/20' . substr($data['Transaction']['card_exp_year'], 2) : $data['Transaction']['card_expire']; // make this a function which parses more examples of dates, and put it in a more global place
 				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0] = array(
 				 	'CreditCardNumber' => '************' . substr($data['Transaction']['card_number'], -4),
-					'ExpirationDate' => sprintf('%02d', $data['Transaction']['card_exp_month']) . '/20' . substr($data['Transaction']['card_exp_year'], 2),
+					'ExpirationDate' => $expireDate,
 					'BillingZipCode' => $data['TransactionAddress'][0]['zip'],
 					'IsDefault' => 1,
 					'CreatedOn' => date('Y-m-d h:i:s'),
@@ -261,7 +262,7 @@ class Bluepay extends AppModel {
  */
  	public function sendTransaction($data) {
 		$this->rebAdd($data);
-		$this->sale($data['Transaction']['total']); // sets the amount for both sales, and trial period of ARB's / Rebilling		
+		$this->sale($data['Transaction']['total']); // sets the amount for both sales, and trial period of ARB's / Rebilling
 		$this->process();
 		
 		//if response is not 1 then throw new error msg to user using processor response msg		 
@@ -475,7 +476,8 @@ class Bluepay extends AppModel {
 		if (empty($this->masterId)) {
 			$this->account = $data['Transaction']['card_number']; // $this->account
 			$this->cvv2 = $data['Transaction']['card_sec']; // $this->cvv2 
-			$this->expire = sprintf('%02d', $data['Transaction']['card_exp_month']) . substr($data['Transaction']['card_exp_year'], 2); // $this->expire
+			$this->expire = empty($data['Transaction']['card_expire']) ? sprintf('%02d', $data['Transaction']['card_exp_month']) . '/20' . substr($data['Transaction']['card_exp_year'], 2) : $data['Transaction']['card_expire']; // make this a function which parses more examples of dates, and put it in a more global place
+				
 		}
 		$this->name1 = $data['TransactionAddress'][0]['first_name'];
 		$this->name2 = $data['TransactionAddress'][0]['last_name'];
@@ -621,6 +623,9 @@ class Bluepay extends AppModel {
 	 * the response, and finally parse the response.
 	 */
 	public function process() {
+		if ($this->payType == 'ACH') {
+			return $this->processACH(); 
+		}
 
 		/* calculate the tamper proof seal */
 		$tps = $this->calcTPS();
