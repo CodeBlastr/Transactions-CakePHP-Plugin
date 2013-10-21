@@ -125,8 +125,6 @@ class Paysimple extends AppModel {
 			
 			$data[$this->modelName]['Payment'] = $paymentData;
 			$data[$this->modelName]['status'] = $this->statusTypes['paid'];
-			debug($data);
-			break;
 			
             return $data;
 			
