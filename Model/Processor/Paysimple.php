@@ -59,7 +59,6 @@ class Paysimple extends AppModel {
  */
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
-		debug($data);
 		
 		try {
 				      
