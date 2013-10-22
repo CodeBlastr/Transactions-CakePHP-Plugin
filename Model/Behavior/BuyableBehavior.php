@@ -139,33 +139,30 @@ class BuyableBehavior extends ModelBehavior {
 		try {
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
-			$paymentProcessor = $paymentProcessor[0]; 
+			$paymentProcessor = $paymentProcessor[0];
 
 			$this->loadProcessor($paymentProcessor);
 			
+			App::uses('Transaction' , 'Transactions.Model');
+			$Transaction = new Transaction;
+			
+			$data = $Transaction->beforePayment($data);
 			if (method_exists($Model, 'beforePayment') && is_callable('beforePayment')) {
 				$data = $Model->beforePayment($data);
-			} else {
-				App::uses('Transaction' , 'Transactions.Model');
-				$Transaction = new Transaction;
-				$data = $Transaction->beforePayment($data);
 			}
-						
+			
 			if ($this->recurring) {
 				$this->Processor->recurring = true;	
 			}
 			$data = $this->Processor->pay($data);
 			
+			$Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
 			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
 				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
-			} else {
-				App::uses('Transaction' , 'Transactions.Model');
-				$Transaction = new Transaction;
-				$Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
 			}
 			
             return $data;
-			//return $this->paymentComponent->response;
+			
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
