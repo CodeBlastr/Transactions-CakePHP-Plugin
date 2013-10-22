@@ -199,7 +199,35 @@ class _TransactionsController extends TransactionsAppController {
         $this->set('page_title_for_layout', __('Checkout <small>Please fill in your billing details.</small>'));
 		return array_merge($this->request->data, array('options' => $options)); // for the ajax cart element
 	}
+
     
+/**
+ * Success method
+ * A simple "thank you" page with some post-order actions.
+ * Also used as the return_url for PayPal transactions.
+ */
+	public function success() {
+		if (isset($this->request->query['token']) && isset($this->request->query['PayerID'])) {
+			// This user probably coming back from hitting OK at PayPal.
+			// Execute the payment
+			App::uses('Paypal', 'Transactions.Model/Processor');
+			$this->Processor = new Paypal;
+			$this->Processor->executePayment();
+			// Run the afterPayment callbacks.
+			$data = CakeSession::read('Transaction.data');
+			$this->Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			$boughtModel = CakeSession::read('Transaction.modelName');
+			App::uses($boughtModel, ZuhaInflector::pluginize($boughtModel).'.Model');
+			$Model = new $boughtModel;
+			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
+				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			}
+		}
+		
+		$this->set('userId', $this->Session->read('Auth.User.id'));
+	}
+
+	
 /**
  * My method
  * 
@@ -213,14 +241,6 @@ class _TransactionsController extends TransactionsAppController {
         //$this->Transaction->recursive = 2;
         $this->set('transactions', $this->paginate());
     }
-    
-/**
- * Success method
- */
-	public function success() {
-		$this->set('userId', $this->Session->read('Auth.User.id'));
-	}
-	
 	
 /**
  * Merge Carts method
