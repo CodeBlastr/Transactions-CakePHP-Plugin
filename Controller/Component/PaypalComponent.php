@@ -2,8 +2,8 @@
 /**
  * Paypal Direct Payment API Component class file.
  */
-App::import('Vendor','paypal' ,array('file'=>'paypal/paypal.php'));
-class PaypalComponent extends Object{
+App::import('Vendor', 'paypal', array('file'=>'paypal/paypal.php'));
+class PaypalComponent extends Object {
 
 	var $paysettings = array();
 	var $response = array();
@@ -11,12 +11,12 @@ class PaypalComponent extends Object{
 	var $recurring = false;
 
 	// set recurring value default is false
-	function recurring($val = false) {
+	public function recurring($val = false) {
 		$this->recurring = $val;
 	}
 
-	function initialize(&$controller, $settings=array()) {
-		if(defined('__TRANSACTIONS_PAYPAL')) {
+	public function initialize($controller, $settings=array()) {
+		if (defined('__TRANSACTIONS_PAYPAL')) {
             $this->paysettings = unserialize(__TRANSACTIONS_PAYPAL);
 		}
 	}
@@ -26,8 +26,8 @@ class PaypalComponent extends Object{
 	* @params $data and $amount
 	* it returns the response text if its successfull
 	*/
-	function chainedPayment($data , $amount ) {
-		if(defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
+	public function chainedPayment($data, $amount ) {
+		if (defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
             	App::import('Component', 'Transactions.Chained');
 	        	$component = new ChainedComponent();
 	        	if (method_exists($component, 'initialize')) {
@@ -38,7 +38,7 @@ class PaypalComponent extends Object{
 		        }
             	$component->chainedSettings($data['Billing']);
     			$component->Pay($amount);
-				if($component->response['response_code'] == 1) {
+				if ($component->response['response_code'] == 1) {
 					return " Payment has been transfered to its vendors" ;
 				}
 		}
@@ -50,7 +50,7 @@ class PaypalComponent extends Object{
 	 * $profileId: profile id of buyer
 	 * $action: to suspend , cancel, reactivate the reccuring profile
 	 */
-	function ManageRecurringPaymentsProfileStatus($profileId, $action){
+	public function ManageRecurringPaymentsProfileStatus($profileId, $action) {
 		$paypal = new Paypal();
 		$paypal->setPaySettings($this->paysettings);
 		$res = $paypal->ManageRecurringPaymentsProfileStatus($profileId, $action);
@@ -58,27 +58,28 @@ class PaypalComponent extends Object{
 		$this->_parsePaypalResponse($res);
 	}
 	
-	function Pay($paymentInfo,$function = "DoDirectPayment"){
+	public function Pay($paymentInfo,$function = "DoDirectPayment") {
 		$paypal = new Paypal();
 		$this->payInfo = $paymentInfo ;
 		$paypal->setPaySettings($this->paysettings);
 
 		// if existing profile recurring id for arb, update the subscription
-		if ($this->recurring && !empty($paymentInfo['Billing']['arb_profile_id']))
+		if ($this->recurring && !empty($paymentInfo['Billing']['arb_profile_id'])) { 
 			$res = $paypal->UpdateRecurringPaymentsProfile($paymentInfo);
-		// create a new subscription of recurring type
-		elseif ($this->recurring)
+		} elseif ($this->recurring) {
+			// create a new subscription of recurring type
 			$res = $paypal->CreateRecurringPaymentsProfile($paymentInfo);
-		elseif ($function=="DoDirectPayment")
+		} elseif ($function=="DoDirectPayment") {
 			$res = $paypal->DoDirectPayment($paymentInfo);
-		elseif ($function=="SetExpressCheckout")
+		} elseif ($function=="SetExpressCheckout") {
 			$res = $paypal->SetExpressCheckout($paymentInfo);
-		elseif ($function=="GetExpressCheckoutDetails")
+		} elseif ($function=="GetExpressCheckoutDetails") {
 			$res = $paypal->GetExpressCheckoutDetails($paymentInfo);
-		elseif ($function=="DoExpressCheckoutPayment")
+		} elseif ($function=="DoExpressCheckoutPayment") {
 			$res = $paypal->DoExpressCheckoutPayment($paymentInfo);
-		else
+		} else {
 			$res = "Function Does Not Exist!";
+		}
 
 		$this->_parsePaypalResponse($res);
 	}
@@ -88,13 +89,13 @@ class PaypalComponent extends Object{
  * makes doing validation changes easier.
  *
  */
-	function _parsePaypalResponse($parsedResponse = null) {
-		if($parsedResponse) {
+	public function _parsePaypalResponse($parsedResponse = null) {
+		if ($parsedResponse) {
 			$parsedResponse['reason_code'] = $parsedResponse['ACK'];
-			switch($parsedResponse['ACK']) {
+			switch ($parsedResponse['ACK']) {
 				case 'Success' :
 					$parsedResponse['reason_text'] = 'Successful Payment';
-					if(defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
+					if (defined('__TRANSACTIONS_CHAINED_PAYMENT')) {
 						$parsedResponse['reason_text'] .= $this->chainedPayment($this->payInfo, $parsedResponse['AMT']) ;
 					}
 					$parsedResponse['response_code'] = 1;
@@ -112,14 +113,15 @@ class PaypalComponent extends Object{
 					$parsedResponse['description'] = $parsedResponse['L_LONGMESSAGE0'];
 					break;
 			}
-			if(isset($parsedResponse['AMT']))
+			if (isset($parsedResponse['AMT'])) {
 				$parsedResponse['amount'] = $parsedResponse['AMT'];
-			if(isset($parsedResponse['TRANSACTIONID']))
+			}
+			if (isset($parsedResponse['TRANSACTIONID'])) {
 				$parsedResponse['transaction_id'] = $parsedResponse['TRANSACTIONID'];
+			}
 
-			//if PROFILEID is set then it is reccuring payment and
-			// it will get profile info
-			if(isset($parsedResponse['PROFILEID'])) {
+			// if PROFILEID is set then it is reccuring payment and it will get profile info
+			if (isset($parsedResponse['PROFILEID'])) {
 				$paypal = new Paypal();
 				$paypal->setPaySettings($this->paysettings);
 
@@ -136,11 +138,11 @@ class PaypalComponent extends Object{
 					"BILLINGPERIOD:{$res['BILLINGPERIOD']}, BILLINGFREQUENCY:{$res['BILLINGFREQUENCY']}, TOTALBILLINGCYCLES:{$res['TOTALBILLINGCYCLES']}";
 			}
 
-			if(isset($parsedResponse['CVV2MATCH']) && isset($parsedResponse['CORRELATIONID']))
+			if (isset($parsedResponse['CVV2MATCH']) && isset($parsedResponse['CORRELATIONID'])) {
 				$parsedResponse['meta'] = "CORRELATIONID:{$parsedResponse['CORRELATIONID']}, CVV2MATCH:{$parsedResponse['CVV2MATCH']}";
+			}
 		}
 		$this->response = $parsedResponse;
 	}
 
 }
-?>

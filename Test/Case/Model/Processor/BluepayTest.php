@@ -163,7 +163,7 @@ class BluepayTestCase extends CakeTestCase {
 				'ach_bank_name' => '',
 				'ach_is_checking_account' => '',
 				'quantity' => '1',
-				'total' => '5.34' // randomize the last two numbers between 0 and 99
+				'total' => '5.36' // randomize the last two numbers between 0 and 99
 			),
 			'TransactionItem' => array(
 				array(

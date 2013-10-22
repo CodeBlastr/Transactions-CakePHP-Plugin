@@ -130,6 +130,7 @@
 
 
 <script type="text/javascript">
+console.log('test');
 $(function() {
     // hide / show the coupon code input dependent on value
     if (!$("#TransactionCouponCode").val()) {
@@ -270,7 +271,7 @@ $(function() {
 		$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
 		
 	}
-
+	
     document.changePaymentInputs = function () {
 		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CC' ) {
 			document.changeToPaysimpleCC();
@@ -281,6 +282,7 @@ $(function() {
 		if ( $('#TransactionMode').val() === 'BLUEPAY.CC' ) {
 			document.changeToBluepayCC();
 		}
+
 		if ( $('#TransactionMode').val() === 'BLUEPAY.ACH' ) {
 			document.changeToBluepayAch();
 		}
