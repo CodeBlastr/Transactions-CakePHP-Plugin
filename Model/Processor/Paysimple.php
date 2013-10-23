@@ -158,7 +158,7 @@ class Paysimple extends AppModel {
 		$params = array(
 			'FirstName' => $data[$this->addressModel][0]['first_name'],
 			'LastName' => $data[$this->addressModel][0]['last_name'],
-			//'Company' => $data['Meta']['company'],
+			//'Company' => $data['Contact']['company'],
 			'BillingAddress' => array(
 				'StreetAddress1' => $data[$this->addressModel][0]['street_address_1'],
 				'StreetAddress2' => $data[$this->addressModel][0]['street_address_2'],
@@ -168,8 +168,7 @@ class Paysimple extends AppModel {
 				'ZipCode' => $data[$this->addressModel][0]['zip'],
 			),
 			'ShippingSameAsBilling' => true,
-			'Email' => $data['Customer']['email'],
-			//'Phone' => $data['Customer']['phone'],
+			'Email' => !empty($data[$this->addressModel][0]['email']) ? $data[$this->addressModel][0]['email'] : $data['Customer']['email'],
 			'Phone' => $data[$this->addressModel][0]['phone'],
 		);
 
@@ -214,7 +213,7 @@ class Paysimple extends AppModel {
 			'IsDefault' => true,
 			'Issuer' => $this->getIssuer($data[$this->modelName]['card_number']),
 			'CreditCardNumber' => $data[$this->modelName]['card_number'],
-			'ExpirationDate' => $data[$this->modelName]['card_exp_month'] . '/' . $data[$this->modelName]['card_exp_year'],
+			'ExpirationDate' => !empty($data[$this->modelName]['card_expire']) ? $data[$this->modelName]['card_expire'] : $data[$this->modelName]['card_exp_month'] . '/' . $data[$this->modelName]['card_exp_year'],
 			'CustomerId' => $data['Customer']['Connection'][0]['value']['Customer']['Id'],
 		);
 		return $this->_sendRequest('POST', '/account/creditcard', $params);
@@ -543,7 +542,6 @@ class Paysimple extends AppModel {
  * @todo obsolete..?  seems that it may be.
  */
 	public function echoErrors() {
-		//debug($this->errors);
 		foreach ($this->errors as $error) {
 			$this->response['reason_text'] .= '<li>' . $error . '</li>';
 		}
