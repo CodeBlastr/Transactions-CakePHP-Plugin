@@ -212,15 +212,19 @@ class _TransactionsController extends TransactionsAppController {
 			// Execute the payment
 			App::uses('Paypal', 'Transactions.Model/Processor');
 			$this->Processor = new Paypal;
-			$this->Processor->executePayment();
+			$this->Processor->executePayment($this->request->query['PayerID']);
 			// Run the afterPayment callbacks.
 			$data = CakeSession::read('Transaction.data');
-			$this->Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			if (!empty($data)) {
+				$this->Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			}
 			$boughtModel = CakeSession::read('Transaction.modelName');
-			App::uses($boughtModel, ZuhaInflector::pluginize($boughtModel).'.Model');
-			$Model = new $boughtModel;
-			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
-				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			if (!empty($boughtModel)) {
+				App::uses($boughtModel, ZuhaInflector::pluginize($boughtModel).'.Model');
+				$Model = new $boughtModel;
+				if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
+					$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+				}
 			}
 		}
 		

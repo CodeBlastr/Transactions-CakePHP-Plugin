@@ -32,7 +32,7 @@ class Paypal extends AppModel {
 			throw new Exception($e->msg());
 		}
 		
-		$data = json_encode(array(
+		$postData = json_encode(array(
 			'intent' => 'sale',
 			'redirect_urls' => array(
 				'return_url' => 'http://ttysoon.localhost/transactions/transactions/success',
@@ -55,8 +55,8 @@ class Paypal extends AppModel {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->paysettings['API_ENDPOINT'] . '/v1/payments/payment');
 		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Authorization: ".$this->paysettings['token_type']." ".$this->paysettings['access_token'], "Content-length: " . strlen($data)));
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Authorization: ".$this->paysettings['token_type']." ".$this->paysettings['access_token'], "Content-length: " . strlen($postData)));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		
 		$response = curl_exec($ch);
@@ -70,6 +70,9 @@ class Paypal extends AppModel {
 			// save stuff to session.  we have to redirect to paypal.com next.
 			CakeSession::write('Transaction.data', $data);
 			CakeSession::write('Transaction.modelName', $this->modelName);
+			CakeSession::write('Transaction.Paypal.id', $response['id']);
+			CakeSession::write('Transaction.Paypal.token_type', $this->paysettings['token_type']);
+			CakeSession::write('Transaction.Paypal.access_token', $this->paysettings['access_token']);
 			// all set to redirect
 			foreach ($response['links'] as $link) {
 				if ($link['method'] === 'REDIRECT') {
@@ -104,6 +107,30 @@ class Paypal extends AppModel {
 		if ($httpCode === 200) {
 			$this->paysettings['token_type'] = $response['token_type'];
 			$this->paysettings['access_token'] = $response['access_token'];
+		} else {
+			throw new Exception("Error Processing Request", 1);
+		}
+	}
+	
+	
+	public function executePayment($payerId) {
+		$data = '{ "payer_id" : "'.$payerId.'"}';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $this->paysettings['API_ENDPOINT'] . '/v1/payments/payment/'.CakeSession::read('Transaction.Paypal.id').'/execute/');
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Authorization: ".CakeSession::read('Transaction.Paypal.token_type')." ".CakeSession::read('Transaction.Paypal.access_token'), "Content-length: " . strlen($data)));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		
+		$response = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		
+		curl_close($ch);
+		
+		$response = json_decode($response, true);
+
+		if ($httpCode === 200) {
+			return true;
 		} else {
 			throw new Exception("Error Processing Request", 1);
 		}
