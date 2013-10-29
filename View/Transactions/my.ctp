@@ -1,4 +1,4 @@
-
+<?php debug($transactions); ?>
 <?php
 $expand = 'in';
 foreach ($transactions as $transaction) {
