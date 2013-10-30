@@ -232,6 +232,7 @@ class _TransactionItem extends TransactionsAppModel {
  * @todo check stock and cart max 
  */
 	public function addItemToCart($data) {
+		debug($data);
 		try {
 			// determine and set the transaction id (cart id) for this user
 			$this->Transaction->id = $this->setCartId();
@@ -253,7 +254,9 @@ class _TransactionItem extends TransactionsAppModel {
 				$data['TransactionItem']['quantity'] = $data['TransactionItem']['quantity'] < $data['TransactionItem']['cart_min'] ? $data['TransactionItem']['cart_min'] : $data['TransactionItem']['quantity']; 
 				$this->id = $chkdata[0]['TransactionItem']['id'];
 			}
+			debug($data); break;
 			return $this->save($data);
+			
 		} catch (Exception $e) {
 			throw new Exception(__d('transactions', $e->getMessage()));
 		}
@@ -277,6 +280,40 @@ class _TransactionItem extends TransactionsAppModel {
 
 		return parent::beforeSave($options);
 	}
+/**
+ * After save callback
+ */	
+	
+	public function afterSave($created, array $options = array()){
+		if($created){
+			$this->finalize($this->id);
+		}
+	}
+	
+/**
+ * Finalize the data for a new transaction item
+ */
+ 
+ 	public function finalize($id){
+ 		debug($id); 
+		//lookup trans item
+		//see if seller id is set
+		//if is not set give it a value of current user logged in and resave
+		//validation callbacks = false
+		//find cehck resave
+		
+		$trans = $this->find('first', array('conditions' => array('TransactionItem.id' => $id)));
+		debug($trans);break;
+		
+		if($trans){
+			
+		} else{
+			
+		}
+		
+ 	}
+	
+	
 
 /**
  * Statuses method

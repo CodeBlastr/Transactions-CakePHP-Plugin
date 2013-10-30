@@ -46,7 +46,14 @@ class TransactionItemTestCase extends CakeTestCase {
 
 		parent::tearDown();
 	}
+	
+/**
+ * Test Finalize method
+ */
 
+ 	public function testFinalize(){
+ 		$this->TransactionItem->finalize('50773d75-cab4-40dd-b34c-187800000001');
+ 	}
 	
 	public function testSetCartId() {
 	 // $result = $this->TransactionItem->setCartId(String::uuid());
