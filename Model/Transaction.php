@@ -11,7 +11,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property TransactionAddress $TransactionAddress
  * @todo Add LoggableBehavior and track who the referrer was from the stats in the session $this->triggerLog() in the model, if done right.
  */
-class _Transaction extends TransactionsAppModel {
+class AppTransaction extends TransactionsAppModel {
  		
  	public $name = 'Transaction';
 
@@ -582,5 +582,5 @@ class _Transaction extends TransactionsAppModel {
 }
 
 if ( !isset($refuseInit) ) {
-	class Transaction extends _Transaction {}
+	class Transaction extends AppTransaction {}
 }

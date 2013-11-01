@@ -13,7 +13,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property Creator $Creator
  * @property Modifier $Modifier
  */
-class _TransactionItem extends TransactionsAppModel {
+class AppTransactionItem extends TransactionsAppModel {
 
     public $name = 'TransactionItem';
 
@@ -332,5 +332,5 @@ class _TransactionItem extends TransactionsAppModel {
 }
 
 if ( !isset($refuseInit) ) {
-	class TransactionItem extends _TransactionItem {}
+	class TransactionItem extends AppTransactionItem {}
 }
