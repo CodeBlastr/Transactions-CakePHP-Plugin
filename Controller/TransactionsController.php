@@ -1,5 +1,6 @@
 <?php
 App::uses('TransactionsAppController', 'Transactions.Controller');
+
 /**
  * Transactions Controller
  *
@@ -37,6 +38,25 @@ class AppTransactionsController extends TransactionsAppController {
 		'success',
 		'my'
 	);
+	
+/**
+ * Dashboard method
+ * 
+ * @return void
+ */
+ 	public function dashboard() {
+ 		$this->redirect('admin');
+		$this->set('counts', $counts = array_count_values(array_filter(Set::extract('/Transaction/status', $this->Transaction->find('all')))));
+		$this->set('statsSalesToday', $this->Transaction->salesStats('today'));
+		$this->set('statsSalesThisWeek', $this->Transaction->salesStats('thisWeek'));
+		$this->set('statsSalesThisMonth', $this->Transaction->salesStats('thisMonth'));
+		$this->set('statsSalesThisYear', $this->Transaction->salesStats('thisYear'));
+		$this->set('statsSalesAllTime', $this->Transaction->salesStats('allTime'));
+		$this->set('transactionStatuses', $this->Transaction->statuses());
+		$this->set('itemStatuses', $this->Transaction->TransactionItem->statuses());
+		$this->set('title_for_layout', __('Ecommerce Dashboard'));
+		$this->set('page_title_for_layout', __('Ecommerce Dashboard'));
+ 	}
 	
 /**
  * Index method
