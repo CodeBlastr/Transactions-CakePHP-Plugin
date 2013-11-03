@@ -1,8 +1,8 @@
 <?php echo $this->Html->script('http://code.highcharts.com/highcharts.js', array('inline' => false)); ?>
 <?php echo $this->Html->script('http://code.highcharts.com/modules/exporting.js', array('inline' => false)); ?>
 
-<div class="products row-fluid">
-    <div class="span8 pull-left first">
+<div class="products row">
+    <div class="span8 col-md-8 pull-left first">
         <ul class="nav nav-tabs" id="myTab">
             <li><a href="#today" data-toggle="tab">Today</a></li>
             <li><a href="#thisWeek" data-toggle="tab">This Week</a></li>
@@ -14,12 +14,11 @@
             <div class="tab-pane fade" id="today">
                 <div class="row-fluid">
                     <div class="alert alert-success clearfix">
-                        <h3 class="span6 pull-left"> <?php echo $statsSalesToday['count']; ?> Orders Today </h3>
-                        <h3 class="span6 pull-left"> $<?php echo $statsSalesToday['value']; ?> Total Value </h3>
+                        <h3 class="col-md-6 pull-left"> <?php echo $statsSalesToday['count']; ?> Orders Today </h3>
+                        <h3 class="col-md-6 pull-left"> $<?php echo $statsSalesToday['value']; ?> Total Value </h3>
                     </div>
 
                     <?php
-                    // vars for chart
                     $hour = array_fill(0, 24, 0);
                     foreach ($statsSalesToday as $order) {
                         if ($order['Transaction']) {
@@ -133,7 +132,7 @@
     
     
 
-    <div class="tagProducts span3 pull-right last">
+    <div class="tagProducts span3 col-md-3 pull-right last">
         <ul class="nav nav-list">
             <?php 
             $counts['open'] = !empty($counts['open']) ? __('<span class="badge badge-inverse">%s</span>', $counts['open']) : '<span class="badge">0</span>';
@@ -151,17 +150,17 @@
 
 </div>
 
-<div class="products clear first pull-left row-fluid">
+<div class="products clear first row">
     <h3>Setup</h3>
-    <div class="span3">
+    <div class="span3 col-md-3">
         <h5>Store</h5>
         <ul class="nav nav-list">
             <li>
             	<div class="btn-group">
-            		<button class="btn btn-small"><?php echo $this->Html->link('Create a Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add')); ?></button>
-            		<button class="btn btn-small dropdown-toggle" data-toggle="dropdown">
-            			<span class="caret"></span>
-            		</button>
+            		<?php echo $this->Html->link('Create a Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add'), array('class' => 'btn btn-primary btn-small', 'escape' => false)); ?>
+            		<a class="btn btn-primary btn-small dropdown-toggle" data-toggle="dropdown">
+					    <span class="caret"></span>
+					</a>
             		<ul class="dropdown-menu">
             			<li><?php echo $this->Html->link('Create an Membership Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add', 'membership')); ?></li>
             			<li><?php echo $this->Html->link('Create an ARB Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add', 'arb')); ?></li>
@@ -174,14 +173,14 @@
             <li><?php echo $this->Html->link('Out Of Stock Products', array('plugin' => 'products', 'controller' => 'products', 'action' => 'index', 'filter' => 'stock:0')); ?></li>
         </ul>
     </div>
-    <div class="span3">
+    <div class="span3 col-md-3">
         <h5>Brands</h5>
         <ul class="nav nav-list">
             <li><?php echo $this->Html->link('List All Brands', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'index')); ?></li>
             <li><?php echo $this->Html->link('Add a Brand', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'add')); ?></li>
         </ul>
     </div>
-    <div class="span3">
+    <div class="span3 col-md-3">
         <h5>Attributes</h5>
         <ul class="nav nav-list">
             <li><?php echo $this->Html->link('Product Variations', array('plugin' => 'products', 'controller' => 'products', 'action' => 'categories')); ?></li>
@@ -191,7 +190,7 @@
             <li><?php echo $this->Html->link('Product Categories', array('plugin' => 'products', 'controller' => 'products', 'action' => 'categories')); ?></li>
         </ul>
     </div>
-    <div class="span2">
+    <div class="span2 col-md-2">
         <h5>Settings</h5>
         <ul class="nav nav-list">
             <li><?php echo $this->Html->link('List All', array('admin' => true, 'plugin' => null, 'controller' => 'settings', 'action' => 'index', 'start' => 'type:Transactions')); ?></li>
@@ -236,8 +235,8 @@ $this->set('context_menu', array('menus' => array(
         array(
             'heading' => 'Products',
             'items' => array(
-                $this->Html->link(__('List Products'), array('controller' => 'products', 'action' => 'index')),
-                $this->Html->link(__('List Transactions'), array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index')),
+                $this->Html->link(__('Products'), array('controller' => 'products', 'action' => 'index')),
+                $this->Html->link(__('Transactions'), array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index')),
             )
         ),
         ))); ?>
