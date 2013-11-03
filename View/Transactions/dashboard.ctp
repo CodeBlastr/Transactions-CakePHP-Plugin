@@ -2,7 +2,7 @@
 <?php echo $this->Html->script('http://code.highcharts.com/modules/exporting.js', array('inline' => false)); ?>
 
 <div class="products row">
-    <div class="span8 col-md-8 pull-left first">
+    <div class="span8 col-md-8">
         <ul class="nav nav-tabs" id="myTab">
             <li><a href="#today" data-toggle="tab">Today</a></li>
             <li><a href="#thisWeek" data-toggle="tab">This Week</a></li>
@@ -13,9 +13,9 @@
         <div id="myTabContent" class="tab-content">
             <div class="tab-pane fade" id="today">
                 <div class="row-fluid">
-                    <div class="alert alert-success clearfix">
-                        <h3 class="col-md-6 pull-left"> <?php echo $statsSalesToday['count']; ?> Orders Today </h3>
-                        <h3 class="col-md-6 pull-left"> $<?php echo $statsSalesToday['value']; ?> Total Value </h3>
+                    <div class="clearfix">
+                        <h3 class="col-md-6 pull-left"><?php echo $statsSalesToday['count']; ?> Orders Today</h3>
+                        <h3 class="col-md-6 pull-left"><?php echo ZuhaInflector::pricify($statsSalesToday['value'], array('currency' => 'USD')); ?> Total Value </h3>
                     </div>
 
                     <?php
@@ -84,77 +84,49 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="thisWeek">
-                <div>
-                    <?php
-                    echo
-                    '<div class="alert alert-success">'
-                    . '<h1>' . $statsSalesThisWeek['count'] . '</h1><b>Orders This Week</b>'
-                    . '<h1>$' . $statsSalesThisWeek['value'] . '</h1><b>Total Value</b>'
-                    . '</div>';
-                    ?>
-                </div>
+                <h1><?php echo $statsSalesThisWeek['count']; ?></h1><b>Orders This Week</b>
+                <h1><?php echo ZuhaInflector::pricify($statsSalesThisWeek['value'], array('currency' => 'USD')); ?></h1><b>Total Value</b>
             </div>
             <div class="tab-pane fade" id="thisMonth">
-                <div>
-                    <?php
-                    echo
-                    '<div class="alert alert-success">'
-                    . '<h1>' . $statsSalesThisMonth['count'] . '</h1><b>Orders This Month</b>'
-                    . '<h1>$' . $statsSalesThisMonth['value'] . '</h1><b>Total Value</b>'
-                    . '</div>';
-                    ?>
-                </div>
+                <h1><?php echo $statsSalesThisMonth['count']; ?></h1><b>Orders This Month</b>
+                <h1><?php echo ZuhaInflector::pricify($statsSalesThisMonth['value'], array('currency' => 'USD')); ?></h1><b>Total Value</b>
             </div>
             <div class="tab-pane fade" id="thisYear">
-                <div>
-                    <?php
-                    echo
-                    '<div class="alert alert-success">'
-                    . '<h1>' . $statsSalesThisYear['count'] . '</h1><b>Orders This Year</b>'
-                    . '<h1>$' . $statsSalesThisYear['value'] . '</h1><b>Total Value</b>'
-                    . '</div>';
-                    ?>
-                </div>
+                <h1><?php echo $statsSalesThisYear['count']; ?></h1><b>Orders This Year</b>
+                <h1><?php echo ZuhaInflector::pricify($statsSalesThisYear['value'], array('currency' => 'USD')); ?></h1><b>Total Value</b>
             </div>
             <div class="tab-pane fade" id="allTime">
-                <div>
-                    <?php
-                    echo
-                    '<div class="alert alert-success">'
-                    . '<h1>' . $statsSalesAllTime['count'] . '</h1><b>Orders All Time</b>'
-                    . '<h1>$' . $statsSalesAllTime['value'] . '</h1><b>Total Value</b>'
-                    . '</div>';
-                    ?>
-                </div>
+                <h1><?php echo $statsSalesAllTime['count']; ?></h1><b>Orders All Time</b>
+                <h1><?php echo ZuhaInflector::pricify($statsSalesAllTime['value'], array('currency' => 'USD')); ?></h1><b>Total Value</b>
             </div>
         </div>
     </div>
     
     
 
-    <div class="tagProducts span3 col-md-3 pull-right last">
-        <ul class="nav nav-list">
+    <div class="tagProducts span3 col-md-4 last">
+        <ul class="list-group">
             <?php 
             $counts['open'] = !empty($counts['open']) ? __('<span class="badge badge-inverse">%s</span>', $counts['open']) : '<span class="badge">0</span>';
             $counts['shipped'] = !empty($counts['shipped']) ? __('<span class="badge badge-info">%s</span>', $counts['shipped']) : '<span class="badge">0</span>';
             $counts['paid'] = !empty($counts['paid']) ? __('<span class="badge badge-success">%s</span>', $counts['paid']) : '<span class="badge">0</span>';
             $counts['failed'] = !empty($counts['failed']) ? __('<span class="badge badge-important">%s</span>', $counts['failed']) : '<span class="badge">0</span>';
-            foreach (array_reverse($transactionStatuses) as $key => $status) { ?>
-                <li><?php echo $this->Html->link(__('%s %s Transactions', $counts[strtolower($status)], $status), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'filter' => 'status:' . $key, 'sort' => 'Transaction.created', 'direction' => 'desc'), array('escape' => false)); ?></li>
-
-            <?php } ?>
-            <li><?php echo $this->Html->link(__('%s In Cart Transactions', $counts['open']), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'filter' => 'status:open', 'sort' => 'Transaction.created', 'direction' => 'desc'), array('escape' => false)); ?></li>
-            <li><?php echo $this->Html->link(__('My Assigned Transactions'), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_items', 'action' => 'index', 'filter' => 'assignee_id:'.$this->Session->read('Auth.User.id'))); ?></li>
+            foreach (array_reverse($transactionStatuses) as $key => $status) : ?>
+                <?php echo $this->Html->link(__('%s %s Transactions', $counts[strtolower($status)], $status), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'filter' => 'status:' . $key, 'sort' => 'Transaction.created', 'direction' => 'desc'), array('escape' => false, 'class' => 'list-group-item')); ?></li>
+            <?php endforeach; ?>
+            <?php echo $this->Html->link(__('%s In Cart Transactions', $counts['open']), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'filter' => 'status:open', 'sort' => 'Transaction.created', 'direction' => 'desc'), array('escape' => false, 'class' => 'list-group-item')); ?>
+            <?php echo $this->Html->link(__('My Assigned Transactions'), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_items', 'action' => 'index', 'filter' => 'assignee_id:'.$this->Session->read('Auth.User.id')), array('class' => 'list-group-item')); ?>
         </ul>
     </div>
 
 </div>
 
+<hr />
+
 <div class="products clear first row">
-    <h3>Setup</h3>
-    <div class="span3 col-md-3">
-        <h5>Store</h5>
+    <div class="span3 col-sm-3">
         <ul class="nav nav-list">
+        	<li class="dropdown-header">Store</li>
             <li>
             	<div class="btn-group">
             		<?php echo $this->Html->link('Create a Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add'), array('class' => 'btn btn-primary btn-small', 'escape' => false)); ?>
@@ -173,26 +145,27 @@
             <li><?php echo $this->Html->link('Out Of Stock Products', array('plugin' => 'products', 'controller' => 'products', 'action' => 'index', 'filter' => 'stock:0')); ?></li>
         </ul>
     </div>
-    <div class="span3 col-md-3">
-        <h5>Brands</h5>
+    <div class="span3 col-sm-3">
+        
         <ul class="nav nav-list">
+        	<li class="dropdown-header">Brands</li>
             <li><?php echo $this->Html->link('List All Brands', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'index')); ?></li>
             <li><?php echo $this->Html->link('Add a Brand', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'add')); ?></li>
         </ul>
     </div>
-    <div class="span3 col-md-3">
-        <h5>Attributes</h5>
+    <div class="span3 col-sm-3">
         <ul class="nav nav-list">
+        	<li class="dropdown-header">Attributes</li>
             <li><?php echo $this->Html->link('Product Variations', array('plugin' => 'products', 'controller' => 'products', 'action' => 'categories')); ?></li>
         </ul>
-        <h5>Categories</h5>
         <ul class="nav nav-list">
+        	<li class="dropdown-header">Categories</li>
             <li><?php echo $this->Html->link('Product Categories', array('plugin' => 'products', 'controller' => 'products', 'action' => 'categories')); ?></li>
         </ul>
     </div>
-    <div class="span2 col-md-2">
-        <h5>Settings</h5>
+    <div class="span2 col-sm-2">
         <ul class="nav nav-list">
+        	<li class="dropdown-header">Settings</li>
             <li><?php echo $this->Html->link('List All', array('admin' => true, 'plugin' => null, 'controller' => 'settings', 'action' => 'index', 'start' => 'type:Transactions')); ?></li>
             <li><?php echo $this->Html->link('Emails', array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'settings')); ?></li>
             <li><?php echo $this->Html->link('Tax Rates', array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_taxes', 'action' => 'index')); ?></li>
@@ -229,13 +202,13 @@ $this->set('context_menu', array('menus' => array(
     array(
 		'heading' => 'Products',
 		'items' => array(
-			$this->Html->link(__('Dashboard'), array('admin' => true, 'controller' => 'products', 'action' => 'dashboard'), array('class' => 'active')),
+			$this->Html->link(__('Dashboard'), array('admin' => true, 'controller' => 'transactions', 'action' => 'dashboard'), array('class' => 'active')),
 			)
 		),
         array(
             'heading' => 'Products',
             'items' => array(
-                $this->Html->link(__('Products'), array('controller' => 'products', 'action' => 'index')),
+                $this->Html->link(__('Products'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'index')),
                 $this->Html->link(__('Transactions'), array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index')),
             )
         ),
