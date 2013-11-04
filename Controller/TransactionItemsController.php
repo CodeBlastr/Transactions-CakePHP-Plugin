@@ -70,7 +70,7 @@ class TransactionItemsController extends TransactionsAppController {
 				throw new Exception( __d('transactions', $exc->getMessage()) );
 			}
 		} else {
-		    throw new NotFoundException( __d('transactions', 'Invalid transaction request') );
+		    throw new Exception( __d('transactions', 'Invalid transaction request') );
 		}
 	}
 
