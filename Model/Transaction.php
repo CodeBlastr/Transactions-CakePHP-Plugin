@@ -483,7 +483,6 @@ class AppTransaction extends TransactionsAppModel {
 			return $data;
 
 		} catch (Exception $e) {
-			break;
 			throw new Exception($e->getMessage());
 		}
 	}
