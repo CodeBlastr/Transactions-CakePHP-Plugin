@@ -64,7 +64,7 @@ class AppTransactionsController extends TransactionsAppController {
  * @return void
  */
 	public function index() {
-        $this->Transaction->contain(array('TransactionAddress', 'TransactionItem')); // contained items for the csv output
+        $this->Transaction->contain(array('TransactionAddress', 'TransactionItem', 'Customer')); // contained items for the csv output
 		$this->set('transactions', $this->paginate());
 		$type = !empty($this->request->named['filter']) ? str_replace('status:', '', $this->request->named['filter']) : 'All';
 		$this->set('title_for_layout', __('%s Transactions', Inflector::humanize($type)));
