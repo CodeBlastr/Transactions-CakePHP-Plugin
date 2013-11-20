@@ -8,7 +8,7 @@
 	        </div>
 	    </div>
     	<div class="span4 pull-right">
-    		<?php if(!empty($billingAddress)) { ?>
+    		<?php if (!empty($billingAddress)) { ?>
 	        <h3><?php echo __('%s %s <small>Billing Address</small>', $billingAddress['TransactionAddress']['first_name'], $billingAddress['TransactionAddress']['last_name']); ?></h3>
 	        <table class="table table-hover">
 	        	<tbody>
@@ -41,7 +41,7 @@
 	        <?php } ?>
 	    </div>	
     	<div class="span4 pull-right">
-    		<?php if(!empty($shippingAddress)) { ?>
+    		<?php if (!empty($shippingAddress)) { ?>
 	        <h3><?php echo __('%s %s <small>Shipping Address</small>', $shippingAddress['TransactionAddress']['first_name'], $shippingAddress['TransactionAddress']['last_name']); ?></h3>
 	        <table class="table table-hover">
 	        	<tbody>
@@ -86,7 +86,7 @@
         		<th><?php echo $this->Paginator->sort('TransactionItem.quantity', 'Qty');?></th>
     			<th><?php echo $this->Paginator->sort('TransactionItem.tracking_no', 'Tracking #');?></th>
         		<th><?php echo $this->Paginator->sort('TransactionItem.status', 'Status');?></th>
-        		<?php if (in_array('Tasks', CakePlugin::loaded())) { ?>
+        		<?php if (CakePlugin::loaded('Tasks')) { ?>
         		<th><?php echo $this->Paginator->sort('Assignee.full_name', 'Assigned To');?></th>
         		<?php } ?>
     	    </tr>
@@ -104,7 +104,7 @@
                 	<td><?php echo $item['quantity']; ?></td>
                 	<td><?php echo $this->Form->input('TransactionItem.'.$i.'.tracking_no', array('value' => $item['tracking_no'], 'label' => false, 'class' => 'span')); ?></td>
                     <td><?php echo $this->Form->input('TransactionItem.'.$i.'.status', array('value' => $item['status'], 'label' => false, 'class' => 'span')); ?></td>
-                    <?php if (in_array('Tasks', CakePlugin::loaded())) { ?>
+                    <?php if (CakePlugin::loaded('Tasks')) { ?>
                     <td><?php echo $this->Form->input('TransactionItem.'.$i.'.assignee_id', array('value' => $item['assignee_id'], 'empty' => ' -- Select --', 'label' => false, 'class' => 'span')); ?></td>
                     <?php } ?>
         	    </tr>
@@ -133,5 +133,5 @@ $this->set('context_menu', array('menus' => array(
     		 $this->Html->link(__('Regions'), array('action' => 'index')),
 			 $this->Html->link(__('Add'), array('action' => 'add')),
 			 )
-		),
-	)));?>
+		)
+	)));
