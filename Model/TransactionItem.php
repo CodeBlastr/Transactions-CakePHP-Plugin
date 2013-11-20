@@ -74,9 +74,8 @@ class AppTransactionItem extends TransactionsAppModel {
  *
  */
 	public function afterFind($results, $primary = false) {
-		if (!empty($results[0]['TransactionItem']['model'])) {
-            // let the model say how the associated record should look
-			$models = Set::extract('/TransactionItem/model', $results);
+		$models = Set::extract('/TransactionItem/model', $results);
+		if (!empty($models)) {
             foreach ($models as $model) {
 				$model = Inflector::classify($model);
 				try {

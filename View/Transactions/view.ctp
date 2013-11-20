@@ -96,7 +96,10 @@
         	$i = 0;
         	foreach ($transaction['TransactionItem'] as $item) { ?>
         	    <tr>
-            		<td><?php echo $this->Html->link($item['name'], array('plugin' => Inflector::tableize(ZuhaInflector::pluginize($item['model'])), 'controller' => Inflector::tableize($item['model']), 'action' => 'view', $item['foreign_key'])); ?></td>
+            		<td>
+            			<?php echo $this->Html->link($item['name'], array('plugin' => Inflector::tableize(ZuhaInflector::pluginize($item['model'])), 'controller' => Inflector::tableize($item['model']), 'action' => 'view', $item['foreign_key'])); ?>
+            			<?php echo !empty($item['_associated']['seller']) ? __('(Seller : %s)', $this->Html->link($item['_associated']['seller']['username'], array('admin' => false, 'plugin' => 'users', 'controller' => 'users', 'action' => 'view', $item['_associated']['seller']['id']))) : null; ?>
+            		</td>
                 	<td><?php echo __('$%s', ZuhaInflector::pricify($item['price'])); ?></td>
                 	<td><?php echo $item['quantity']; ?></td>
                 	<td><?php echo $this->Form->input('TransactionItem.'.$i.'.tracking_no', array('value' => $item['tracking_no'], 'label' => false, 'class' => 'span')); ?></td>
