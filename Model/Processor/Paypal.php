@@ -25,7 +25,6 @@ class Paypal extends AppModel {
 	}
 
 	public function pay($data) {
-		
 		try {
 			$this->getAccessToken();
 		} catch (Exception $e) {
@@ -35,8 +34,8 @@ class Paypal extends AppModel {
 		$postData = json_encode(array(
 			'intent' => 'sale',
 			'redirect_urls' => array(
-				'return_url' => 'http://ttysoon.localhost/transactions/transactions/success',
-				'cancel_url' => 'http://ttysoon.localhost/transactions/transactions/cart'
+				'return_url' => FULL_BASE_URL.'/transactions/transactions/success',
+				'cancel_url' => FULL_BASE_URL.'/transactions/transactions/cart'
 			),
 			'payer' => array(
 				'payment_method' => 'paypal'
