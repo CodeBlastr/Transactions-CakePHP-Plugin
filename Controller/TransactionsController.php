@@ -247,7 +247,28 @@ class AppTransactionsController extends TransactionsAppController {
 				}
 			}
 		}
-		
+		//// Interswitch
+				if(isset($_POST['order_number']) && isset($_POST['cart_order_id'])){
+                        // This user probably coming back from hitting OK at Interswitch.
+                        // Verify payment
+                        App::uses('Interswitch', 'Transactions.Model/Processor');
+                        $this->Processor = new Interswitch;
+                        $this->Processor->executePayment($_POST);
+                        // Run the afterPayment callbacks.
+                        $data = CakeSession::read('Transaction.data');
+                        if (!empty($data)) {
+                                $this->Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+                        }
+						
+                        $boughtModel = CakeSession::read('Transaction.modelName');
+                        if (!empty($boughtModel)) {
+                                App::uses($boughtModel, ZuhaInflector::pluginize($boughtModel).'.Model');
+                                $Model = new $boughtModel;
+                                if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
+                                        $Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+                                }
+                        }
+                } //end Interswitch
 		$this->set('userId', $this->Session->read('Auth.User.id'));
 	}
 
