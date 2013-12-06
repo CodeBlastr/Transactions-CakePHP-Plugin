@@ -247,13 +247,13 @@ class AppTransactionsController extends TransactionsAppController {
 				}
 			}
 		}
-		//// Interswitch
-				if(isset($_POST['order_number']) && isset($_POST['cart_order_id'])){
+				//// Interswitch
+				if(isset($this->request->data['Interswitch']['order_number']) && isset($this->request->data['Interswitch']['cart_order_id'])){
                         // This user probably coming back from hitting OK at Interswitch.
                         // Verify payment
                         App::uses('Interswitch', 'Transactions.Model/Processor');
                         $this->Processor = new Interswitch;
-                        $this->Processor->executePayment($_POST);
+                        $this->Processor->executePayment($this->request->data['Interswitch']);
                         // Run the afterPayment callbacks.
                         $data = CakeSession::read('Transaction.data');
                         if (!empty($data)) {
@@ -269,6 +269,7 @@ class AppTransactionsController extends TransactionsAppController {
                                 }
                         }
                 } //end Interswitch
+                
 		$this->set('userId', $this->Session->read('Auth.User.id'));
 	}
 
