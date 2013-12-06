@@ -27,7 +27,7 @@ class Interswitch extends AppModel {
            public function __construct($id = false, $table = null, $ds = null) {
             parent::__construct($id, $table, $ds);
                 if (defined('__TRANSACTIONS_INTERSWITCH')) {
-                        $settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
+                        $settings = unserialize(__TRANSACTIONS_INTERSWITCH);
             $this->config = Set::merge($this->config, $config, $settings);
                 }
 
