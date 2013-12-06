@@ -1,0 +1,141 @@
+<?php
+/**
+ * Interswitch
+ *
+ * @Author:Agbolade odusami
+ * @email:support@lufem.com.ng
+ */
+class Interswitch extends AppModel {
+
+        public $name = 'Interswitch';
+        
+        public $config = array(
+                'environment' => 'sandbox',
+                'apiUsername' => '',
+                'sharedSecret' => '',
+                );
+
+        public $useTable = false;
+
+
+        public $paysettings = array();
+        public $response = array();
+        public $payInfo = array();
+        public $recurring = false;
+
+
+           public function __construct($id = false, $table = null, $ds = null) {
+            parent::__construct($id, $table, $ds);
+                if (defined('__TRANSACTIONS_INTERSWITCH')) {
+                        $settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
+            $this->config = Set::merge($this->config, $config, $settings);
+                }
+
+
+        // check required config
+        if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
+            throw new Exception('Payment configuration NOT setup, contact admin with error code : 44889');
+        }
+                if (!in_array('Connections', CakePlugin::loaded())) {
+            throw new Exception('Connections plugin is required, contact admin with error code : 44888');
+                }
+                
+        }
+
+
+
+
+
+
+        public function pay($data) {
+                
+               
+                
+                $postData = json_encode(array(
+                        'intent' => 'sale',
+                        'redirect_urls' => array(
+                                'return_url' => 'http://ttysoon.localhost/transactions/transactions/success',
+                                'cancel_url' => 'http://ttysoon.localhost/transactions/transactions/cart'
+                        ),
+                        'payer' => array(
+                                'payment_method' => 'interswitch'
+                        ),
+                        'transactions' => array(
+                                array(
+                                        'amount' => array(
+                                                'total' => $data['Transaction']['total'],
+                                                'currency' => 'USD'
+                                        ),
+                                        'description' => 'Purchase from ' . __SYSTEM_SITE_NAME
+                                )
+                        )
+                ));
+
+               
+
+
+               
+                        // save stuff to session.  we have to redirect to interswitch.com next.
+                        CakeSession::write('Transaction.data', $data);
+                        CakeSession::write('Transaction.modelName', $this->modelName);
+                        CakeSession::write('Transaction.Interswitch.id', $response['id']);
+                        CakeSession::write('Transaction.Interswitch.token_type', $this->paysettings['token_type']);
+                        CakeSession::write('Transaction.Interswitch.access_token', $this->paysettings['access_token']);
+                        // all set to redirect
+                       
+                                if ($link['method'] === 'REDIRECT') {
+                                        header('Location: ' ."http://pay.ttysoon.com");
+                                        exit();
+                                }
+                       
+                    
+        }
+
+
+
+
+        
+        
+        public function executePayment($payerId) {
+                $data = '{ "payer_id" : "'.$payerId.'"}';
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $this->paysettings['API_ENDPOINT'] . '/v1/payments/payment/'.CakeSession::read('Transaction.Interswitch.id').'/execute/');
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Authorization: ".CakeSession::read('Transaction.Interswitch.token_type')." ".CakeSession::read('Transaction.Interswitch.access_token'), "Content-length: " . strlen($data)));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                
+                curl_close($ch);
+                
+                $response = json_decode($response, true);
+
+
+                if ($httpCode === 200) {
+                        return true;
+                } else {
+                        throw new Exception("Error Processing Request", 1);
+                }
+        }
+
+
+        
+
+        
+
+        
+
+        /*
+         * @params
+         * $profileId: profile id of buyer
+         * $action: to suspend , cancel, reactivate the reccuring profile
+         */
+        /**
+         * Parse the response from Interswitch into a more readable array
+         * makes doing validation changes easier.
+         *
+         */
+        }
+
