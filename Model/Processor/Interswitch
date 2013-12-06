@@ -54,7 +54,7 @@ class Interswitch extends AppModel {
                         CakeSession::write('Transaction.data', $data);
                         CakeSession::write('Transaction.modelName', $this->modelName);
                         
-                       $frm="<form id=\"form1\" name=\"form1\" method=\"post\" action=\"\">
+                       $frm="<form id=\"form1\" name=\"form1\" method=\"post\" action=\"http://pay.ttysoon.com/webpay-new.php\">
   <input type=\"hidden\" name=\"invoicenum\" id=\"invoicenum\" value=\"".$data['Transaction']['id']."\" />
   <input type=\"hidden\" name=\"email\" id=\"email\" value=\"".$data['Customer']['email']."\" />
   <input name=\"amount\" type=\"hidden\" id=\"amount\"  value=\"".$data['Transaction']['total']."\" />
