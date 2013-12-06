@@ -78,15 +78,18 @@ class Interswitch extends AppModel {
                         // save stuff to session.  we have to redirect to interswitch.com next.
                         CakeSession::write('Transaction.data', $data);
                         CakeSession::write('Transaction.modelName', $this->modelName);
-                        CakeSession::write('Transaction.Interswitch.id', $response['id']);
-                        CakeSession::write('Transaction.Interswitch.token_type', $this->paysettings['token_type']);
-                        CakeSession::write('Transaction.Interswitch.access_token', $this->paysettings['access_token']);
+                        
+                       $frm="<form id=\"form1\" name=\"form1\" method=\"post\" action=\"\">
+  <input type=\"hidden\" name=\"invoicenum\" id=\"invoicenum\" />
+  <input type=\"hidden\" name=\"email\" id=\"email\" />
+  <input name=\"amount\" type=\"hidden\" id=\"amount\" value=\"amount\" />
+  <input name=\"cname\" type=\"hidden\" id=\"cname\" value=\"cname\" />
+</form>";
                         // all set to redirect
-                       
-                                if ($link['method'] === 'REDIRECT') {
-                                        header('Location: ' ."http://pay.ttysoon.com");
-                                        exit();
-                                }
+                       echo $frm;
+                               echo "<script language='javascript'>";
+	echo "var form = document.forms[0];";
+	echo "form.submit()</script>";
                        
                     
         }
@@ -96,25 +99,20 @@ class Interswitch extends AppModel {
 
         
         
-        public function executePayment($payerId) {
-                $data = '{ "payer_id" : "'.$payerId.'"}';
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $this->paysettings['API_ENDPOINT'] . '/v1/payments/payment/'.CakeSession::read('Transaction.Interswitch.id').'/execute/');
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Authorization: ".CakeSession::read('Transaction.Interswitch.token_type')." ".CakeSession::read('Transaction.Interswitch.access_token'), "Content-length: " . strlen($data)));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        public function executePayment($_POST) {
                 
-                $response = curl_exec($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                 $amount = $_REQUEST['total'];
+                 $hash = $_REQUEST['key'];
+		$txRef=$_REQUEST['order_number'];
+               $msg=base64_decode($_REQUEST['response_msg']);
+                $string_to_hash = $this->config['sharedSecret'].$this->config['apiUsername']. $txRef. $order->order_total;
+                    $checkhash =md5($string_to_hash);
+                 if($hash == $checkhash){
+                 if($status=="Y"){
+                  return true;
+                  
+                  }else{throw new Exception($msg, 1);}
                 
-                curl_close($ch);
-                
-                $response = json_decode($response, true);
-
-
-                if ($httpCode === 200) {
-                        return true;
                 } else {
                         throw new Exception("Error Processing Request", 1);
                 }
