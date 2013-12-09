@@ -130,7 +130,6 @@
 
 
 <script type="text/javascript">
-console.log('test');
 $(function() {
     // hide / show the coupon code input dependent on value
     if (!$("#TransactionCouponCode").val()) {
