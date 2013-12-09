@@ -48,13 +48,14 @@ class Interswitch extends AppModel {
 
 
         public function pay($data) {
-                         $postData = json_encode(array(
+                          $postData = json_encode(array(
                         'intent' => 'sale',
                         'redirect_url' => 'http://ttysoon.localhost/transactions/transactions/success',
                          'total' => $data['Transaction']['total'],       
                        'currency' => 'NGN',
-					   'email' => $data['Customer']['email'],
+			'email' => $data['Customer']['email'],
                         'clientname' => $data['Customer']['full_name'],
+			'lastname' => $data['Customer']['last_name'],
                          'invoiceid' => $data['Transaction']['id']       
                       
                         )
