@@ -9,7 +9,7 @@ class Interswitch extends AppModel {
 
 	public $name = 'Interswitch';
 
-	public $config = array('environment' => 'sandbox', 'apiUsername' => '', 'sharedSecret' => '', );
+	public $config = array('environment' => 'sandbox', 'apiUsername' => '', 'sharedSecret' => '', 'subdomain' => '');
 
 	public $useTable = false;
 
@@ -21,7 +21,7 @@ class Interswitch extends AppModel {
 	public function __construct($id = false, $table = null, $ds = null) {
 		parent::__construct($id, $table, $ds);
 		if (defined('__TRANSACTIONS_INTERSWITCH')) {
-			$settings = unserialize(__TRANSACTIONS_PAYSIMPLE);
+			$settings = unserialize(__TRANSACTIONS_INTERSWITCH);
 			$this->config = Set::merge($this->config, $config, $settings);
 		}
 
@@ -29,17 +29,22 @@ class Interswitch extends AppModel {
 		if (empty($this->config['apiUsername']) || empty($this->config['sharedSecret'])) {
 			throw new Exception('Payment configuration NOT setup, contact admin with error code : 44889');
 		}
-		if (!in_array('Connections', CakePlugin::loaded())) {
-			throw new Exception('Connections plugin is required, contact admin with error code : 44888');
-		}
-
 	}
 
 	public function pay($data) {
-		$postData = json_encode(array('intent' => 'sale', 'redirect_url' => 'http://ttysoon.localhost/transactions/transactions/success', 'total' => $data['Transaction']['total'], 'currency' => 'NGN', 'email' => $data['Customer']['email'], 'clientname' => $data['Customer']['full_name'], 'lastname' => $data['Customer']['last_name'], 'invoiceid' => $data['Transaction']['id']));
+		$postData = json_encode(array(
+			'intent' => 'sale',
+			'redirect_url' => FULL_BASE_URL.'/transactions/transactions/success',
+			'total' => $data['Transaction']['total'],
+			'currency' => 'NGN',
+			'email' => $data['Customer']['email'],
+			'clientname' => $data['Customer']['full_name'],
+			'lastname' => $data['Customer']['last_name'],
+			'invoiceid' => $data['Transaction']['id']
+		));
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, 'http://pay.ttysoon.com/logtra.php');
+		curl_setopt($ch, CURLOPT_URL, $this->config['subdomain'].'/logtra.php');
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: " . strlen($postData)));
@@ -61,23 +66,22 @@ class Interswitch extends AppModel {
 			CakeSession::write('Transaction.data', $data);
 			CakeSession::write('Transaction.modelName', $this->modelName);
 			CakeSession::write('Transaction.Interswitch.txnref', $response['txnref']);
-			header('Location: http://pay.ttysoon.com/webpay-new.php?txnref=' . $response['txnref']);
+			header('Location: '.$this->config['subdomain'].'/webpay-new.php?txnref=' . $response['txnref']);
 		}
 
 	}
 
-	public function executePayment($dataP) {
+	public function executePayment($data) {
 
-		$amount = $dataP['total'];
-		$hash = $dataP['key'];
-		$txRef = $dataP['order_number'];
-		$msg = base64_decode($dataP['response_msg']);
+		$amount = $data['total'];
+		$hash = $data['key'];
+		$txRef = $data['order_number'];
+		$msg = base64_decode($data['response_msg']);
 		$string_to_hash = $this->config['sharedSecret'] . $this->config['apiUsername'] . $txRef . $order->order_total;
 		$checkhash = md5($string_to_hash);
 		if ($hash == $checkhash) {
 			if ($status == "Y") {
 				return true;
-
 			} else {
 				throw new Exception($msg, 1);
 			}
@@ -87,14 +91,4 @@ class Interswitch extends AppModel {
 		}
 	}
 
-	/*
-	 * @params
-	 * $profileId: profile id of buyer
-	 * $action: to suspend , cancel, reactivate the reccuring profile
-	 */
-	/**
-	 * Parse the response from Interswitch into a more readable array
-	 * makes doing validation changes easier.
-	 *
-	 */
 }
