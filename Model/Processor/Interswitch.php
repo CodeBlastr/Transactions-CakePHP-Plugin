@@ -67,6 +67,7 @@ class Interswitch extends AppModel {
 			CakeSession::write('Transaction.modelName', $this->modelName);
 			CakeSession::write('Transaction.Interswitch.txnref', $response['txnref']);
 			header('Location: '.$this->config['subdomain'].'/webpay-new.php?txnref=' . $response['txnref']);
+			exit;
 		}
 
 	}
