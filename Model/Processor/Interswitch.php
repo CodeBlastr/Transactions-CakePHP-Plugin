@@ -77,7 +77,8 @@ class Interswitch extends AppModel {
                 curl_close($ch);
                 if($err){ throw new Exception("Error Processing Request", 1);}else{
 
-                $response = json_decode($response, true);
+               $out=explode("\r\n\r\n",$response);
+                $response = json_decode($out[1], true);
 
                
                         // save stuff to session.  we have to redirect to interswitch.com next.
