@@ -133,7 +133,7 @@ class AppTransaction extends TransactionsAppModel {
         $transactionGuestId = CakeSession::read('Transaction._guestId');
         if ($authUserId) {
             $userId = $authUserId;
-        } elseif($transactionGuestId) {
+        } elseif ($transactionGuestId) {
             $userId = $transactionGuestId;
         } else {
             $userId = String::uuid();
@@ -168,7 +168,7 @@ class AppTransaction extends TransactionsAppModel {
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
         // GET THIS OUT OF HERE!!!!
 		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
-		if($defaultShippingCharge !== FALSE) {
+		if ($defaultShippingCharge !== FALSE) {
 			$shippingCharge = number_format($defaultShippingCharge, 2, '.', false);
 		}
 	    $data['Transaction']['sub_total'] = number_format($subTotal, 2, '.', false);
@@ -267,19 +267,16 @@ class AppTransaction extends TransactionsAppModel {
                 )
             ));
          
-		if(!$currentTransaction) {
+		if (!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
        
 		// update quantities
 		$allHaveZeroQty = true;
-      
-		foreach($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
-    
-		    if($submittedTxnItem['quantity'] > 0) {
-                foreach($currentTransaction['TransactionItem'] as $currentTxnItem) {
-             
-                    if($currentTxnItem['id'] == $submittedTxnItem['id']) {
+		foreach ($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
+		    if ($submittedTxnItem['quantity'] > 0) {
+                foreach ($currentTransaction['TransactionItem'] as $currentTxnItem) {
+                    if ($currentTxnItem['id'] == $submittedTxnItem['id']) {
                         $currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
                         $finalTxnItems[] = $currentTxnItem;  
                     }
@@ -287,8 +284,7 @@ class AppTransaction extends TransactionsAppModel {
                 $allHaveZeroQty = false;
 		    }
 		}
-		       
-		if($allHaveZeroQty) {
+		if ($allHaveZeroQty) {
 			throw new Exception('Cart is empty');
 		}
 		
@@ -301,15 +297,14 @@ class AppTransaction extends TransactionsAppModel {
       
         // add tax
         $officialTransaction = $this->TransactionTax->applyTax($officialTransaction);
-		 
+		
 		$officialTransaction = $this->calculateTotal($officialTransaction);
         
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
-            
-         
+        
         //Check Transaction Coupon code empty or not
-        if($officialTransaction['TransactionCoupon']['code']!=''){
+        if ($officialTransaction['TransactionCoupon']['code']!='') {
            $officialTransaction = $this->TransactionCoupon->verify($officialTransaction); 
         }
 		
@@ -329,7 +324,7 @@ class AppTransaction extends TransactionsAppModel {
  */
 	public function finalizeUserData($transaction) {
         // ensure their 'Customer' data has values when they are not logged in
-        if(empty($transaction['Customer']['id']) || !isset($transaction['Customer'])) {
+        if (empty($transaction['Customer']['id']) || !isset($transaction['Customer'])) {
             $transaction['Customer']['first_name'] = $transaction['TransactionAddress'][0]['first_name'];
             $transaction['Customer']['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
             $transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
@@ -348,7 +343,7 @@ class AppTransaction extends TransactionsAppModel {
 		}
         
         // copy Payment data to Shipment data if neccessary
-        if(isset($transaction['TransactionAddress'][0]['shipping']) && $transaction['TransactionAddress'][0]['shipping'] == '0') {
+        if (isset($transaction['TransactionAddress'][0]['shipping']) && $transaction['TransactionAddress'][0]['shipping'] == '0') {
             $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
             $transaction['TransactionAddress'][1]['type'] = 'shipping';
         }
@@ -363,8 +358,8 @@ class AppTransaction extends TransactionsAppModel {
  * @return array A single Transaction
  */
 	public function combineTransactions($transactions) {
-	    foreach($transactions as $transaction) {
-            foreach($transaction['TransactionItem'] as $transactionItem) {
+	    foreach ($transactions as $transaction) {
+            foreach ($transaction['TransactionItem'] as $transactionItem) {
                 if( ! isset($finalTransactionItems[$transactionItem['foreign_key']]) ) {
                     $finalTransactionItems[$transactionItem['foreign_key']] = $transactionItem;
                 } else {
