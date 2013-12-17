@@ -28,7 +28,7 @@ class Paypal extends AppModel {
 		try {
 			$this->getAccessToken();
 		} catch (Exception $e) {
-			throw new Exception($e->msg());
+			throw new Exception($e->getMessage());
 		}
 		
 		$postData = json_encode(array(
@@ -107,7 +107,7 @@ class Paypal extends AppModel {
 			$this->paysettings['token_type'] = $response['token_type'];
 			$this->paysettings['access_token'] = $response['access_token'];
 		} else {
-			throw new Exception("Error Processing Request", 1);
+			throw new Exception("Error Processing Request ".$response['error_description'], 1);
 		}
 	}
 	
