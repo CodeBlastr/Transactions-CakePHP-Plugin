@@ -188,7 +188,7 @@ class AppTransactionsController extends TransactionsAppController {
                 $this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
     		} catch (Exception $e) {
-    		    $this->Session->setFlash($e->getMessage());
+    		    $this->Session->setFlash($e->getMessage(), 'flash_warning');
     		}
 	    }
         
