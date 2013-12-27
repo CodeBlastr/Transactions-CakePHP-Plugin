@@ -1,6 +1,6 @@
 <?php
 $expand = 'in';
-foreach ($transactions as $transaction) {
+foreach ($transactions as $transaction) :
     $i = 0;
 	foreach ($transaction['TransactionItem'] as $item) {
 		$items[$i]['TransactionItem']['id'] = $item['id'];
@@ -15,21 +15,21 @@ foreach ($transactions as $transaction) {
 			<small><?php echo __('<span class="badge badge-info">%s</span> %s %s.', count($items), Inflector::humanize(Inflector::pluralize($item['model'])), $item['status']); ?></small>
 		</p>
 		<div id="demo<?php echo $transaction['Transaction']['id']; ?>" class="collapse <?php echo $expand; ?>">
-			<?php echo !empty($items) ? $this->Element('scaffolds/index', array('data' => $items, 'modelName' => 'TransactionItem', 'actions' => false, 'link' => array('pluginName' => 'products', 'controllerName' => 'products', 'actionName' => 'view', 'pass' => 'foreign_key'))) : null; ?>
+			<?php
+			echo !empty($items) ? $this->Element('scaffolds/index', array('data' => $items, 'modelName' => 'TransactionItem', 'actions' => false, 'link' => array('pluginName' => 'products', 'controllerName' => 'products', 'actionName' => 'view', 'pass' => 'foreign_key'))) : null;
+			?>
 		</div>
 	</div>
 	<?php
 	$expand = 'collapsed';
 	unset($items);
-}
+endforeach;
 
-if ( empty($transactions) ) {
+if (empty($transactions)) :
 ?>
-
 <div class="well">No previous orders found.</div>
-
 <?php
-}
+endif;
 
 // set the contextual menu items
 $this->set('context_menu', array('menus' => array(
