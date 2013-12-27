@@ -73,20 +73,19 @@ class Interswitch extends AppModel {
 	}
 
 	public function executePayment($data) {
-
 		$amount = $data['total'];
 		$hash = $data['key'];
 		$txRef = $data['order_number'];
 		$msg = base64_decode($data['response_msg']);
-		$string_to_hash = $this->config['sharedSecret'] . $this->config['apiUsername'] . $txRef . $order->order_total;
+		$string_to_hash = $this->config['sharedSecret'] . $this->config['apiUsername'] . $txRef . $data['total'];
+		
 		$checkhash = md5($string_to_hash);
 		if ($hash == $checkhash) {
-			if ($status == "Y") {
-				return true;
+			if ($data['credit_card_processed'] == "Y") {
+				return $msg;
 			} else {
 				throw new Exception($msg, 1);
 			}
-
 		} else {
 			throw new Exception("Error Processing Request", 1);
 		}
