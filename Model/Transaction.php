@@ -440,8 +440,10 @@ class AppTransaction extends TransactionsAppModel {
 		try {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
 			
-			$data[$this->modelName]['status'] = 'paid';
+			$data[$this->alias]['status'] = 'paid';
+
 			$this->save($data);
+			
 			// run the afterSuccessfulPayment callbacks
             $transactionItems = $data['TransactionItem'];
             foreach ($transactionItems as $transactionItem) {
@@ -451,11 +453,15 @@ class AppTransaction extends TransactionsAppModel {
 				   $Model->afterSuccessfulPayment($data);
 				}
             }
+			
+			// save TransactionItems, with relation to Transaction.id
 			foreach ($data['TransactionItem'] as $txnItem) {
 				$txnItem['transaction_id'] = $this->id;
 				$this->TransactionItem->create();
 				$this->TransactionItem->save($txnItem);
 			}
+			
+			// save TransactionAddresses, with relation to Transaction.id
 			foreach ($data['TransactionAddress'] as $txnAddr) {
 				$txnAddr['transaction_id'] = $this->id;
 				$txnAddr['user_id'] = empty($txnAddr['user_id']) ? CakeSession::read('Auth.User.id') : $txnAddr['user_id'];
@@ -464,6 +470,8 @@ class AppTransaction extends TransactionsAppModel {
 					$this->TransactionAddress->save($txnAddr);
 				}
 			}
+			
+			// save Connection data, if any
 			if (!empty($data['Customer']['Connection'])) {
 				$options = $this->gatherCheckoutOptions();
 				// connection[id] should be pre-filled or empty
@@ -474,7 +482,9 @@ class AppTransaction extends TransactionsAppModel {
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
 				$this->Customer->Connection->save($connection);
 			}
+			
             $this->_sendReceipt($data);
+			
 			return $data;
 
 		} catch (Exception $e) {
@@ -494,7 +504,7 @@ class AppTransaction extends TransactionsAppModel {
     	$message = '<p><strong>Thank you for your purchase</strong></p>';
     	$items = '<table style="width:100%;"><tr><th>Qty</th><th>Name</th><th>Price</th><th>Action</th></tr>';
     	foreach ($data['TransactionItem'] as $item) {
-    		$items .= __('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
+    		$items .= __('<tr><td style="text-align:center">%s</td><td style="text-align:center">%s</td><td style="text-align:center">%s</td><td style="text-align:center"><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
     	}
     	$items .= '</table>';
     	$message = $message . $items;
