@@ -67,58 +67,58 @@ public $name = 'TransactionCoupon';
 
 	
 	public function verify($data, $conditions = null) {
-             
-        $mktime=mktime();
-        $current_date=date('Y-m-d',$mktime);     // Get Current Date
+        // Get Current Date
+        $mktime = mktime();
+        $current_date = date('Y-m-d H:m:s', $mktime);
         
         // Check status is in Active or not and also check start date and end date valid or not.  
         $conditions = array('TransactionCoupon.is_active' => 1,'TransactionCoupon.start_date <=' => $current_date,'TransactionCoupon.end_date >=' => $current_date);
         
-         # similar to apply but don't mark as used
+        // similar to apply but don't mark as used
 		if (!empty($data['TransactionCoupon']['code'])) {
-			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions); 
-			$coupon = $this->find('first', array('conditions' => $condtions)); 
-           		
+			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
+			$coupon = $this->find('first', array('conditions' => $condtions));
+           	
 			if (empty($coupon)) {
-				throw new Exception('Code out of date or does not apply.');   
+				throw new Exception('Code out of date or does not apply.');
 			} else {
 				$data = $this->_applyPriceChange(
-					$coupon['TransactionCoupon']['discount_type'], 
-					$coupon['TransactionCoupon']['discount'], 
+					$coupon['TransactionCoupon']['discount_type'],
+					$coupon['TransactionCoupon']['discount'],
 					$data);
                 $data['Transaction']['transaction_coupon_id']=$coupon['TransactionCoupon']['id'];    
 				$data['TransactionCoupon'] = $coupon['TransactionCoupon']; 
 				return $data;
-			}  
+			}
 		} else {
 			throw new Exception('Coupon code was empty.'); 
 		}   
 	} 
 	
 	private function _applyPriceChange($type = 'fixed', $discount = 0, $data = null) {
-        $data['Transaction']['sub_total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);  
+        $data['Transaction']['sub_total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
        
 		if ($type == 'percent') {
-			# for now it does the total 
+			// for now it does the total 
 			$data['Transaction']['sub_total'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['sub_total']);    
 		} else {
-			# do fixed coupon price change 
+			// do fixed coupon price change
 			$data['Transaction']['sub_total'] = ZuhaInflector::pricify($data['Transaction']['sub_total'] - $discount);
             
 		}
-	    $data['Transaction']['total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);   
-		return $data;		
+	    $data['Transaction']['total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
+		return $data;
 	}
 	
 	public function apply($data) {
-		# find the coupon (make sure it can be applied)
+		// find the coupon (make sure it can be applied)
 		try {
 			$data = $this->verify($data);
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
-		}		
+		}
 		
-		# make the coupon as used 
+		// make the coupon as used
 		$coupon['TransactionCoupon']['id'] = $data['TransactionCoupon']['id'];
 		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
 		$this->validate = false;

@@ -171,6 +171,7 @@
             <li><?php echo $this->Html->link('Tax Rates', array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_taxes', 'action' => 'index')); ?></li>
             <li><?php echo $this->Html->link('Status Types', array('admin' => true, 'plugin' => null, 'controller' => 'enumerations', 'action' => 'index', 'filter' => 'type:TRANSACTIONS_ITEM_STATUS')); ?></li>
             <li><?php echo $this->Html->link('Item Status Types', array('admin' => true, 'plugin' => null, 'controller' => 'enumerations', 'action' => 'index', 'start' => 'type:TRANSACTIONS_STATUS')); ?></li>
+            <li><?php echo $this->Html->link('Coupon Codes', array('admin' => true, 'controller' => 'transaction_coupons', 'action' => 'index')); ?></li>
         </ul>
     </div>
 </div>
