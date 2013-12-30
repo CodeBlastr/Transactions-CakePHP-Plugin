@@ -59,10 +59,10 @@ class TransactionItemsController extends TransactionsAppController {
 		if ($this->request->is('post')) {
 			try {
 				if ($this->TransactionItem->addItemToCart($this->request->data) ) {
-					$this->Session->setFlash( __d('transactions', 'Added to cart') );
+					$this->Session->setFlash(__d('transactions', 'Added to cart'), 'flash_success');
 					$this->redirect( array('plugin'=>'transactions', 'controller'=>'transactions', 'action'=>'cart') );
 				} else {
-				  $this->Session->setFlash( __d('transactions', 'Error adding to cart. Please, try again.') );
+				  $this->Session->setFlash( __d('transactions', 'Error adding to cart. Please, try again.'), 'flash_warning');
 				  $this->redirect( $this->referer() );
 				}
 			} catch (Exception $exc) {

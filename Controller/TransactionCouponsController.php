@@ -29,7 +29,7 @@ class TransactionCouponsController extends TransactionsAppController {
 	public function view($id = null) {
 		$this->TransactionCoupon->id = $id;
 		if (!$this->TransactionCoupon->exists()) {
-			throw new NotFoundException(__('Invalid transaction coupon'));
+			throw new NotFoundException(__('Invalid transaction coupon'), 'flash_danger');
 		}
 		$this->set('transactionCoupon', $this->TransactionCoupon->read(null, $id));
 	}
@@ -43,10 +43,10 @@ class TransactionCouponsController extends TransactionsAppController {
 		if ($this->request->is('post')) {
 			$this->TransactionCoupon->create();
 			if ($this->TransactionCoupon->save($this->request->data)) {
-				$this->Session->setFlash(__('The transaction coupon has been saved'));
+				$this->Session->setFlash(__('The transaction coupon has been saved'), 'flash_success');
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The transaction coupon could not be saved. Please, try again.'));
+				$this->Session->setFlash(__('The transaction coupon could not be saved. Please, try again.'), 'flash_warning');
 			}
 		}
 		$this->set('discountTypes', $this->TransactionCoupon->types());
@@ -61,14 +61,14 @@ class TransactionCouponsController extends TransactionsAppController {
 	public function edit($id = null) {
 		$this->TransactionCoupon->id = $id;
 		if (!$this->TransactionCoupon->exists()) {
-			throw new NotFoundException(__('Invalid transaction coupon'));
+			throw new NotFoundException(__('Invalid transaction coupon'), 'flash_warning');
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->TransactionCoupon->save($this->request->data)) {
-				$this->Session->setFlash(__('The transaction coupon has been saved'));
+				$this->Session->setFlash(__('The transaction coupon has been saved'), 'flash_success');
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The transaction coupon could not be saved. Please, try again.'));
+				$this->Session->setFlash(__('The transaction coupon could not be saved. Please, try again.'), 'flash_warning');
 			}
 		} else {
 			$this->request->data = $this->TransactionCoupon->read(null, $id);
@@ -88,23 +88,27 @@ class TransactionCouponsController extends TransactionsAppController {
 		}
 		$this->TransactionCoupon->id = $id;
 		if (!$this->TransactionCoupon->exists()) {
-			throw new NotFoundException(__('Invalid transaction coupon'));
+			throw new NotFoundException(__('Invalid transaction coupon'), 'flash_danger');
 		}
 		if ($this->TransactionCoupon->delete()) {
-			$this->Session->setFlash(__('Transaction coupon deleted'));
+			$this->Session->setFlash(__('Transaction coupon deleted'), 'flash_success');
 			$this->redirect(array('action' => 'index'));
 		}
-		$this->Session->setFlash(__('Transaction coupon was not deleted'));
+		$this->Session->setFlash(__('Transaction coupon was not deleted'), 'flash_danger');
 		$this->redirect(array('action' => 'index'));
 	}
 	
 	
-
+/**
+ * currently used at transactions/transactions/cart only
+ */
 	public function verify() { 
-        
-  		// currently used at transactions/transactions/cart only
-		$this->request->data = $this->TransactionCoupon->verify($this->request->data);
-		$this->set('data', $this->request->data);
+  		try {
+			$this->request->data = $this->TransactionCoupon->verify($this->request->data);
+			$this->set('data', $this->request->data);
+		} catch (Exception $e) {
+			throw new Exception(__($e->getMessage()));
+		}
     }
 	
 }
