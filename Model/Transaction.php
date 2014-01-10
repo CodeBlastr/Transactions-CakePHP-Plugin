@@ -507,6 +507,9 @@ class AppTransaction extends TransactionsAppModel {
     		$items .= __('<tr><td style="text-align:center">%s</td><td style="text-align:center">%s</td><td style="text-align:center">%s</td><td style="text-align:center"><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
     	}
     	$items .= '</table>';
+    	$items .= '<table style="width:100%;">';
+		$items .= '<tr><td>Transaction ID</td><td>'.$data['Transaction']['id'].'</td></tr>';
+		$items .= '</table>';
     	$message = $message . $items;
     	if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
     		$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
