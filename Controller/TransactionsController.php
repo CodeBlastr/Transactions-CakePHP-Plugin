@@ -65,6 +65,7 @@ class AppTransactionsController extends TransactionsAppController {
  */
 	public function index() {
         $this->Transaction->contain(array('TransactionAddress', 'TransactionItem', 'Customer')); // contained items for the csv output
+		$this->paginate['order'] = array('Transaction.modified' => 'DESC');
 		$this->set('transactions', $this->paginate());
 		$type = !empty($this->request->named['filter']) ? str_replace('status:', '', $this->request->named['filter']) : 'All';
 		$this->set('title_for_layout', __('%s Transactions', Inflector::humanize($type)));
