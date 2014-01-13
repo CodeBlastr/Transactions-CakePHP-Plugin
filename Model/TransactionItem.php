@@ -171,8 +171,8 @@ class AppTransactionItem extends TransactionsAppModel {
 			$data,
 			array(
 				'TransactionItem' => array(
-				'transaction_id' => $this->Transaction->id,
-				'customer_id' => $this->Transaction->getCustomersId()
+					'transaction_id' => $this->Transaction->id,
+					'customer_id' => $this->Transaction->getCustomersId()
 				))
 			);
 			
