@@ -180,7 +180,6 @@ class AppTransaction extends TransactionsAppModel {
 
 	}
 
-
 /**
  * We could do all sorts of processing in here
  *

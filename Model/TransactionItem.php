@@ -90,6 +90,13 @@ class AppTransactionItem extends TransactionsAppModel {
 				}
             }
 		}
+		
+		for($i = 0 ; $i < count($results) ; $i++) {
+			if(isset($results[$i]['TransactionItem']['data']) && !empty($results[$i]['TransactionItem']['data'])) {
+				$results[$i]['TransactionItem']['data'] = unserialize(($results[$i]['TransactionItem']['data']));
+			}
+		}
+		
 	    return $results;
 	}
 
@@ -143,6 +150,12 @@ class AppTransactionItem extends TransactionsAppModel {
 			$Model = new $model;
 			if (method_exists($Model, 'mapTransactionItem') && is_callable(array($Model, 'mapTransactionItem'))) {
 				$itemData = $Model->mapTransactionItem($data['TransactionItem']['foreign_key']);
+			}elseif(isset($data['TransactionItem']['product_id']) && !empty($data['TransactionItem']['product_id'])) {
+				//Added this here to support Product Related to models so you can still keep all 
+				//tranaction related data in the products tables where it should be
+				App::uses('Product', 'Products.Model');
+				$Model = new Product();
+				$itemData = $Model->mapTransactionItem($data['TransactionItem']['product_id']);
 			}
 		} catch (Exception $e) {
 			// we get here sometimes if the plugin doesn't exist (virtual / test plugins)
@@ -235,6 +248,7 @@ class AppTransactionItem extends TransactionsAppModel {
 			// determine and set the transaction id (cart id) for this user
 			$this->Transaction->id = $this->setCartId();
 			$this->verifyItemRequest($data);
+			
 			$itemData = $this->mapItemData($data);
 			// Check if the TransactionItem already exists in this Transaction
 			$conditions = array(
@@ -276,6 +290,10 @@ class AppTransactionItem extends TransactionsAppModel {
 				$this->data['TransactionItem']['arb_settings']['PaymentAmount'] = $this->data['TransactionItem']['price'];
 			}
 			$this->data['TransactionItem']['arb_settings'] = serialize($this->data['TransactionItem']['arb_settings']);
+		}
+		
+		if(isset($this->data['TransactionItem']['data']) && !empty($this->data['TransactionItem']['data'])) {
+			$this->data['TransactionItem']['data'] = serialize($this->data['TransactionItem']['data']);
 		}
 
 		return parent::beforeSave($options);

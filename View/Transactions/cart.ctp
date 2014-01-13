@@ -64,6 +64,7 @@
 
 		    <fieldset id="paymentInformation" class="control-group">
 			    <legend><?php echo __d('transactions', 'Payment Information'); ?></legend>
+			    <?php echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode'])); ?>
 			    <?php
 				// unFlatten the paymentOptions
 				$paymentOptions = array();

@@ -140,7 +140,7 @@ class BuyableBehavior extends ModelBehavior {
 			$paymentProcessor = ucfirst(strtolower($data['Transaction']['mode']));
 			$paymentProcessor = explode('.', $paymentProcessor);
 			$paymentProcessor = $paymentProcessor[0];
-
+			//debug($data['Transaction']['mode']);exit;
 			$this->loadProcessor($paymentProcessor);
 			
 			App::uses('Transaction' , 'Transactions.Model');
