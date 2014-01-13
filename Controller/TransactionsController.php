@@ -10,27 +10,27 @@ class AppTransactionsController extends TransactionsAppController {
 
 /**
  * Name
- * 
+ *
  * @var string
  */
 	public $name = 'Transactions';
 
 /**
  * Uses
- * 
+ *
  * @var array
  */
 	public $uses = array('Transactions.Transaction');
 
 /**
  * Components
- * 
+ *
  * @var array
  */
 	//public $components = array('Ssl', 'Transactions.Payments');
-	public $components = array('Ssl');	
-	
-	
+	public $components = array('Ssl');
+
+
 	public $allowedActions = array(
 		'add',
 		'cart',
@@ -38,10 +38,10 @@ class AppTransactionsController extends TransactionsAppController {
 		'success',
 		'my'
 	);
-	
+
 /**
  * Dashboard method
- * 
+ *
  * @return void
  */
  	public function dashboard() {
@@ -57,7 +57,7 @@ class AppTransactionsController extends TransactionsAppController {
 		$this->set('title_for_layout', __('Ecommerce Dashboard'));
 		$this->set('page_title_for_layout', __('Ecommerce Dashboard'));
  	}
-	
+
 /**
  * Index method
  *
@@ -65,6 +65,7 @@ class AppTransactionsController extends TransactionsAppController {
  */
 	public function index() {
         $this->Transaction->contain(array('TransactionAddress', 'TransactionItem', 'Customer')); // contained items for the csv output
+		$this->paginate['order'] = array('Transaction.modified' => 'DESC');
 		$this->set('transactions', $this->paginate());
 		$type = !empty($this->request->named['filter']) ? str_replace('status:', '', $this->request->named['filter']) : 'All';
 		$this->set('title_for_layout', __('%s Transactions', Inflector::humanize($type)));
@@ -74,7 +75,7 @@ class AppTransactionsController extends TransactionsAppController {
 
 /**
  * View method
- * 
+ *
  * @param string $id
  * @throws NotFoundException
  * @todo Add LoggableBehavior and track who the referrer was from the stats in the session $this->triggerLog() in the model, if done right.
@@ -121,7 +122,7 @@ class AppTransactionsController extends TransactionsAppController {
 
 /**
  * Edit method
- * 
+ *
  * @param string $id
  * @throws NotFoundException
  */
@@ -150,7 +151,7 @@ class AppTransactionsController extends TransactionsAppController {
 
 /**
  * Delete method
- * 
+ *
  * @param string $id
  * @throws MethodNotAllowedException
  * @throws NotFoundException
@@ -171,10 +172,10 @@ class AppTransactionsController extends TransactionsAppController {
 		return $this->redirect(array('action' => 'index'));
 	}
 
-    
+
 /**
  * Cart method
- * 
+ *
  * @throws NotFoundException
  * @todo Convert to Transaction->buy()
  */
@@ -183,7 +184,7 @@ class AppTransactionsController extends TransactionsAppController {
         	try {
             	// remove these three lines soon (10-1-2013 RK)
 				//$data = $this->Transaction->beforePayment($this->request->data);
-                //$data = $this->Payments->pay($data); 
+                //$data = $this->Payments->pay($data);
                 //$this->Transaction->afterSuccessfulPayment($this->Auth->loggedIn(), $data);
                 $this->Transaction->buy($this->request->data);
 				return $this->redirect($this->_redirect());
@@ -191,17 +192,17 @@ class AppTransactionsController extends TransactionsAppController {
     		    $this->Session->setFlash($e->getMessage(), 'flash_warning');
     		}
 	    }
-        
+
 	  	// gather checkout options like shipping, payments, ssl, etc
 		$options = $this->Transaction->gatherCheckoutOptions();
-        
+
 	    // ensure that SSL is on if it's supposed to be
 		$options['ssl'] !== null ? $this->Ssl->force() : null;
-		      
+
 		// If they have two carts, we are going to ask the customer what to do with them
 		$userId = $this->Transaction->getCustomersId();
 		$numberOfCarts = $this->Transaction->find('count', array('conditions' => array('Transaction.customer_id' => $userId, 'Transaction.status' => 'open')));
-		
+
 		if ($numberOfCarts > 1) {
             return $this->redirect(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'merge'));
 		} else {
@@ -220,7 +221,7 @@ class AppTransactionsController extends TransactionsAppController {
 		return array_merge($this->request->data, array('options' => $options)); // for the ajax cart element
 	}
 
-    
+
 /**
  * Success method
  * A simple "thank you" page with some post-order actions.
@@ -262,7 +263,7 @@ class AppTransactionsController extends TransactionsAppController {
             if (!empty($data)) {
 				$this->Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
             }
-			
+
             $boughtModel = CakeSession::read('Transaction.modelName');
             if (!empty($boughtModel)) {
                 App::uses($boughtModel, ZuhaInflector::pluginize($boughtModel).'.Model');
@@ -272,25 +273,29 @@ class AppTransactionsController extends TransactionsAppController {
                 }
             }
         } //end Interswitch
-                
+
 		$this->set('userId', $this->Session->read('Auth.User.id'));
 	}
 
-	
+
 /**
  * My method
- * 
+ *
  * Show transaction history
  * @return void
  */
     public function my() {
-		$this->set('title_for_layout', __('Order History | ' . __SYSTEM_SITE_NAME));
-        $this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
-        $this->paginate['contain'] = 'TransactionItem';
-        //$this->Transaction->recursive = 2;
-        $this->set('transactions', $this->paginate());
+		if ($this->Session->read('Auth.User.id')) {
+			$this->set('title_for_layout', __('Order History | ' . __SYSTEM_SITE_NAME));
+			$this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
+			$this->paginate['contain'] = 'TransactionItem';
+			//$this->Transaction->recursive = 2;
+			$this->set('transactions', $this->paginate());
+		} else {
+			$this->redirect('/');
+		}
     }
-	
+
 /**
  * Merge Carts method
  */
@@ -303,9 +308,9 @@ class AppTransactionsController extends TransactionsAppController {
 		    'contain' => array('TransactionItem'),
 		    'order' => array('Transaction.modified' => 'desc')
 	    ));
-	  
+
 	    $this->set('transactions', $transactions);
-	  
+
 	    // they have made a choice.  process it; choices are: '1', 'merge', or '2'
 	    if(isset($this->request->params['named']['choice'])) {
 		    if(in_array($this->request->params['named']['choice'], array('1', 'merge', '2'))) {
@@ -330,7 +335,7 @@ class AppTransactionsController extends TransactionsAppController {
 
 /**
  * Settings method
- * 
+ *
  */
  	public function settings() {
  		// data gets submitted to /settings/add
@@ -340,17 +345,17 @@ class AppTransactionsController extends TransactionsAppController {
  			$this->request->data['Setting']['value']['body'] = stripcslashes($email['body']);
  		}
  	}
-    
+
 /**
  * Redirect method
  *
  * @return array $url
  */
-    protected function _redirect() { 
+    protected function _redirect() {
         if (defined('__TRANSACTIONS_CHECKOUT_REDIRECT')) {
-			extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT)); 
+			extract(unserialize(__TRANSACTIONS_CHECKOUT_REDIRECT));
 			if(empty($url)) {
-				$plugin = strtolower(ZuhaInflector::pluginize($model));         
+				$plugin = strtolower(ZuhaInflector::pluginize($model));
 				$controller = Inflector::tableize($model);
 				if(!empty($pass)) {
 					// get foreign key of TransactionItem using given setings
@@ -365,11 +370,11 @@ class AppTransactionsController extends TransactionsAppController {
 				$url = array('plugin' => $plugin, 'controller' => $controller, 'action' => $action, !empty($foreign_key['TransactionItem']['foreign_key']) ? $foreign_key['TransactionItem']['foreign_key'] : '');
 			}
 		} else {
-			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success'); 
+			$url = array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'success');
 		}
         return $url;
     }
-    
+
 }
 
 if (!isset($refuseInit)) {

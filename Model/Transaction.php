@@ -12,7 +12,7 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @todo Add LoggableBehavior and track who the referrer was from the stats in the session $this->triggerLog() in the model, if done right.
  */
 class AppTransaction extends TransactionsAppModel {
- 		
+
  	public $name = 'Transaction';
 
 	public $actsAs = array(
@@ -90,14 +90,14 @@ class AppTransaction extends TransactionsAppModel {
 		)
 	);
 
-    
+
 /**
  * The checkout page has options.
  * This function's job is to get those options.
- * 
+ *
  * @return array
  */
-	public function gatherCheckoutOptions() {     
+	public function gatherCheckoutOptions() {
 	    $options['ssl'] = defined('__TRANSACTIONS_SSL') ? unserialize(__TRANSACTIONS_SSL) : null;
 	    $options['trustLogos'] = !empty($ssl['trustLogos']) ? $ssl['trustLogos'] : null;
 	    $options['enableShipping'] = defined('__TRANSACTIONS_ENABLE_SHIPPING') ? __TRANSACTIONS_ENABLE_SHIPPING : false;
@@ -118,14 +118,14 @@ class AppTransaction extends TransactionsAppModel {
 	    $options['states'] = $this->TransactionTax->states(array('type' => 'enabled'));
 	    return $options;
 	}
-	
-	
+
+
 /**
  * This function returns the UUID to use for a User by first checking the Auth Session, then by checking for a Transaction Guest session,
  * and finally, creating a Transaction Guest session if necessary.
- *  
+ *
  * @todo This should probably be in the User model in some fashion..?
- * 
+ *
  * @return string The UUID of the User
  */
 	public function getCustomersId() {
@@ -139,32 +139,32 @@ class AppTransaction extends TransactionsAppModel {
             $userId = String::uuid();
             CakeSession::write('Transaction._guestId', $userId);
         }
-        
+
         // Assign their Guest Cart to their Logged in self, if neccessary
         $this->reassignGuestCart($transactionGuestId, $authUserId);
-        
+
         return $userId;
-	}	
+	}
 
 /**
  * Calculate
- * 
+ *
  * @param array $data
  * @return array
  */
 	public function calculateTotal($data) {
         // defaults
-        $data = $this->TransactionTax->applyTax($data);        
+        $data = $this->TransactionTax->applyTax($data);
 	    $subTotal = 0;
 	    $shippingCharge = 0;
-        
+
         // recalculate subtotal
         if (!empty($data['TransactionItem'])) {
 		    foreach($data['TransactionItem'] as $txnItem) {
 	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
 		    }
 		}
-        
+
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
         // GET THIS OUT OF HERE!!!!
 		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
@@ -175,23 +175,23 @@ class AppTransaction extends TransactionsAppModel {
 	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
 	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
 		$data['Transaction']['total'] = number_format($subTotal + $data['Transaction']['tax_charge'] + $shippingCharge, 2, '.', false);
-        
+
 		return $data;
-		
+
 	}
-	
+
 
 /**
  * We could do all sorts of processing in here
- * 
+ *
  * @todo How to get saved addresses for returning users??
- * 
+ *
  * @param string $userId
  * @return boolean|array
  */
 	public function processCart($userId, $data = array()) {
 		$options = $this->gatherCheckoutOptions();
-		
+
 	    $cart = Set::merge($this->find('first', array(
 		    'conditions' => array(
 			    'Transaction.customer_id' => $userId,
@@ -202,7 +202,7 @@ class AppTransaction extends TransactionsAppModel {
 			    'TransactionAddress',
 			    'Customer' => array(
 				    'Connection' => array(
-					    'conditions' => array('Connection.type' => $options['paymentMode'])  
+					    'conditions' => array('Connection.type' => $options['paymentMode'])
 					    )
 				     )
 			    )
@@ -218,10 +218,10 @@ class AppTransaction extends TransactionsAppModel {
 
 /**
  * Prefill Adresses
- * 
+ *
  * If the customer has checked out before we get their address and merge it into the cart data
- * 
- * @param array $cart 
+ *
+ * @param array $cart
  */
 	protected function _prefillAddresses($data) {
 		// get the last used address of the logged in user, if this transaction doesn't already have one
@@ -239,10 +239,10 @@ class AppTransaction extends TransactionsAppModel {
 		}
 		return $data;
 	}
-	
+
 /**
  * Combine the pre-checkout and post-checkout Transactions.
- *  
+ *
  * @param integer $userId
  * @param array $data
  * @return type
@@ -261,16 +261,16 @@ class AppTransaction extends TransactionsAppModel {
                 'TransactionAddress',
                 'Customer' => array(
                     'Connection' => array(
-                        'conditions' => array('Connection.type' => $options['paymentMode'])  
+                        'conditions' => array('Connection.type' => $options['paymentMode'])
                         )
                     )
                 )
             ));
-         
+
 		if (!$currentTransaction) {
 			throw new Exception('Transaction missing.');
 		}
-       
+
 		// update quantities
 		$allHaveZeroQty = true;
 		foreach ($submittedTransaction['TransactionItem'] as $submittedTxnItem) {
@@ -278,7 +278,7 @@ class AppTransaction extends TransactionsAppModel {
                 foreach ($currentTransaction['TransactionItem'] as $currentTxnItem) {
                     if ($currentTxnItem['id'] == $submittedTxnItem['id']) {
                         $currentTxnItem['quantity'] = $submittedTxnItem['quantity'];
-                        $finalTxnItems[] = $currentTxnItem;  
+                        $finalTxnItems[] = $currentTxnItem;
                     }
                 }
                 $allHaveZeroQty = false;
@@ -287,38 +287,38 @@ class AppTransaction extends TransactionsAppModel {
 		if ($allHaveZeroQty) {
 			throw new Exception('Cart is empty');
 		}
-		
+
 		// unset the submitted TransactionItem's. They will be replaced after the merge.
 		unset($submittedTransaction['TransactionItem']);
-		
+
 		// combine the Current and Submitted Transactions
 		$officialTransaction = Set::merge($currentTransaction, $submittedTransaction);
 		$officialTransaction['TransactionItem'] = $finalTxnItems;
-      
+
         // add tax
         $officialTransaction = $this->TransactionTax->applyTax($officialTransaction);
-		
+
 		$officialTransaction = $this->calculateTotal($officialTransaction);
-        
+
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
-        
+
         //Check Transaction Coupon code empty or not
         if ($officialTransaction['TransactionCoupon']['code']!='') {
-           $officialTransaction = $this->TransactionCoupon->verify($officialTransaction); 
+           $officialTransaction = $this->TransactionCoupon->verify($officialTransaction);
         }
-		
+
    		$officialTransaction = $this->finalizeUserData($officialTransaction);
-		
+
 		// return the official transaction
 		return $officialTransaction;
 	}
-	
-	
+
+
 /**
  * - Ensures that the necessary data is present to create a Customer
  * - Fills out the TransactionShipment fields when shipping info is same as billing info
- * 
+ *
  * @param array $transaction Transaction data that was posted by the cart form
  * @return array Same array with neccessary and completed fields
  */
@@ -329,31 +329,31 @@ class AppTransaction extends TransactionsAppModel {
             $transaction['Customer']['last_name'] = $transaction['TransactionAddress'][0]['last_name'];
             $transaction['Customer']['email'] = $transaction['TransactionAddress'][0]['email']; // required
             $transaction['Customer']['username'] = $transaction['TransactionAddress'][0]['email']; // required
-            
+
             // generate a temporary password: Aaa9999 (then shuffled)
             $transaction['Customer']['password'] = str_shuffle('*$' . chr(97 + mt_rand(0, 25)) . chr(97 + mt_rand(0, 25)) . strtoupper(chr(97 + mt_rand(0, 25))) . rand(1000, 9999)); // required
-            
+
             // set their User Role Id
             $transaction['Customer']['user_role_id'] = (defined('__APP_DEFAULT_USER_REGISTRATION_ROLE_ID')) ? __APP_DEFAULT_USER_REGISTRATION_ROLE_ID : 3 ;
         }
-		
+
 		if (!empty($transaction['TransactionAddress'][0]['phone'])) {
 			// make sure the phone is just numbers
 			$transaction['TransactionAddress'][0]['phone'] = ZuhaInflector::numerate($transaction['TransactionAddress'][0]['phone']);
 		}
-        
+
         // copy Payment data to Shipment data if neccessary
         if (isset($transaction['TransactionAddress'][0]['shipping']) && $transaction['TransactionAddress'][0]['shipping'] == '0') {
             $transaction['TransactionAddress'][1] = $transaction['TransactionAddress'][0];
             $transaction['TransactionAddress'][1]['type'] = 'shipping';
         }
-		
+
         return $transaction;
 	}
 
-	
+
 /**
- * 
+ *
  * @param array $transactions Multiple transactions
  * @return array A single Transaction
  */
@@ -373,19 +373,19 @@ class AppTransaction extends TransactionsAppModel {
         $finalTransaction['Transaction'] = $transactions[0]['Transaction'];
         return $finalTransaction;
 	}
-	
-	
+
+
 /**
- * 
+ *
  * @todo make this better
- * 
+ *
  * @param boolean $isLoggedIn
  * @param array $data
  * @return array
  */
 	public function completeUserAndTransactionData($isLoggedIn, $data) {
 		try {
-			//$data['Transaction']['status'] = 'paid'; // this really belongs here, but we have an issue with processors 
+			//$data['Transaction']['status'] = 'paid'; // this really belongs here, but we have an issue with processors
 			if (!$isLoggedIn) {
 				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
 				$this->Customer->add($data);
@@ -404,34 +404,34 @@ class AppTransaction extends TransactionsAppModel {
 			foreach ($data['TransactionItem'] as &$transactionItem) {
 				$transactionItem['status'] = 'paid';
 			}
-			
+
 			return $data;
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
 	}
 
-	
-	
+
+
 /**
- * 
+ *
  * @param array $data A payment object
  * @return array
  * @throws Exception
  */
 	public function beforePayment($data) {
 		try {
-            $data = $this->finalizeTransactionData($data); 
-            
+            $data = $this->finalizeTransactionData($data);
+
 			return $data;
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
 	}
-	
-	
+
+
 /**
- * 
+ *
  * @param boolean $isLoggedIn
  * @param array $data A payment object
  * @throws Exception
@@ -439,11 +439,11 @@ class AppTransaction extends TransactionsAppModel {
 	public function afterSuccessfulPayment($isLoggedIn, $data) {
 		try {
 			$data = $this->completeUserAndTransactionData($isLoggedIn, $data);
-			
-			$data[$this->alias]['status'] = 'paid';
 
+			$data[$this->alias]['status'] = 'paid';
+			unset($data[$this->alias]['modified']);
 			$this->save($data);
-			
+
 			// run the afterSuccessfulPayment callbacks
             $transactionItems = $data['TransactionItem'];
             foreach ($transactionItems as $transactionItem) {
@@ -453,14 +453,14 @@ class AppTransaction extends TransactionsAppModel {
 				   $Model->afterSuccessfulPayment($data);
 				}
             }
-			
+
 			// save TransactionItems, with relation to Transaction.id
 			foreach ($data['TransactionItem'] as $txnItem) {
 				$txnItem['transaction_id'] = $this->id;
 				$this->TransactionItem->create();
 				$this->TransactionItem->save($txnItem);
 			}
-			
+
 			// save TransactionAddresses, with relation to Transaction.id
 			foreach ($data['TransactionAddress'] as $txnAddr) {
 				$txnAddr['transaction_id'] = $this->id;
@@ -470,7 +470,7 @@ class AppTransaction extends TransactionsAppModel {
 					$this->TransactionAddress->save($txnAddr);
 				}
 			}
-			
+
 			// save Connection data, if any
 			if (!empty($data['Customer']['Connection'])) {
 				$options = $this->gatherCheckoutOptions();
@@ -482,9 +482,9 @@ class AppTransaction extends TransactionsAppModel {
 				$connection['value'] = serialize($data['Customer']['Connection'][0]['value']);
 				$this->Customer->Connection->save($connection);
 			}
-			
+
             $this->_sendReceipt($data);
-			
+
 			return $data;
 
 		} catch (Exception $e) {
@@ -493,7 +493,7 @@ class AppTransaction extends TransactionsAppModel {
 	}
 
 
-    
+
 /**
  * Send transaction email
  *
@@ -507,30 +507,28 @@ class AppTransaction extends TransactionsAppModel {
     		$items .= __('<tr><td style="text-align:center">%s</td><td style="text-align:center">%s</td><td style="text-align:center">%s</td><td style="text-align:center"><a href="http://%s%s">View</a></td></tr>', $item['quantity'], $item['name'], $item['price'], $_SERVER['HTTP_HOST'], $item['_associated']['viewLink']);
     	}
     	$items .= '</table>';
-    	$items .= '<table style="width:100%;">';
-		$items .= '<tr><td>Transaction ID</td><td>'.$data['Transaction']['id'].'</td></tr>';
-		$items .= '</table>';
     	$message = $message . $items;
     	if (defined('__TRANSACTIONS_RECEIPT_EMAIL')) {
     		$email = unserialize(__TRANSACTIONS_RECEIPT_EMAIL);
     		$subject = stripcslashes($email['subject']);
     		$message = str_replace('{element: transactionItems}', $items, stripcslashes($email['body']));
+    		$message = str_replace('{element: transactionId}', $data['Transaction']['id'], $message);
     	}
     	// this probably doesn't throw an exception if it fails
     	$this->__sendMail($data['TransactionAddress'][0]['email'], $subject, $message);
     }
-	
+
 
 	public function generateTransactionNumber() {
 		return str_pad($this->find('count') + 1, 7, '0', STR_PAD_LEFT);
 	}
 
-	
+
 /**
  * Retrieves various stats for dashboard display
- * 
+ *
  * @todo This could probably be done in one query, then shaped with PHP ?
- * 
+ *
  * @param string $param
  * @return array|boolean
  */
@@ -573,7 +571,7 @@ class AppTransaction extends TransactionsAppModel {
         }
         return ($data) ? $data : false;
     }
-	
+
 /**
  * An array of options for select inputs
  *
