@@ -180,7 +180,10 @@ class AppTransactionsController extends TransactionsAppController {
  * @todo Convert to Transaction->buy()
  */
     public function cart() {
-        if ($this->request->is('post') || $this->request->is('put')) {
+        if (
+				($this->request->is('post') || $this->request->is('put'))
+				&& !empty($this->request->data)
+			) {
         	try {
             	// remove these three lines soon (10-1-2013 RK)
 				//$data = $this->Transaction->beforePayment($this->request->data);
