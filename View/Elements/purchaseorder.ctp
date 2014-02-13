@@ -8,7 +8,7 @@
 
 		document.changeToPurchaseOrder = function changeToPurchaseOrder() {
 			$("#creditCardInfo, #echeckInfo").children().removeClass('required');
-			$("#TransactionPoNumber").addClass('required');
+			//$("#TransactionPoNumber").addClass('required');
 			$('.paysimpleCc').parent().parent().hide();
 			$('.paysimpleCheck').parent().parent().hide();
 			$('.purchaseOrder').parent().parent().show();
