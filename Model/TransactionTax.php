@@ -497,6 +497,7 @@ public $name = 'TransactionTax';
 			'US-CA' => 'California',
 			'US-CO' => 'Colorado',
 			'US-CT' => 'Connecticut',
+			'US-DC' => 'District of Columbia',
 			'US-DE' => 'Delaware',
 			'US-FL' => 'Florida',
 			'US-GA' => 'Georgia',
