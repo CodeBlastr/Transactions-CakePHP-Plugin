@@ -230,10 +230,10 @@ class AppTransaction extends TransactionsAppModel {
 			if (!empty($transactionBilling)) {
 				$data['TransactionAddress'][] = $transactionBilling['TransactionAddress'];
 			}
-			// billing first
+			// shipping second
 			$transactionShipping = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'shipping'));
 			if (!empty($transactionBilling)) {
-				$data['TransactionAddress'][] = $transactionBilling['TransactionAddress'];
+				$data['TransactionAddress'][] = $transactionShipping['TransactionAddress'];
 			}
 		}
 		return $data;
