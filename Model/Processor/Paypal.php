@@ -79,7 +79,7 @@ class Paypal extends AppModel {
 					exit();
 				}
 			}
-			break;
+			exit;
 		} else {
 			throw new Exception("Error Processing Request", 1);
 		}
@@ -135,7 +135,13 @@ class Paypal extends AppModel {
 		}
 	}
 
-	public function payOLD($paymentInfo, $function = "DoDirectPayment") {
+/**
+ * @param $paymentInfo
+ * @param string $function
+ * @throws Exception
+ * @deprecated
+ */
+    public function payOLD($paymentInfo, $function = "DoDirectPayment") {
 		$paypal = new PaypalApi();
 		$this->payInfo = $paymentInfo;
 		$paypal->setPaySettings($this->paysettings);
@@ -168,7 +174,7 @@ class Paypal extends AppModel {
 		}
 
 		debug($paymentInfo);
-		break;
+		exit;
 
 		// if ($this->recurring && !empty($paymentInfo['Billing']['arb_profile_id'])) {
 		// // if existing profile recurring id for arb, update the subscription
