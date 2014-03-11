@@ -106,10 +106,10 @@ class AppTransactionsController extends TransactionsAppController {
 		if ($this->request->is('post')) {
 			$this->Transaction->create();
 			if ($this->Transaction->save($this->request->data)) {
-				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
+				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'), 'flash_success');
 				return $this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
+				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'), 'flash_warning');
 			}
 		}
 		// $transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
@@ -133,10 +133,10 @@ class AppTransactionsController extends TransactionsAppController {
 		}
 		if ( ($this->request->is('post') || $this->request->is('put')) && !empty($this->request->data)) {
 			if ($this->Transaction->saveAll($this->request->data)) {
-				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'));
+				$this->Session->setFlash(__d('transactions', 'The transaction has been saved'), 'flash_success');
 				return $this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'));
+				$this->Session->setFlash(__d('transactions', 'The transaction could not be saved. Please, try again.'), 'flash_warning');
 			}
 		} else {
 			$this->request->data = $this->Transaction->read(null, $id);
@@ -165,10 +165,10 @@ class AppTransactionsController extends TransactionsAppController {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
 		if ($this->Transaction->delete()) {
-			$this->Session->setFlash(__d('transactions', 'Transaction deleted'));
+			$this->Session->setFlash(__d('transactions', 'Transaction deleted'), 'flash_success');
 			return $this->redirect(array('action' => 'index'));
 		}
-		$this->Session->setFlash(__d('transactions', 'Transaction was not deleted'));
+		$this->Session->setFlash(__d('transactions', 'Transaction was not deleted'), 'flash_danger');
 		return $this->redirect(array('action' => 'index'));
 	}
 
