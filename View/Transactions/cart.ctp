@@ -34,7 +34,7 @@
 	} ?>
     
     <div id="transactionForm" class="transactionForm text-inputs row-fluid">
-	    <div id="transactionCartLeft" class="span8 pull-left">
+	    <div id="transactionCartLeft" class="span8 col-md-8 pull-left">
 		    <div id="transactionAddress">
 			    <fieldset id="billingAddress" class="control-group">
     				<legend><?php echo __d('transactions', 'Billing Details'); ?></legend>
@@ -64,23 +64,25 @@
 
 		    <fieldset id="paymentInformation" class="control-group">
 			    <legend><?php echo __d('transactions', 'Payment Information'); ?></legend>
-			    <?php echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode'])); ?>
+			    <?php // this input is inside the element on line 76, this makes it show up twice. 
+			          // removed on beef jockey if you feel like bring this back
+			          // echo $this->Form->input('mode', array('label' => 'Payment Method', 'options' => $options['paymentOptions'], 'default' => $options['paymentMode'])); ?>
 			    <?php
 				// unFlatten the paymentOptions
 				$paymentOptions = array();
-				foreach ($options['paymentOptions'] as $k => $v) {
+				foreach ($options['paymentOptions'] as $k => $v) :
 					$paymentOptions = Set::insert($paymentOptions, $k, $v);
-				}
+				endforeach;
 				// display each payment option's element
-				foreach ( $paymentOptions as $k => $v ) {
+				foreach ( $paymentOptions as $k => $v ) :
 					echo $this->Element(strtolower($k), array('var1' => 'value1'));
-				}
+				endforeach;
 				?>
 		    </fieldset>
 	    </div>
 
 
-	    <div id="transactionCartRight" class="span4 pull-right">
+	    <div id="transactionCartRight" class="span4 col-md-4 pull-right">
 		    <?php echo $this->Element('Transactions.trust_logos'); ?>
 		    <fieldset id="transactionItems" class="transactionItems">
 			    <legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
