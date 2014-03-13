@@ -1,5 +1,2 @@
 <?php
-$cart_count = 0;
-{$cart_count = $this->Session->read('TransactionsCartCount');} 
-
-echo  $cart_count ; ?>
+echo  $this->Session->read('TransactionsCartCount') ? $this->Session->read('TransactionsCartCount') : 0; ?>
