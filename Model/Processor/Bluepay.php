@@ -279,6 +279,8 @@ class Bluepay extends AppModel {
 		// check if Customer Connection already exists from the incoming data 
 		if(!empty($data['Customer']['Connection'][0]['value'])){
 			$value = unserialize($data['Customer']['Connection'][0]['value']);
+			// this could break something, added for use on beef checkout for 30 day classified ad RK 3/9/2014
+			$value = unserialize($value) ? unserialize($value) : $value;
 			// get key (could be CreditCard could be BankAccount)
 			$key = key($value['Account']);
 			// if yes  use rebSale($transId) with transactionId, NOTE : get the transaction Id from the Customer Connection
