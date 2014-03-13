@@ -227,6 +227,15 @@ class AppTransaction extends TransactionsAppModel {
 		if (empty($data['TransactionAddress']) && CakeSession::read('Auth.User.id')) {
 			// billing first
 			$transactionBilling = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'billing'));
+			// if transactionBilling is empty let's fill it with session vars
+			if (empty($transactionBilling) && CakeSession::read('Auth.User')) {
+				$transactionBilling['TransactionAddress']['first_name'] = CakeSession::read('Auth.User.first_name');
+				$transactionBilling['TransactionAddress']['last_name'] = CakeSession::read('Auth.User.last_name');
+				$transactionBilling['TransactionAddress']['email'] = CakeSession::read('Auth.User.email');
+				$transactionBilling['TransactionAddress']['zip'] = CakeSession::read('Auth.User.zip');
+				$transactionBilling['TransactionAddress']['country'] = CakeSession::read('Auth.User.email');
+				$transactionBilling['TransactionAddress']['user_id'] = CakeSession::read('Auth.User.id');
+			}
 			if (!empty($transactionBilling)) {
 				$data['TransactionAddress'][] = $transactionBilling['TransactionAddress'];
 			}
