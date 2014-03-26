@@ -69,7 +69,7 @@ public $name = 'TransactionCoupon';
 	public function verify($data, $conditions = null) {
         // Get Current Date
         $mktime = mktime();
-        $current_date = date('Y-m-d H:m:s', $mktime);
+        $current_date = date('Y-m-d H:i:s', $mktime);
         
         // Check status is in Active or not and also check start date and end date valid or not.  
         $conditions = array('TransactionCoupon.is_active' => 1,'TransactionCoupon.start_date <=' => $current_date,'TransactionCoupon.end_date >=' => $current_date);
