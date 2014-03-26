@@ -6,8 +6,8 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property Transaction $Transaction
  */
 class TransactionCoupon extends TransactionsAppModel {
-    
-public $name = 'TransactionCoupon';  
+
+public $name = 'TransactionCoupon';
 /**
  * Display field
  *
@@ -65,20 +65,27 @@ public $name = 'TransactionCoupon';
 		)
 	);
 
-	
+/**
+ *
+ * @param array $data
+ * @param array $conditions
+ * @return array
+ * @throws Exception
+ */
+
 	public function verify($data, $conditions = null) {
         // Get Current Date
         $mktime = mktime();
         $current_date = date('Y-m-d H:i:s', $mktime);
-        
-        // Check status is in Active or not and also check start date and end date valid or not.  
+
+        // Check status is in Active or not and also check start date and end date valid or not.
         $conditions = array('TransactionCoupon.is_active' => 1,'TransactionCoupon.start_date <=' => $current_date,'TransactionCoupon.end_date >=' => $current_date);
-        
+
         // similar to apply but don't mark as used
 		if (!empty($data['TransactionCoupon']['code'])) {
 			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
 			$coupon = $this->find('first', array('conditions' => $condtions));
-           	
+
 			if (empty($coupon)) {
 				throw new Exception('Code out of date or does not apply.');
 			} else {
@@ -86,30 +93,42 @@ public $name = 'TransactionCoupon';
 					$coupon['TransactionCoupon']['discount_type'],
 					$coupon['TransactionCoupon']['discount'],
 					$data);
-                $data['Transaction']['transaction_coupon_id']=$coupon['TransactionCoupon']['id'];    
-				$data['TransactionCoupon'] = $coupon['TransactionCoupon']; 
+                $data['Transaction']['transaction_coupon_id']=$coupon['TransactionCoupon']['id'];
+				$data['TransactionCoupon'] = $coupon['TransactionCoupon'];
 				return $data;
 			}
 		} else {
-			throw new Exception('Coupon code was empty.'); 
-		}   
-	} 
-	
+			throw new Exception('Coupon code was empty.');
+		}
+	}
+
+/**
+ *
+ * @param string $type
+ * @param int $discount
+ * @param array $data
+ * @return type
+ */
 	private function _applyPriceChange($type = 'fixed', $discount = 0, $data = null) {
         $data['Transaction']['sub_total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
-       
+
 		if ($type == 'percent') {
-			// for now it does the total 
-			$data['Transaction']['sub_total'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['sub_total']);    
+			// for now it does the total
+			$data['Transaction']['sub_total'] = ZuhaInflector::pricify(((100 - $discount) / 100) * $data['Transaction']['sub_total']);
 		} else {
 			// do fixed coupon price change
 			$data['Transaction']['sub_total'] = ZuhaInflector::pricify($data['Transaction']['sub_total'] - $discount);
-            
 		}
 	    $data['Transaction']['total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
 		return $data;
 	}
-	
+
+/**
+ *
+ * @param array $data
+ * @return string
+ * @throws Exception
+ */
 	public function apply($data) {
 		// find the coupon (make sure it can be applied)
 		try {
@@ -117,7 +136,7 @@ public $name = 'TransactionCoupon';
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
-		
+
 		// make the coupon as used
 		$coupon['TransactionCoupon']['id'] = $data['TransactionCoupon']['id'];
 		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
@@ -128,8 +147,11 @@ public $name = 'TransactionCoupon';
 			throw new Exception('Code apply failed.');
 		}
 	}
-	
-	
+
+/**
+ *
+ * @return array
+ */
 	public function types() {
 		return array(
 			'fixed' => 'Fixed discount for cart total.',
