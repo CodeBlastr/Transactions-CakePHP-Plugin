@@ -23,8 +23,8 @@
 
 <div id="transactionsCheckout" class="transactions checkout form">
     <?php 
-    echo $this->Html->script('plugins/jquery.validate.min', array('inline' => false));
-    echo $this->Html->css('/transactions/css/transactions', null, array('inline' => false));
+    echo $this->Html->script('plugins/jquery.validate.min');
+    echo $this->Html->css('/transactions/css/transactions');
     echo $this->Form->create('Transaction', array('class' => 'form-responsive validate'));     
     
 	if($this->request->data['Customer']['id'] == NULL) {
@@ -107,19 +107,19 @@
                 <table class="table-hover">
                     <tbody>
                         <tr>
-                            <td class="subTotal"><?php echo __d('transactions', 'Subtotal') ?> <td id="TransactionSubtotal" class="total">$<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['sub_total']) ?></span></td>
+                            <td class="subTotal"><?php echo __d('transactions', 'Subtotal') ?> <td id="TransactionSubtotal" class="total text-right">$<span class="floatPrice"><?php echo $this->request->data['Transaction']['sub_total']; ?></span></td>
                         </tr>
                         <tr>
-                            <td class="shippingTotal"><?php echo __('Shipping') ?>  </td><td id="TransactionShipping" class="total">+ $<span class="floatPrice"><?php echo ZuhaInflector::pricify($this->request->data['Transaction']['shipping_charge']) ?></span></td>
+                            <td class="shippingTotal"><?php echo __('Shipping') ?>  </td><td id="TransactionShipping" class="total text-right">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['shipping_charge'] ?></span></td>
                         </tr>
                         <tr>
-                            <td class="discountTotal"><?php echo __('Discount') ?>: </td><td id="TransactionDiscount" class="total"><span class="floatPrice"></span></td></div>
+                            <td class="discountTotal"><?php echo __('Discount') ?>: </td><td id="TransactionDiscount" class="total text-right"><span class="floatPrice"></span></td></div>
                         </tr>
                         <tr>
-                            <td class="taxTotal"><?php echo __('Tax') ?>: </td><td id="TransactionTax" class="total">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['tax_charge']; ?></span></td></div>
+                            <td class="taxTotal"><?php echo __('Tax') ?>: </td><td id="TransactionTax" class="total text-right">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['tax_charge']; ?></span></td></div>
                         </tr>
                         <tr>
-                            <td class="transactionTotal" style="margin: 10px 0; font-weight: bold;">Total </td><td id="TransactionTotal" class="total">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></td>
+                            <td class="transactionTotal" style="margin: 10px 0; font-weight: bold;">Total </td><td id="TransactionTotal" class="total text-right">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -134,6 +134,9 @@
 
 <script type="text/javascript">
 $(function() {
+	// init
+	toggleShippingAddress();
+	
     // hide / show the coupon code input dependent on value
     if (!$("#TransactionCouponCode").val()) {
 	  $("#TransactionCouponCode").parent().hide();
@@ -149,12 +152,8 @@ $(function() {
     }
 
 	// toggle Shipping Address fields
-    $('#TransactionAddress0Shipping').change(function(e){
-	  if ( $('#TransactionAddress0Shipping').prop("checked") ) {
-		  $('#shippingAddress').show('slow');
-	  } else {
-		  $('#shippingAddress').hide('slow');
-	  }
+    $('#TransactionAddress0Shipping').change(function(e) {
+   		toggleShippingAddress();
     });
 
     // handle a submitted code for verification (update total)
@@ -224,6 +223,14 @@ $(function() {
 			subtotal += parseFloat($(this).text());
 		});
 		$('#TransactionSubtotal .floatPrice').text(subtotal.toFixed(2));		
+	}
+	
+	function toggleShippingAddress() {
+		if ( $('#TransactionAddress0Shipping').prop("checked") ) {
+			$('#shippingAddress').show('slow');
+	  	} else {
+			$('#shippingAddress').hide('slow');
+	  	}
 	}
 
     function updateTaxRate() {
