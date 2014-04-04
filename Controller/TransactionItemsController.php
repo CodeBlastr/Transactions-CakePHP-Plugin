@@ -65,12 +65,17 @@ class TransactionItemsController extends TransactionsAppController {
 				  $this->Session->setFlash(__d('transactions', 'Error adding to cart. Please, try again.'), 'flash_warning');
 				  $this->redirect($this->referer());
 				}
-			} catch (Exception $exc) {
-				//$this->Session->setFlash($exc->getMessage());
-				throw new Exception(__d('transactions', $exc->getMessage()));
+			} catch (Exception $e) {
+				$this->Session->setFlash($e->getMessage());
+				$this->redirect($this->referer());
+				// if you change this back, leave a comment for why we're throwing an exception here instead of redirecting
+				// throw new Exception(__d('transactions', $e->getMessage()));
 			}
 		} else {
-		    throw new Exception(__d('transactions', 'Invalid transaction request'));
+			$this->Session->setFlash(__('Invalid transaction request'));
+			$this->redirect($this->referer());
+			// if you change this back, leave a comment for why we're throwing an exception here instead of redirecting
+		    // throw new Exception(__('Invalid transaction request'));
 		}
 	}
 
