@@ -1,36 +1,34 @@
-<?php
-$expand = 'in';
-foreach ($transactions as $transaction) :
-    $i = 0;
-	foreach ($transaction['TransactionItem'] as $item) {
-		$items[$i]['TransactionItem']['id'] = $item['id'];
-		$items[$i]['TransactionItem']['name'] = $item['name'];
-		$items[$i]['TransactionItem']['status'] = $item['status'];
-		$items[$i]['TransactionItem']['foreign_key'] = $item['foreign_key'];
-        $i++;
-	} ?>
-	<div class="dashboardBox <?php echo $expand; ?>">
-		<h3 class="title" data-toggle="collapse" data-target="#demo<?php echo $transaction['Transaction']['id']; ?>"> Transaction from <?php echo ZuhaInflector::datify($transaction['Transaction']['modified']); ?> </h3>
-		<p>
-			<small><?php echo __('<span class="badge badge-info">%s</span> %s %s.', count($items), Inflector::humanize(Inflector::pluralize($item['model'])), $item['status']); ?></small>
-		</p>
-		<div id="demo<?php echo $transaction['Transaction']['id']; ?>" class="collapse <?php echo $expand; ?>">
-			<?php
-			echo !empty($items) ? $this->Element('scaffolds/index', array('data' => $items, 'modelName' => 'TransactionItem', 'actions' => false, 'link' => array('pluginName' => 'products', 'controllerName' => 'products', 'actionName' => 'view', 'pass' => 'foreign_key'))) : null;
-			?>
+<div class="list-group">
+	<?php $expand = 'in'; ?>
+	<?php foreach ($transactions as $transaction) : ?>
+    	<div class="list-group-item clearfix <?php echo $expand; ?>">
+    		<span class="badge badge-info"><?php echo count($transaction['TransactionItem']); ?></span>
+			<h5 class="title pull-left" data-toggle="collapse" data-target="#demo<?php echo $transaction['Transaction']['id']; ?>"> Transactions on <?php echo ZuhaInflector::datify($transaction['Transaction']['modified']); ?> </h5>
+			<div id="demo<?php echo $transaction['Transaction']['id']; ?>" class="collapse <?php echo $expand; ?>">
+				<table>
+					
+				<?php foreach ($transaction['TransactionItem'] as $item) : ?>
+					<tr>
+						<td>
+							<?php echo $item['name']; ?>
+						</td>
+						<td>
+							<?php echo $item['status']; ?>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</table>
+			</div>
 		</div>
-	</div>
-	<?php
-	$expand = 'collapsed';
-	unset($items);
-endforeach;
+		<?php $expand = 'collapsed'; ?>
+		<?php unset($items); ?>
+	<?php endforeach; ?>
+</div>
+<?php if (empty($transactions)) : ?>
+	<div class="well">No previous orders found.</div>
+<?php endif; ?>
 
-if (empty($transactions)) :
-?>
-<div class="well">No previous orders found.</div>
 <?php
-endif;
-
 // set the contextual menu items
 $this->set('context_menu', array('menus' => array(
     array(
