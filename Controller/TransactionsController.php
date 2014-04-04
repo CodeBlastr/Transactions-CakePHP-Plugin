@@ -30,15 +30,6 @@ class AppTransactionsController extends TransactionsAppController {
 	//public $components = array('Ssl', 'Transactions.Payments');
 	public $components = array('Ssl');
 
-
-	public $allowedActions = array(
-		'add',
-		'cart',
-		'merge',
-		'success',
-		'my'
-	);
-
 /**
  * Dashboard method
  *
@@ -218,7 +209,7 @@ class AppTransactionsController extends TransactionsAppController {
 		}
         $this->set('title_for_layout', __('Checkout'));
         $this->set('page_title_for_layout', __('Checkout <small>Please fill in your billing details.</small>'));
-		return array_merge($this->request->data, array('options' => $options)); // for the ajax cart element
+		return is_array($this->request->data) ? array_merge($this->request->data, array('options' => $options)) : array('options' => $options); // for the ajax cart element
 	}
 
 
