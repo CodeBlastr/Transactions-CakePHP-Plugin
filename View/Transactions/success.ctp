@@ -1,8 +1,7 @@
 <h1>Thank you for your purchase !</h1>
 <p>Expect an email with further information. </p>
-
 <?php if(!$userId) { ?>
-<p>Would you like to register an account with us? <a href="#" class="btn">Register Account</a></p>
+	<p>Would you like to register an account with us? <br><a href="/users/users/register" class="btn btn-primary">Register Account</a></p>
 <?php } else {
    echo __('<p>%s</p>', $this->Html->link('View Your Order History', array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'my'))); 
 }
