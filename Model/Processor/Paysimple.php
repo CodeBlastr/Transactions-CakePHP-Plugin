@@ -305,6 +305,26 @@ class Paysimple extends AppModel {
 		if(!empty($arbSettings['FirstPaymentDate'])) {
 			$arbSettings['FirstPaymentDate'] = date('Y-m-d', strtotime(date('Y-m-d') . ' + '.$arbSettings['arb_settings']['FirstPaymentDate'].' days'));
 		}
+		
+		if (!empty($arbSettings['ExecutionFrequencyType']) && is_string($arbSettings['ExecutionFrequencyType'])) {
+			$possibilities = array(
+				'Daily' => 1,
+				'Weekly' => 2,
+				'BiWeekly' => 3,
+				'FirstofMonth' => 4,
+				'SpecificDayofMonth' => 5,
+				'Monthly' => 5, // does not exist with PaySimple, this is an auto setup for us
+				'LastofMonth' => 6,
+				'Quarterly' => 7,
+				'SemiAnnually' => 8,
+				'Annually' => 9
+				);
+			$arbSettings['ExecutionFrequencyType'] = $possibilities[$arbSettings['ExecutionFrequencyType']];
+		}
+		if ($arbSettings['ExecutionFrequencyType'] == 5 && empty($arbSettings['ExecutionFrequencyParameter'])) {
+			// set the date of the payment to today for monthly subscriptions, without a specified date
+			$arbSettings['ExecutionFrequencyParameter'] = date('j'); // 1 - 31
+		}
 		$params = array(
 			'PaymentAmount' => $arbSettings['PaymentAmount'], // required
 			'FirstPaymentAmount' => $arbSettings['FirstPaymentAmount'],
@@ -315,13 +335,12 @@ class Paysimple extends AppModel {
 			'PaymentSubType' => $data[$this->modelName]['paymentSubType'], // required
 			'StartDate' => $arbSettings['StartDate'], // required
 			'EndDate' => $arbSettings['EndDate'],
-			'ScheduleStatus' => 'Active', // required
+			'ScheduleStatus' => 1, // required // Active
 			'ExecutionFrequencyType' => $arbSettings['ExecutionFrequencyType'], // required
-			'ExecutionFrequencyParameter' => $arbSettings['ExecutionFrequencyParameter'],
+			'ExecutionFrequencyParameter' => $arbSettings['ExecutionFrequencyParameter'], // "required":false, "type":"integer","description":"The execution frequency parameter specifies the day of month for a SpecificDayOfMonth frequency or specifies day of week for Weekly or BiWeekly schedule. It is required when ExecutionFrequncyType is SpecificDayofMonth, Weekly or BiWeekly.",
 			'Description' => __SYSTEM_SITE_NAME,
 			'Id' => 0
 		);
-		
 		return $this->_sendRequest('POST', '/recurringpayment', $params);
 	}
 	
