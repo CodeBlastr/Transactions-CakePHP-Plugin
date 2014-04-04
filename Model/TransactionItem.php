@@ -228,7 +228,7 @@ class AppTransactionItem extends TransactionsAppModel {
 
 		if($isArb && count($transaction['TransactionItem']) > 1) {
 			// you can only have one item in your cart if one of the items is using ARB
-			throw new NotFoundException(__d('transactions', 'Item payment plans not compatible.  Please checkout or remove an item.'));;
+			throw new NotFoundException(__('Item incompatible with items already in your cart.  Please checkout or remove an item from cart.'));;
 		} else {
 			return;
 		}
