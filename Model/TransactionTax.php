@@ -196,11 +196,10 @@ class TransactionTax extends TransactionsAppModel {
     }
 
 /**
- * Apply tax
+ * @todo add math for more tax types - We only support state tax at the moment
  *
  * @param array $data
  * @return array
- * @todo add math for more tax types - We only support state tax at the moment
  */
 	public function applyTax($data) {
         $data['Transaction']['tax_charge'] = 0;
