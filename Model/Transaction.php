@@ -220,7 +220,7 @@ class AppTransaction extends TransactionsAppModel {
  *
  * If the customer has checked out before we get their address and merge it into the cart data
  *
- * @param array $cart
+ * @param array $data
  */
 	protected function _prefillAddresses($data) {
 		// get the last used address of the logged in user, if this transaction doesn't already have one
@@ -241,7 +241,7 @@ class AppTransaction extends TransactionsAppModel {
 			}
 			// shipping second
 			$transactionShipping = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'shipping'));
-			if (!empty($transactionBilling)) {
+			if (!empty($transactionShipping)) {
 				$data['TransactionAddress'][] = $transactionShipping['TransactionAddress'];
 			}
 		}
