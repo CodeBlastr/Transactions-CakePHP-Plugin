@@ -1,6 +1,7 @@
 <!--div id="purchaseOrder" class="paymentOption"-->
 	<?php echo $this->Form->input('Transaction.po_number', array('label' => 'PO Number', 'class' => 'purchaseOrder')); ?>
-	<?php echo $this->Html->link('<i class="icon-print"></i> Print Invoice', array('action' => 'pdfInvoice', $this->request->data['Transaction']['id']), array('class' => 'btn btn-info', 'escape' => false)); ?>
+	<?php #echo $this->Html->link('<i class="icon-print"></i> Print Invoice', array('action' => 'pdfInvoice', $this->request->data['Transaction']['id']), array('class' => 'btn btn-info', 'escape' => false)); ?>
+	<button class="btn-info btn purchaseOrder pdfInvoice" type="submit" name="printInvoice" value="printInvoice"><i class="icon-print"></i> Print Invoice</button>
 <!--/div-->
 
 <script type="text/javascript">
