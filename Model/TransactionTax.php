@@ -6,29 +6,24 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  * @property Transaction $Transaction
  */
 class TransactionTax extends TransactionsAppModel {
-    
-public $name = 'TransactionTax';  
+
+	public $name = 'TransactionTax';
+
 /**
- * Display field
- *
  * @var string
  */
     public $displayField = 'name';
-    
+
 /**
- * Acts as
- * 
  * @var array
  */
     public $actsAs = array('Tree');
-    
+
 /**
- * Order
- * 
  * @var array
  */
     public $order = array('name' => 'ASC');
-    
+
 /**
  * Validation rules
  *
@@ -50,8 +45,6 @@ public $name = 'TransactionTax';
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**
- * hasMany associations
- *
  * @var array
  */
 	public $hasMany = array(
@@ -82,7 +75,10 @@ public $name = 'TransactionTax';
 			'counterQuery' => 'SELECT COUNT(*) FROM transaction_taxes as TransactionTax WHERE TransactionTax.id = Transaction.parent_id',
 		    ),
 	    );
-    
+
+/**
+ * @var array
+ */
     public $belongsTo = array(
 		'Parent' => array(
 			'className' => 'Transactions.TransactionTax',
@@ -93,29 +89,31 @@ public $name = 'TransactionTax';
             'counterCache' => 'children'
 	    	),
         );
-    
+
 /**
- * Constructor
+ * 
+ * @param type $id
+ * @param type $table
+ * @param type $ds
  */
 	public function __construct($id = false, $table = null, $ds = null) {
     	parent::__construct($id, $table, $ds);
 		$this->order = array("{$this->alias}.name");
 	}
-    
+
 /**
- * Before save callback
- *
- * @var array $options
+ * 
+ * @param array $options
+ * @return boolean
  */
     public function beforeSave($options = array()) {
         $this->data = $this->_cleanData($this->data);
         return true;
     }
-    
+
 /**
- * After save callback
- *
- * @var bool $created
+ * 
+ * @param boolean $created
  */
     public function afterSave($created) {
         if ($created) {
@@ -128,7 +126,12 @@ public $name = 'TransactionTax';
             }
         }
     }
-    
+
+/**
+ * 
+ * @param array $data
+ * @return string
+ */
     protected function _subRegionData($data) {
         $subRegions = false;
         if (!empty($data['TransactionTax']['code']) && $list = $this->_lists($data['TransactionTax']['code'])) {
@@ -144,9 +147,11 @@ public $name = 'TransactionTax';
         }
         return $subRegions;
     }
-    
+
 /**
  * Which list to use
+ * @param string $code
+ * @return string
  */
     protected function _lists($code) {
         $list = false;
@@ -161,9 +166,11 @@ public $name = 'TransactionTax';
         }
         return $list;
     }
-    
+
 /**
  * Labels by Code
+ * @param string $code
+ * @return string
  */
     protected function _labels($code) {
         $label = 'State Tax';
@@ -171,13 +178,14 @@ public $name = 'TransactionTax';
         if (in_array($code, $labels['VAT'])) {
             $label = 'VAT';
         }
-        
+
         return $label;
     }
-    
+
 /**
- * Clean data
- * 
+ *
+ * @param array $data
+ * @return array
  */
     protected function _cleanData($data) {
         if (!empty($data['TransactionTax']['code']) && empty($data['TransactionTax']['name'])) {
@@ -189,7 +197,7 @@ public $name = 'TransactionTax';
 
 /**
  * Apply tax
- * 
+ *
  * @param array $data
  * @return array
  * @todo add math for more tax types - We only support state tax at the moment
@@ -197,32 +205,32 @@ public $name = 'TransactionTax';
 	public function applyTax($data) {
         $data['Transaction']['tax_charge'] = 0;
         $data['Transaction']['sub_total'] = !empty($data['Transaction']['sub_total']) ? $data['Transaction']['sub_total'] : 0;
-        
+
         if (!empty($data['TransactionAddress'][0])) {
             $addresses = Set::combine($data['TransactionAddress'], '{n}.country', '{n}.state', '{n}.type');
             $country = key($addresses['billing']);
             $state = $addresses['billing'][$country];
             $this->bindModel(array('hasOne' => array('Child' => array('className' => 'Transactions.TransactionTax', 'foreignKey' => 'parent_id', 'conditions' => array('Child.code' => $state)))));
             $tax = $this->find('first', array('conditions' => array('TransactionTax.code' => $country), 'contain' => array('Child')));
-            
+
             if ($tax['Child']['rate']) {
                 $rate = !empty($tax['Child']['rate']) ? $tax['Child']['rate'] / 100 : 0;
                 $data['Transaction']['tax_rate'] = $rate;
                 $data['Transaction']['tax_charge'] = round($data['Transaction']['sub_total'] * $rate, 2);
             }
         }
-        
+
         return $data;
 	}
-    
+
 /**
  * Countries
- * 
+ *
  * @param array $options  ['type' => 'filtered' || 'enabled']
  * @return array
  */
     public function countries($options = array()) {
-        
+
         $countries =  array(
             'ZZ' => 'Everywhere Else',
             'EU*' => 'European Countries',
@@ -472,15 +480,15 @@ public $name = 'TransactionTax';
         if (!empty($options['type']) && $options['type'] == 'filtered') {
             $countries = array_diff_key($countries, $this->find('list', array('conditions' => array('TransactionTax.parent_id' => null), 'fields' => array('TransactionTax.code', 'TransactionTax.name'))));
         }
-        
+
         if (!empty($options['type']) && $options['type'] == 'enabled') {
             $countries = $this->find('list', array('fields' => array('TransactionTax.code', 'TransactionTax.name'), 'conditions' => array('TransactionTax.parent_id' => null)));
             $countries = empty($countries) ? array('US' => 'United States') : $countries;  // a default for new stores that haven't enabled, nor need taxes
         }
-        
+
         return $countries;
     }
-    
+
 /**
  * States
  *
@@ -547,18 +555,18 @@ public $name = 'TransactionTax';
 			'US-WI' => 'Wisconsin',
 			'US-WY' => 'Wyoming',
 			);
-        
+
         if (!empty($options['type']) && $options['type'] == 'enabled') {
             $states = Set::combine($this->find('all', array('fields' => array('TransactionTax.code', 'TransactionTax.name', 'TransactionTax.parent_id', 'Parent.id', 'Parent.code'), 'conditions' => array('TransactionTax.parent_id NOT' => null), 'contain' => 'Parent')), '{n}.TransactionTax.code', '{n}.TransactionTax.name', '{n}.Parent.code');
             $states = empty($states) ? $this->states() : $states;
         }
-        
+
         return $states;
 	}
-    
+
 /**
  * Canadian Provinces
- * 
+ * @return array
  */
     public function provinces() {
         return array(
@@ -576,10 +584,10 @@ public $name = 'TransactionTax';
             'CA-YT' => 'Yukon',
             );
     }
-    
+
 /**
  * Australian Territories
- * 
+ * @return array
  */
     public function territories() {
         return array(
@@ -588,25 +596,25 @@ public $name = 'TransactionTax';
             'AU-JBT' => 'Jervis Bay Territory',
             'AU-NSW' => 'New South Wales',
             'AU-NT' => 'Northern Territory',
-            'AU-QLD' => 'Queensland', 
+            'AU-QLD' => 'Queensland',
             'AU-SA' => 'South Australia',
             'AU-TAS' => 'Tasmania',
             'AU-VIC' => 'Victoria',
             'AU-WA' => 'Western Australia',
             );
     }
-    
+
 /**
  * Types of Tax Calculations
- * 
+ * @param array $parent
  * @return array
  */
 	public function types($parent = null) {
         $message = !empty($parent) ? $parent['TransactionTax']['rate'] . '% ' .$parent['TransactionTax']['name'] . ' rate' : __('parent rate');
 		return array(
 			'added' => __('Added to %s', $message), // added to [Parent.rate]% [Parent.name]
-			'instead' => __('Instead of %s', $message), // Instead of [Parent.rate]% [Parent.name] 
-    		'compound' => __('Compounded on top of %s', $message), // Instead of [Parent.rate]% [Parent.name] 
+			'instead' => __('Instead of %s', $message), // Instead of [Parent.rate]% [Parent.name]
+    		'compound' => __('Compounded on top of %s', $message), // Instead of [Parent.rate]% [Parent.name]
 			);
 	}
 
