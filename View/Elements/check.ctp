@@ -24,9 +24,9 @@
 
 		document.changeToCheck = function changeToCheck() {
 			$("#creditCardInfo, #echeckInfo").children().removeClass('required');
-			$('.paysimpleCc').parent().parent().hide();
-			$('.paysimpleCheck').parent().parent().hide();
-			$('.purchaseOrder').parent().parent().hide();
+			$('.paysimpleCc').closest('tr.input').hide();
+			$('.paysimpleCheck').closest('tr.input').hide();
+			$('.purchaseOrder').closest('tr.input').hide();
 			$('.pdfInvoice').hide();
 			$('.payByCheck.pdfInvoice').show();
 		};
