@@ -83,8 +83,8 @@ public $name = 'TransactionCoupon';
 
         // similar to apply but don't mark as used
 		if (!empty($data['TransactionCoupon']['code'])) {
-			$condtions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
-			$coupon = $this->find('first', array('conditions' => $condtions));
+			$conditions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
+			$coupon = $this->find('first', array('conditions' => $conditions));
 
 			if (empty($coupon)) {
 				throw new Exception('Code out of date or does not apply.');
