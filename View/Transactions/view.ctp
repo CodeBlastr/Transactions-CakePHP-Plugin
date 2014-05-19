@@ -83,6 +83,7 @@
             <tr>
     			<th><?php echo $this->Paginator->sort('TransactionItem.name', 'Item');?></th>
         		<th><?php echo $this->Paginator->sort('TransactionItem.price', 'Price');?></th>
+        		<th><?php echo $this->Paginator->sort('TransactionItem.comments', 'Comments');?></th>
         		<th><?php echo $this->Paginator->sort('TransactionItem.quantity', 'Qty');?></th>
     			<th><?php echo $this->Paginator->sort('TransactionItem.tracking_no', 'Tracking #');?></th>
         		<th><?php echo $this->Paginator->sort('TransactionItem.status', 'Status');?></th>
@@ -101,6 +102,7 @@
             			<?php echo !empty($item['_associated']['seller']) ? __('(Seller : %s)', $this->Html->link($item['_associated']['seller']['username'], array('admin' => false, 'plugin' => 'users', 'controller' => 'users', 'action' => 'view', $item['_associated']['seller']['id']))) : null; ?>
             		</td>
                 	<td><?php echo __('$%s', ZuhaInflector::pricify($item['price'])); ?></td>
+                	<td><?php echo $item['comments']; ?></td>
                 	<td><?php echo $item['quantity']; ?></td>
                 	<td><?php echo $this->Form->input('TransactionItem.'.$i.'.tracking_no', array('value' => $item['tracking_no'], 'label' => false, 'class' => 'span')); ?></td>
                     <td><?php echo $this->Form->input('TransactionItem.'.$i.'.status', array('value' => $item['status'], 'label' => false, 'class' => 'span')); ?></td>
