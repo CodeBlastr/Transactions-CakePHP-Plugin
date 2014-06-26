@@ -106,16 +106,29 @@
 
     <div class="tagProducts span3 col-md-4 last">
         <ul class="list-group">
-            <?php 
-            $counts['open'] = !empty($counts['open']) ? __('<span class="badge badge-inverse">%s</span>', $counts['open']) : '<span class="badge">0</span>';
-            $counts['shipped'] = !empty($counts['shipped']) ? __('<span class="badge badge-info">%s</span>', $counts['shipped']) : '<span class="badge">0</span>';
-            $counts['paid'] = !empty($counts['paid']) ? __('<span class="badge badge-success">%s</span>', $counts['paid']) : '<span class="badge">0</span>';
-            $counts['failed'] = !empty($counts['failed']) ? __('<span class="badge badge-important">%s</span>', $counts['failed']) : '<span class="badge">0</span>';
-            foreach (array_reverse($transactionStatuses) as $key => $status) : ?>
-                <?php echo $this->Html->link(__('%s %s Transactions', $counts[strtolower($status)], $status), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'filter' => 'status:' . $key, 'sort' => 'Transaction.created', 'direction' => 'desc'), array('escape' => false, 'class' => 'list-group-item')); ?></li>
-            <?php endforeach; ?>
-            <?php echo $this->Html->link(__('%s In Cart Transactions', $counts['open']), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index', 'filter' => 'status:open', 'sort' => 'Transaction.created', 'direction' => 'desc'), array('escape' => false, 'class' => 'list-group-item')); ?>
-            <?php echo $this->Html->link(__('My Assigned Transactions'), array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_items', 'action' => 'index', 'filter' => 'assignee_id:'.$this->Session->read('Auth.User.id')), array('class' => 'list-group-item')); ?>
+            <?php
+            $counts['open'] = __('<span class="badge alert-warning">%s</span>', $counts['open']);
+            $counts['shipped'] = __('<span class="badge alert-info">%s</span>', $counts['shipped']);
+            $counts['paid'] = __('<span class="badge alert-success">%s</span>', $counts['paid']);
+            $counts['failed'] = __('<span class="badge alert-danger">%s</span>', $counts['failed']);
+            foreach (array_reverse($transactionStatuses) as $key => $status) {
+				if (is_numeric($counts[strtolower($status)])) {
+					$counts[strtolower($status)] = __('<span class="badge">%s</span>', $counts[strtolower($status)]);
+				}
+                echo $this->Html->link(__('%s %s Transactions', $counts[strtolower($status)], $status), array(
+					'admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index',
+					'filter' => 'status:' . $key, 'sort' => 'Transaction.created', 'direction' => 'desc'
+					), array('escape' => false, 'class' => 'list-group-item'));
+            }
+            echo $this->Html->link(__('%s In Cart Transactions', $counts['open']), array(
+				'admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index',
+				'filter' => 'status:open', 'sort' => 'Transaction.created', 'direction' => 'desc'
+				), array('escape' => false, 'class' => 'list-group-item'));
+            echo $this->Html->link(__('My Assigned Transactions'), array(
+				'admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_items', 'action' => 'index',
+				'filter' => 'assignee_id:'.$this->Session->read('Auth.User.id')
+				), array('class' => 'list-group-item'));
+			?>
         </ul>
     </div>
 

@@ -37,13 +37,19 @@ class AppTransactionsController extends TransactionsAppController {
  */
  	public function dashboard() {
  		$this->redirect('admin');
-		$this->set('counts', $counts = array_count_values(array_filter(Set::extract('/Transaction/status', $this->Transaction->find('all')))));
+		$transactionStatuses = $this->Transaction->statuses();
+		$counts =
+				Hash::merge(
+						array_fill_keys(array_keys($transactionStatuses), 0),
+						array_count_values(array_filter(Set::extract('/Transaction/status', $this->Transaction->find('all'))))
+				);
+		$this->set('counts', $counts);
 		$this->set('statsSalesToday', $this->Transaction->salesStats('today'));
 		$this->set('statsSalesThisWeek', $this->Transaction->salesStats('thisWeek'));
 		$this->set('statsSalesThisMonth', $this->Transaction->salesStats('thisMonth'));
 		$this->set('statsSalesThisYear', $this->Transaction->salesStats('thisYear'));
 		$this->set('statsSalesAllTime', $this->Transaction->salesStats('allTime'));
-		$this->set('transactionStatuses', $this->Transaction->statuses());
+		$this->set('transactionStatuses', $transactionStatuses);
 		$this->set('itemStatuses', $this->Transaction->TransactionItem->statuses());
 		$this->set('title_for_layout', __('Ecommerce Dashboard'));
 		$this->set('page_title_for_layout', __('Ecommerce Dashboard'));
@@ -132,12 +138,13 @@ class AppTransactionsController extends TransactionsAppController {
 		} else {
 			$this->request->data = $this->Transaction->read(null, $id);
 		}
+		$transactionStatuses = $this->Transaction->statuses();
 		$transactionAddresses = $this->Transaction->TransactionAddress->find('list');
 		$transactionCoupons = $this->Transaction->TransactionCoupon->find('list');
 		$customers = $this->Transaction->Customer->find('list');
 		$contacts = $this->Transaction->Contact->find('list');
 		$assignees = $this->Transaction->Assignee->find('list');
-		$this->set(compact('transactionAddresses', 'transactionCoupons', 'customers', 'contacts', 'assignees'));
+		$this->set(compact('transactionAddresses', 'transactionCoupons', 'customers', 'contacts', 'assignees', 'transactionStatuses'));
 	}
 
 /**
