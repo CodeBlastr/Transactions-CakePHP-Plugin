@@ -143,7 +143,7 @@ class BraintreePayment extends AppModel {
                 'submitForSettlement' => true,
                 'holdInEscrow' => true,
             );
-            $params['serviceFeeAmount'] = 10;
+            $params['serviceFeeAmount'] = $data['Transaction']['total'] * ($this->config['serviceFee']/100);
             $params['merchantAccountId'] = $subMerchant;
 
         }
