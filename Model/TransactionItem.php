@@ -196,7 +196,7 @@ class AppTransactionItem extends TransactionsAppModel {
  * @todo check stock and cart max and ARB
  * @param array $data
  */
-    public function verifyItemRequest($data) {
+    public function verifyItemRequest($data,$callback = null) {
 
 		// check for a model
 		if(empty($data['TransactionItem']['model'])) {
@@ -210,6 +210,7 @@ class AppTransactionItem extends TransactionsAppModel {
 			'conditions' => array('id' => $this->Transaction->id),
 			'contain' => 'TransactionItem'
 			));
+
         if (!empty($transaction['TransactionItem'])) {
             foreach ($transaction['TransactionItem'] as $transactionItem) {
 
@@ -311,6 +312,10 @@ class AppTransactionItem extends TransactionsAppModel {
             $statuses[Inflector::underscore($status)] = $status;
         }
         return Set::merge(array('incart' => 'In Cart', 'paid' => 'Paid', 'shipped' => 'Shipped', 'used' => 'Used'), $statuses);
+    }
+
+    public function changeStatus($id,$status = 'used'){
+
     }
 
 }

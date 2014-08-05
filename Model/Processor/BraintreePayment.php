@@ -54,10 +54,11 @@ class BraintreePayment extends AppModel {
 
 		try {
 
-            $paymentData = $this->createPayment($data);
+            $paymentData = $this->doSales($data);
             if($paymentData){
 
                 $data[$this->modelName]['processor_response'] = $paymentData->transaction->processorResponseText;
+                $data[$this->modelName]['processor_transaction_id'] = $paymentData->transaction->id;
                 $data[$this->modelName]['Payment'] = $paymentData;
                 $data[$this->modelName]['status'] = $paymentData->success ? $this->statusTypes['paid'] : $this->statusTypes['failed'];
             }else{
@@ -118,12 +119,38 @@ class BraintreePayment extends AppModel {
         }
     }
 
-    public function createPayment($data) {
+    private function isNeedEscrow($data){
+        $item = $data['TransactionItem'][0];
+        if(is_null($item['is_virtual']) || empty($item['is_virtual'])){
+            return true;
+        }
+        return false;
+    }
+
+    public function doSales($data) {
         $data['brainTree']['creditCard']['expirationDate'] = $data['brainTree']['creditCard']['month'] . '/' . $data['brainTree']['creditCard']['year'];
         unset($data['brainTree']['creditCard']['year'],$data['brainTree']['creditCard']['month']);
         $params['creditCard'] = $data['brainTree']['creditCard'];
         $params['amount'] = $data['Transaction']['total'];
+        $params['orderId'] = $data['Transaction']['id'];
+
+        if($this->isNeedEscrow($data)){
+            $subMerchant = $data['TransactionItem'][0]['_associated']['seller']['merchant_account'];
+            if(empty($subMerchant)){
+               throw new Exception('Seller does not have funding account');
+            }
+            $params['options'] = array(
+                'submitForSettlement' => true,
+                'holdInEscrow' => true,
+            );
+            $params['serviceFeeAmount'] = 10;
+            $params['merchantAccountId'] = $subMerchant;
+
+        }
+
         return Braintree_Transaction::sale($params);
+
+
     }
 
 

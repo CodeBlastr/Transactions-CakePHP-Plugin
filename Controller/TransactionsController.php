@@ -36,11 +36,8 @@ class AppTransactionsController extends TransactionsAppController {
 
     public function beforeFilter() {
         parent::beforeFilter();
-        if(in_array($this->request->params['action'],array('addfundingaccount','updatefundingaccount'))){
-            App::uses('BraintreePayment', 'Transactions.Model/Processor');
-            $this->BraintreePayment = new BraintreePayment();
-
-        }
+        App::uses('BraintreePayment', 'Transactions.Model/Processor');
+        $this->BraintreePayment = new BraintreePayment();
     }
 
 /**
@@ -303,8 +300,8 @@ class AppTransactionsController extends TransactionsAppController {
     public function my() {
 		if ($this->Session->read('Auth.User.id')) {
 			$this->set('title_for_layout', __('Order History | ' . __SYSTEM_SITE_NAME));
-			$this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
-			$this->paginate['contain'] = 'TransactionItem';
+			$this->Paginator->settings['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
+            $this->Paginator->settings['contain'] = array('TransactionItem');
 			//$this->Transaction->recursive = 2;
 			$this->set('transactions', $this->paginate());
 		} else {

@@ -182,6 +182,6 @@ $merchantId = $this->Session->read('Auth.User.merchant_account');
     </style>
 <?php else: ?>
     <div>
-        <p>You already created an account, you can click <a href="/users/users/editaccount">here</a> edit it.</p>
+        <h2>You already created an account, <?php echo $this->Html->link('Edit Funding Account', array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'updatefundingaccount')); ?></h2>
     </div>
 <?php endif; ?>

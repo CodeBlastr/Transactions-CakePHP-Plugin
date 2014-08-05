@@ -14,7 +14,10 @@ $merchantId = $this->Session->read('Auth.User.merchant_account');
         <caption style="text-align: left;font-weight: bold">Bank information</caption>
 
         <tbody>
-
+        <tr>
+            <td class="funding-table-title">Account ID</td>
+            <td><?php echo $this->Session->read('Auth.User.merchant_account'); ?></td>
+        </tr>
         <tr>
             <td class="funding-table-title">Bank Account#</td>
             <td><?php echo $this->Form->input('merchant.funding.accountNumber', array('label' => false, 'div' => false, 'required' => 'required', 'placeholder' => 'Account Number', 'autocomplete' => 'off', 'class' => 'form-control')); ?></td>
@@ -177,7 +180,7 @@ $merchantId = $this->Session->read('Auth.User.merchant_account');
     </style>
 <?php else: ?>
     <div>
-        <p>You don't have any account, please click <a href="/users/users/addaccount">here</a> create one</p>
+        <h2>You don't have any account, please <?php echo $this->Html->link('Add Funding Account', array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'addfundingaccount')); ?></h2>
     </div>
 
 <?php endif;?>
