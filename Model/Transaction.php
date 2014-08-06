@@ -224,7 +224,7 @@ class AppTransaction extends TransactionsAppModel {
  */
 	protected function _prefillAddresses($data) {
 		// get the last used address of the logged in user, if this transaction doesn't already have one
-		if (empty($data['TransactionAddress']) && CakeSession::read('Auth.User.id')) {
+		if (empty($data['TransactionAddress']) && !empty(CakeSession::read('Auth.User.id'))) {
 			// billing first
 			$transactionBilling = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'billing'));
 			// if transactionBilling is empty let's fill it with session vars
