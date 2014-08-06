@@ -113,10 +113,10 @@
                             <td class="shippingTotal"><?php echo __('Shipping') ?>  </td><td id="TransactionShipping" class="total text-right">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['shipping_charge'] ?></span></td>
                         </tr>
                         <tr>
-                            <td class="discountTotal"><?php echo __('Discount') ?>: </td><td id="TransactionDiscount" class="total text-right"><span class="floatPrice"></span></td></div>
+                            <td class="discountTotal"><?php echo __('Discount') ?>: </td><td id="TransactionDiscount" class="total text-right"><span class="floatPrice"></span></td>
                         </tr>
                         <tr>
-                            <td class="taxTotal"><?php echo __('Tax') ?>: </td><td id="TransactionTax" class="total text-right">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['tax_charge']; ?></span></td></div>
+                            <td class="taxTotal"><?php echo __('Tax') ?>: </td><td id="TransactionTax" class="total text-right">+ $<span class="floatPrice"><?php echo $this->request->data['Transaction']['tax_charge']; ?></span></td>
                         </tr>
                         <tr>
                             <td class="transactionTotal" style="margin: 10px 0; font-weight: bold;">Total </td><td id="TransactionTotal" class="total text-right">$<span class="floatPrice"><?php echo $pricifiedOrderTotal ?></span></td>
