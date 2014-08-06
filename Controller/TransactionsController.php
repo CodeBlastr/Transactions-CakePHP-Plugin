@@ -36,8 +36,11 @@ class AppTransactionsController extends TransactionsAppController {
 
     public function beforeFilter() {
         parent::beforeFilter();
-        App::uses('BraintreePayment', 'Transactions.Model/Processor');
-        $this->BraintreePayment = new BraintreePayment();
+        if(defined('__TRANSACTIONS_BRAINTREE')){
+            App::uses('BraintreePayment', 'Transactions.Model/Processor');
+            $this->BraintreePayment = new BraintreePayment();
+        }
+
     }
 
 /**
