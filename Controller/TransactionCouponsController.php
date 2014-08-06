@@ -1,5 +1,7 @@
 <?php
+
 App::uses('TransactionsAppController', 'Transactions.Controller');
+
 /**
  * TransactionCoupons Controller
  *
@@ -9,7 +11,7 @@ class TransactionCouponsController extends TransactionsAppController {
 
 	public $name = 'TransactionCoupons';
 	public $uses = 'Transactions.TransactionCoupon';
-	
+
 /**
  * index method
  *
@@ -73,7 +75,7 @@ class TransactionCouponsController extends TransactionsAppController {
 		} else {
 			$this->request->data = $this->TransactionCoupon->read(null, $id);
 		}
-        $this->set('discountTypes', $this->TransactionCoupon->types()); 
+		$this->set('discountTypes', $this->TransactionCoupon->types());
 	}
 
 /**
@@ -97,18 +99,17 @@ class TransactionCouponsController extends TransactionsAppController {
 		$this->Session->setFlash(__('Transaction coupon was not deleted'), 'flash_danger');
 		$this->redirect(array('action' => 'index'));
 	}
-	
-	
+
 /**
  * currently used at transactions/transactions/cart only
  */
-	public function verify() { 
-  		try {
+	public function verify() {
+		try {
 			$this->request->data = $this->TransactionCoupon->verify($this->request->data);
 			$this->set('data', $this->request->data);
 		} catch (Exception $e) {
 			throw new Exception(__($e->getMessage()));
 		}
-    }
-	
+	}
+
 }
