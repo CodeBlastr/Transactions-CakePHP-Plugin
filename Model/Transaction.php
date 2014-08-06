@@ -398,9 +398,6 @@ class AppTransaction extends TransactionsAppModel {
 			if (!$isLoggedIn) {
 				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
 				$this->Customer->add($data);
-				debug($this->Customer->id);
-				debug($this->Contact->User->id);
-				exit;
 				// Refactor their $data with their new Customer.id  (it's kind of odd how you get $this->Contact here, but its because Customer is User and User uses Contact first then adds a User -- if that helps :)
 				$userId = !empty($this->Contact->User->id) ? $this->Contact->User->id : $this->Customer->id;
 				$data['Transaction']['customer_id'] = $userId;
