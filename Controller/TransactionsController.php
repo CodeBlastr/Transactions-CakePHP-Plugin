@@ -5,6 +5,8 @@ App::uses('TransactionsAppController', 'Transactions.Controller');
  * Transactions Controller
  *
  * @property Transaction $Transaction
+ * @property BraintreePayment BraintreePayment
+ * @property User User
  */
 class AppTransactionsController extends TransactionsAppController {
 
@@ -29,6 +31,17 @@ class AppTransactionsController extends TransactionsAppController {
  */
 	//public $components = array('Ssl', 'Transactions.Payments');
 	public $components = array('Ssl');
+
+
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+        if(defined('__TRANSACTIONS_BRAINTREE')){
+            App::uses('BraintreePayment', 'Transactions.Model/Processor');
+            $this->BraintreePayment = new BraintreePayment();
+        }
+
+    }
 
 /**
  * Dashboard method
@@ -61,8 +74,13 @@ class AppTransactionsController extends TransactionsAppController {
  * @return void
  */
 	public function index() {
+
+
         $this->Transaction->contain(array('TransactionAddress', 'TransactionItem', 'Customer')); // contained items for the csv output
 		$this->paginate['order'] = array('Transaction.modified' => 'DESC');
+        if(!$this->isSiteAdmin()){
+            $this->paginate['conditions'] = array('customer_id' => $this->userId);
+        }
 		$this->set('transactions', $this->paginate());
 		$type = !empty($this->request->named['filter']) ? str_replace('status:', '', $this->request->named['filter']) : 'All';
 		$this->set('title_for_layout', __('%s Transactions', Inflector::humanize($type)));
@@ -285,8 +303,8 @@ class AppTransactionsController extends TransactionsAppController {
     public function my() {
 		if ($this->Session->read('Auth.User.id')) {
 			$this->set('title_for_layout', __('Order History | ' . __SYSTEM_SITE_NAME));
-			$this->paginate['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
-			$this->paginate['contain'] = 'TransactionItem';
+			$this->Paginator->settings['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
+            $this->Paginator->settings['contain'] = array('TransactionItem');
 			//$this->Transaction->recursive = 2;
 			$this->set('transactions', $this->paginate());
 		} else {
@@ -343,6 +361,56 @@ class AppTransactionsController extends TransactionsAppController {
  			$this->request->data['Setting']['value']['body'] = stripcslashes($email['body']);
  		}
  	}
+
+
+    public function addfundingaccount(){
+
+        if($this->request->is('post')){
+            try{
+
+                $result = $this->BraintreePayment->createSubMerchantFundingAccount($this->request->data['merchant']);
+                if($result){
+                    $this->loadModel('Users.User');
+                    $this->User->autoLogin = false;
+                    $newData = array('id' => $this->userId,'merchant_account' => $this->request->data['merchant']['id']);
+                    $this->User->id = $this->userId;
+                    $this->User->save($newData);
+                    $this->Session->write('Auth.User.merchant_account',$this->request->data['merchant']['id']);
+                    $this->Session->setFlash('add funding account success');
+                    $this->redirect('/users/users/my');
+                }
+            }catch(Exception $e){
+                $this->Session->setFlash($e->getMessage());
+            }
+        }
+    }
+    public function updatefundingaccount(){
+
+        if($this->request->is('post')){
+
+            $this->request->data['merchant']['id'] = $this->Session->read('Auth.User.merchant_account');
+
+            $result = $this->BraintreePayment->updateSubMerchantFundingAccount($this->request->data['merchant']);
+
+            if($result){
+                $this->Session->setFlash('funding account edit success');
+                $this->redirect('/users/users/my');
+            }else{
+                $this->Session->setFlash($result->message);
+            }
+
+
+        }
+
+
+
+        $account = $this->BraintreePayment->getSubMerchantFundingAccount($this->Session->read('Auth.User.merchant_account'));
+        $this->request->data['merchant']['individual'] = $account->individual;
+        $this->request->data['merchant']['business'] = $account->business;
+        $this->request->data['merchant']['funding'] = $account->funding;
+    }
+
+
 
 /**
  * Redirect method

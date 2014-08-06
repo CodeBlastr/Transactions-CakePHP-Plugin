@@ -63,7 +63,7 @@
                                         Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' m';
                                 }
                             },
-        
+
                             series: [{
                                 name: 'Orders',
                                 // Define the data points. All series have a dummy year
@@ -101,8 +101,8 @@
             </div>
         </div>
     </div>
-    
-    
+
+
 
     <div class="tagProducts span3 col-md-4 last">
         <ul class="list-group">
@@ -159,7 +159,7 @@
         </ul>
     </div>
     <div class="span3 col-sm-3">
-        
+
         <ul class="nav nav-list">
         	<li class="dropdown-header">Brands</li>
             <li><?php echo $this->Html->link('List All Brands', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'index')); ?></li>
@@ -192,19 +192,19 @@
 <?php
 // set contextual search options
 $this->set('forms_search', array(
-    'url' => '/products/products/index/', 
+    'url' => '/products/products/index/',
 	'inputs' => array(
 		array(
-			'name' => 'contains:name', 
+			'name' => 'contains:name',
 			'options' => array(
-				'label' => '', 
+				'label' => '',
 				'placeholder' => 'Product Search',
 				'value' => !empty($this->request->params['named']['contains']) ? substr($this->request->params['named']['contains'], strpos($this->request->params['named']['contains'], ':') + 1) : null,
 				)
 			),
 		)
 	));
-	
+
 // set the contextual breadcrumb items
 $this->set('context_crumbs', array('crumbs' => array(
 	$this->Html->link(__('Admin Dashboard'), '/admin'),

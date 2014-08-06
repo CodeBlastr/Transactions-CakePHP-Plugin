@@ -112,7 +112,11 @@ class BuyableBehavior extends ModelBehavior {
  */
 	public function loadProcessor($processor = array()) {
         if (!empty($processor)) {
-			App::uses($processor, 'Transactions.Model/Processor');
+
+            if(strcasecmp('braintree',$processor) == 0){
+                $processor .= 'Payment';
+            }
+            App::uses($processor, 'Transactions.Model/Processor');
 			$this->Processor = new $processor;
 			$this->Processor->modelName = !empty($this->settings['buyModel']) ? $this->settings['buyModel'] : 'Transaction';
 			$this->Processor->statusTypes = $this->statusTypes;
@@ -176,7 +180,7 @@ class BuyableBehavior extends ModelBehavior {
  	// was ManageRecurringPaymentsProfileStatus
 	public function editPaymenProfile($data = null) {
 		debug($data);
-		break;
+		exit;
 		
 		$this->loadComponent(ucfirst(strtolower($data['Mode'])));
 		$this->paymentComponent->ManageRecurringPaymentsProfileStatus($data['profileId'], $data['action']);
