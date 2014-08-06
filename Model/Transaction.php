@@ -312,8 +312,8 @@ class AppTransaction extends TransactionsAppModel {
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
 
         //Check Transaction Coupon code empty or not
-        if ($officialTransaction['TransactionCoupon']['code']!='') {
-           $officialTransaction = $this->TransactionCoupon->verify($officialTransaction);
+        if (!empty($officialTransaction['TransactionCoupon']['code'])) {
+           $officialTransaction = $this->TransactionCoupon->apply($officialTransaction);
         }
 
    		$officialTransaction = $this->finalizeUserData($officialTransaction);
