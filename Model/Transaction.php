@@ -224,9 +224,10 @@ class AppTransaction extends TransactionsAppModel {
  */
 	protected function _prefillAddresses($data) {
 		// get the last used address of the logged in user, if this transaction doesn't already have one
-		if (empty($data['TransactionAddress']) && !empty(CakeSession::read('Auth.User.id'))) {
+		$authUserId = CakeSession::read('Auth.User.id');
+		if (empty($data['TransactionAddress']) && !empty($authUserId)) {
 			// billing first
-			$transactionBilling = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'billing'));
+			$transactionBilling = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => $authUserId), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'billing'));
 			// if transactionBilling is empty let's fill it with session vars
 			if (empty($transactionBilling) && CakeSession::read('Auth.User')) {
 				$transactionBilling['TransactionAddress']['first_name'] = CakeSession::read('Auth.User.first_name');
@@ -234,13 +235,13 @@ class AppTransaction extends TransactionsAppModel {
 				$transactionBilling['TransactionAddress']['email'] = CakeSession::read('Auth.User.email');
 				$transactionBilling['TransactionAddress']['zip'] = CakeSession::read('Auth.User.zip');
 				$transactionBilling['TransactionAddress']['country'] = CakeSession::read('Auth.User.email');
-				$transactionBilling['TransactionAddress']['user_id'] = CakeSession::read('Auth.User.id');
+				$transactionBilling['TransactionAddress']['user_id'] = $authUserId;
 			}
 			if (!empty($transactionBilling)) {
 				$data['TransactionAddress'][] = $transactionBilling['TransactionAddress'];
 			}
 			// shipping second
-			$transactionShipping = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => CakeSession::read('Auth.User.id')), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'shipping'));
+			$transactionShipping = $this->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.user_id' => $authUserId), 'order' => array('TransactionAddress.modified' => 'DESC'), 'type' => 'shipping'));
 			if (!empty($transactionShipping)) {
 				$data['TransactionAddress'][] = $transactionShipping['TransactionAddress'];
 			}
@@ -397,6 +398,9 @@ class AppTransaction extends TransactionsAppModel {
 			if (!$isLoggedIn) {
 				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
 				$this->Customer->add($data);
+				debug($this->Customer->id);
+				debug($this->Contact->User->id);
+				exit;
 				// Refactor their $data with their new Customer.id  (it's kind of odd how you get $this->Contact here, but its because Customer is User and User uses Contact first then adds a User -- if that helps :)
 				$userId = !empty($this->Contact->User->id) ? $this->Contact->User->id : $this->Customer->id;
 				$data['Transaction']['customer_id'] = $userId;
@@ -406,8 +410,7 @@ class AppTransaction extends TransactionsAppModel {
 					$transactionAddress['user_id'] = $userId;
 				}
 			} else {
-				$data['Transaction']['customer_id'] = CakeSession::read('Auth.User.id');
-				$data['Customer']['id'] = CakeSession::read('Auth.User.id');
+				$data['Transaction']['customer_id'] = $data['Customer']['id'] = CakeSession::read('Auth.User.id');
 			}
 			foreach ($data['TransactionItem'] as &$transactionItem) {
 				$transactionItem['status'] = 'paid';
