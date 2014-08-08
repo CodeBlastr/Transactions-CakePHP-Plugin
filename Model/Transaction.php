@@ -537,7 +537,7 @@ class AppTransaction extends TransactionsAppModel {
  *
  * @todo This could probably be done in one query, then shaped with PHP ?
  *
- * @param string $param
+ * @param string $period
  * @return array|boolean
  */
 	public function salesStats($period) {
