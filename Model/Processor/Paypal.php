@@ -24,6 +24,11 @@ class Paypal extends AppModel {
 		}
 	}
 
+/**
+ * 
+ * @param type $data
+ * @throws Exception
+ */
 	public function pay($data) {
 		try {
 			$this->getAccessToken();
@@ -85,7 +90,10 @@ class Paypal extends AppModel {
 		}
 	}
 
-
+/**
+ * 
+ * @throws Exception
+ */
 	public function getAccessToken() {
 		$data = 'grant_type=client_credentials';
 		$ch = curl_init();
@@ -111,7 +119,12 @@ class Paypal extends AppModel {
 		}
 	}
 	
-	
+/**
+ * 
+ * @param type $payerId
+ * @return boolean
+ * @throws Exception
+ */
 	public function executePayment($payerId) {
 		$data = '{ "payer_id" : "'.$payerId.'"}';
 		$ch = curl_init();
