@@ -30,7 +30,7 @@ class AppTransactionsController extends TransactionsAppController {
  * @var array
  */
 	//public $components = array('Ssl', 'Transactions.Payments');
-	public $components = array('Ssl');
+	public $components = array('Ssl', 'Paginator');
 
 
 
@@ -306,7 +306,7 @@ class AppTransactionsController extends TransactionsAppController {
 			$this->Paginator->settings['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
             $this->Paginator->settings['contain'] = array('TransactionItem');
 			//$this->Transaction->recursive = 2;
-			$this->set('transactions', $this->paginate());
+			$this->set('transactions', $this->Paginator->paginate('Transaction'));
 		} else {
 			$this->redirect('/');
 		}
