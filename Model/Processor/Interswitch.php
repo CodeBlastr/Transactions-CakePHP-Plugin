@@ -73,7 +73,6 @@ class Interswitch extends AppModel {
 	}
 
 	public function executePayment($data) {
-		$amount = $data['total'];
 		$hash = $data['key'];
 		$txRef = $data['order_number'];
 		$msg = base64_decode($data['response_msg']);
