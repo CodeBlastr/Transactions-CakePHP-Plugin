@@ -38,27 +38,79 @@
 		    <div id="transactionAddress">
 			    <fieldset id="billingAddress" class="control-group">
     				<legend><?php echo __d('transactions', 'Billing Details'); ?></legend>
-    				<?php
-        			echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required'))));
-    				echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required email'));
-                    echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required', 'type' => 'select', 'options' => $options['countries']));
-    				echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required'));
-    				echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2'));
-    				echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required', 'after' => $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'data-mask' => '99999')) ));
-    				echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'data-mask' => '(999) 999-9999'));
-                    echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing'));
-    				echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your billing address.')) : null; ?>
+    				<?php echo $this->Form->hidden('TransactionAddress.0.type', array('value' => 'billing')); ?>
+    				<div class="row">
+	    				<div class="col-sm-6">
+	    					<?php echo $this->Form->input('TransactionAddress.0.first_name', array('class' => 'required')); ?>
+	    				</div>
+	    				<div class="col-sm-6">
+	    					<?php echo $this->Form->input('TransactionAddress.0.last_name', array('class' => 'required')); ?>
+	    				</div>
+	    			</div>
+	    			<div class="row">
+	    				<div class="col-sm-6">
+	    					<?php echo $this->Form->input('TransactionAddress.0.email', array('class' => 'required email')); ?>
+	    				</div>
+	    				<div class="col-sm-6">
+	    					<?php echo $this->Form->input('TransactionAddress.0.phone', array('label' => 'Phone', 'class' => 'required', 'data-mask' => '(999) 999-9999')); ?>
+	    				</div>
+	    			</div>
+    				<div class="row">
+    					<div class="col-sm-6">
+    						<?php echo $this->Form->input('TransactionAddress.0.street_address_1', array('label' => 'Street', 'class' => 'required')); ?>
+    					</div>
+    					<div class="col-sm-6">
+    						<?php echo $this->Form->input('TransactionAddress.0.street_address_2', array('label' => 'Street 2')); ?>
+    					</div>
+    				</div>
+    				<div class="row">
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.0.city', array('label' => 'City ', 'class' => 'required')); ?>
+    					</div>
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.0.state', array('label' => 'State ', 'class' => 'required', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])); ?>
+    					</div>
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.0.zip', array('label' => 'Zip ', 'class' => 'required', 'data-mask' => '99999')); ?>
+    					</div>
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.0.country', array('label' => 'Country', 'class' => 'required', 'type' => 'select', 'options' => $options['countries'])); ?>
+    					</div>
+    				</div>
+    				
+                    <div class="row">
+                    	<div class="col-sm-12">
+                    		<?php echo $options['displayShipping'] ? $this->Form->input('TransactionAddress.0.shipping', array('type' => 'checkbox', 'label' => 'Click here if your shipping address is different than your billing address.')) : null; ?>
+                    	</div>
+                    </div> 
 			    </fieldset>
           
 			    <fieldset id="shippingAddress" class="control-group">
     				<legend><?php echo __d('transactions', 'Shipping Address'); ?></legend>
+    				<?php echo $this->Form->hidden('TransactionAddress.1.type', array('value' => 'shipping')); ?>
     				<div id="shipping_error"></div>
-    				<?php
-    				echo $this->Form->input('TransactionAddress.1.country', array('label' => 'Country ', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['countries']));
-    				echo $this->Form->input('TransactionAddress.1.street_address_1', array('label' => 'Street', 'size' => '49'));
-    				echo $this->Form->input('TransactionAddress.1.street_address_2', array('label' => 'Street 2', 'size' => '49'));
-    				echo $this->Form->input('TransactionAddress.1.city', array('label' => 'City ', 'after' => $this->Form->input('TransactionAddress.1.state', array('label' => 'State ', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])) . $this->Form->input('TransactionAddress.1.zip', array('label' => 'Zip ', 'maxlength' => '10')) ));
-    				echo $this->Form->hidden('TransactionAddress.1.type', array('value' => 'shipping')); ?>
+    				<div class="row">
+    					<div class="col-sm-6">
+    						<?php echo $this->Form->input('TransactionAddress.1.street_address_1', array('label' => 'Street', 'size' => '49')); ?>
+    					</div>
+    					<div class="col-sm-6">
+    						<?php echo $this->Form->input('TransactionAddress.1.street_address_2', array('label' => 'Street 2', 'size' => '49')); ?>
+    					</div>
+    				</div>
+    				<div class="row">
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.1.city', array('label' => 'City ')); ?>
+    					</div>
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.1.state', array('label' => 'State ', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['states'])); ?>
+    					</div>
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.1.zip', array('label' => 'Zip ', 'maxlength' => '10')); ?>
+    					</div>
+    					<div class="col-sm-3">
+    						<?php echo $this->Form->input('TransactionAddress.1.country', array('label' => 'Country ', 'type' => 'select', 'empty' => '-- Select --', 'options' => $options['countries'])); ?>
+    					</div>
+    				</div>
 			    </fieldset>
 		    </div>
 

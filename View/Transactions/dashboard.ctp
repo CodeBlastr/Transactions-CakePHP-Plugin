@@ -137,9 +137,9 @@
 <hr />
 
 <div class="products clear first row">
-    <div class="span3 col-sm-3">
-        <ul class="nav nav-list">
-        	<li class="dropdown-header">Store</li>
+    <div class="col-sm-3">
+        <ul class="nav nav-pills nav-stacked">
+        	<li class="muted">STORE</li>
             <li>
             	<div class="btn-group">
             		<?php echo $this->Html->link('Create a Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add'), array('class' => 'btn btn-primary btn-small', 'escape' => false)); ?>
@@ -154,31 +154,31 @@
             		</ul>
             	</div>
             </li>
-            <li><?php echo $this->Html->link('All Products', array('plugin' => 'products', 'controller' => 'products', 'action' => 'index')); ?></li>
+            <li><?php echo $this->Html->link('Manage Products', array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')); ?></li>
             <li><?php echo $this->Html->link('Out Of Stock Products', array('plugin' => 'products', 'controller' => 'products', 'action' => 'index', 'filter' => 'stock:0')); ?></li>
         </ul>
     </div>
-    <div class="span3 col-sm-3">
+    <div class="col-sm-3">
 
         <ul class="nav nav-list">
-        	<li class="dropdown-header">Brands</li>
+        	<li class="muted">BRANDS</li>
             <li><?php echo $this->Html->link('List All Brands', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'index')); ?></li>
             <li><?php echo $this->Html->link('Add a Brand', array('plugin' => 'products', 'controller' => 'product_brands', 'action' => 'add')); ?></li>
         </ul>
     </div>
-    <div class="span3 col-sm-3">
+    <div class="col-sm-3">
         <ul class="nav nav-list">
-        	<li class="dropdown-header">Attributes</li>
+        	<li class="muted">ATTRIBUTES</li>
             <li><?php echo $this->Html->link('Product Variations', array('plugin' => 'products', 'controller' => 'products', 'action' => 'categories')); ?></li>
         </ul>
         <ul class="nav nav-list">
-        	<li class="dropdown-header">Categories</li>
+        	<li class="muted">CATEGORIES</li>
             <li><?php echo $this->Html->link('Product Categories', array('plugin' => 'products', 'controller' => 'products', 'action' => 'categories')); ?></li>
         </ul>
     </div>
-    <div class="span2 col-sm-2">
+    <div class="col-sm-3">
         <ul class="nav nav-list">
-        	<li class="dropdown-header">Settings</li>
+        	<li class="muted">SETTINGS</li>
             <li><?php echo $this->Html->link('List All', array('admin' => true, 'plugin' => null, 'controller' => 'settings', 'action' => 'index', 'start' => 'type:Transactions')); ?></li>
             <li><?php echo $this->Html->link('Emails', array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'settings')); ?></li>
             <li><?php echo $this->Html->link('Tax Rates', array('admin' => true, 'plugin' => 'transactions', 'controller' => 'transaction_taxes', 'action' => 'index')); ?></li>
