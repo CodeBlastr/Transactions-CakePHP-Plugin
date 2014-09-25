@@ -150,6 +150,7 @@
             			<li><?php echo $this->Html->link('Create an Membership Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add', 'membership')); ?></li>
             			<li><?php echo $this->Html->link('Create an ARB Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add', 'arb')); ?></li>
             			<?php echo CakePlugin::loaded('Auctions') ? __('<li>%s</li>', $this->Html->link('Create an Auction', array('plugin' => 'auctions', 'controller' => 'auctions', 'action' => 'add'))) : null; ?>
+            			<?php echo CakePlugin::loaded('Credits') ? __('<li>%s</li>', $this->Html->link('Purchase Credits Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add', 'credit'))) : null; ?>
             			<!-- <li><?php echo $this->Html->link('Create a Virtual Product', array('plugin' => 'products', 'controller' => 'products', 'action' => 'add', 'virtual')); ?></li> -->
             		</ul>
             	</div>
