@@ -5,7 +5,7 @@ App::uses('TransactionsAppController', 'Transactions.Controller');
  *
  * @property TransactionItem $TransactionItem
  */
-class TransactionItemsController extends TransactionsAppController {
+class AppTransactionItemsController extends TransactionsAppController {
 
 	public	$name = 'TransactionItems';
 	public	$uses = array('Transactions.TransactionItem');
@@ -131,5 +131,10 @@ class TransactionItemsController extends TransactionsAppController {
         }
 		$this->Session->setFlash(__d('transactions', 'Item could not be removed'));
 		$this->redirect(array('controller' => 'transactions', 'action' => 'cart'));
+	}
+}
+
+if (!isset($refuseInit)) {
+	class TransactionItemsController extends AppTransactionItemsController {
 	}
 }

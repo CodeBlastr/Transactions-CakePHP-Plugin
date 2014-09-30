@@ -305,6 +305,7 @@ class AppTransactionsController extends TransactionsAppController {
 			$this->set('title_for_layout', __('Order History | ' . __SYSTEM_SITE_NAME));
 			$this->Paginator->settings['conditions']['Transaction.customer_id'] = $this->Session->read('Auth.User.id');
             $this->Paginator->settings['contain'] = array('TransactionItem');
+            $this->Paginator->settings['order'] = array('Transaction.created' => 'DESC');
 			//$this->Transaction->recursive = 2;
 			$this->set('transactions', $this->Paginator->paginate('Transaction'));
 		} else {
