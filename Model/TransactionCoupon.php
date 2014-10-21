@@ -142,7 +142,8 @@ public $name = 'TransactionCoupon';
 		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
 		$this->validate = false;
 		if ($this->save($coupon)) {
-			return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['sub_total'];
+			return $data;
+//			return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['sub_total'];
 		} else {
 			throw new Exception('Code apply failed.');
 		}
