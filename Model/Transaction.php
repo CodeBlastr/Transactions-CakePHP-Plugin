@@ -312,10 +312,10 @@ class AppTransaction extends TransactionsAppModel {
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
 
-        //Check Transaction Coupon code empty or not
-        if (!empty($officialTransaction['TransactionCoupon']['code'])) {
-           $officialTransaction = $this->TransactionCoupon->apply($officialTransaction);
-        }
+		//Check Transaction Coupon code empty or not
+		if (!empty($officialTransaction['TransactionCoupon']['code'])) {
+			$officialTransaction = $this->TransactionCoupon->apply($officialTransaction, false);
+		}
 
    		$officialTransaction = $this->finalizeUserData($officialTransaction);
 
@@ -397,7 +397,7 @@ class AppTransaction extends TransactionsAppModel {
 			//$data['Transaction']['status'] = 'paid'; // this really belongs here, but we have an issue with processors
 			if (!$isLoggedIn) {
 				$data['User'] = $data['Customer']; // add the customer data to the user alias so that it all gets saved right
-				$this->Customer->add($data);
+				$this->Customer->save($data);
 				// Refactor their $data with their new Customer.id  (it's kind of odd how you get $this->Contact here, but its because Customer is User and User uses Contact first then adds a User -- if that helps :)
 				$userId = !empty($this->Contact->User->id) ? $this->Contact->User->id : $this->Customer->id;
 				$data['Transaction']['customer_id'] = $userId;
