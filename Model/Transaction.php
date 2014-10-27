@@ -153,33 +153,49 @@ class AppTransaction extends TransactionsAppModel {
  * @return array
  */
 	public function calculateTotal($data) {
-        // defaults
         $data = $this->TransactionTax->applyTax($data);
-	    $subTotal = 0;
-	    $shippingCharge = 0;
 
-        // recalculate subtotal
-        if (!empty($data['TransactionItem'])) {
-		    foreach($data['TransactionItem'] as $txnItem) {
-	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
-		    }
-		}
+		$subTotal = $this->calculateSubTotal($data);
+		$shippingCharge = $this->calculateShippingCharge($data);
 
-		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
-        // GET THIS OUT OF HERE!!!!
-		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
-		if ($defaultShippingCharge !== FALSE) {
-			$shippingCharge = number_format($defaultShippingCharge, 2, '.', false);
-		}
 	    $data['Transaction']['sub_total'] = number_format($subTotal, 2, '.', false);
 	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
 	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
 		$data['Transaction']['total'] = number_format($subTotal + $data['Transaction']['tax_charge'] + $shippingCharge, 2, '.', false);
 
 		return $data;
-
+	}
+	
+/**
+ * Returns the sum of all TransactionItem.{n}.quantity * TransactionItem.{n}.price
+ * @param array $data Array that has TransactionItem.{n}
+ * @return float The subtotal to two decimal places
+ */
+	public function calculateSubTotal($data) {
+		$subTotal = 0;
+		if (!empty($data['TransactionItem'])) {
+		    foreach($data['TransactionItem'] as $txnItem) {
+	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
+		    }
+		}
+		return number_format($subTotal, 2, '.', false);
 	}
 
+/**
+ * 
+ * @param array $data
+ * @return type
+ */
+	public function calculateShippingCharge($data) {
+		$shippingCharge = 0;
+		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
+		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
+		if ($defaultShippingCharge !== FALSE) {
+			$shippingCharge = number_format($defaultShippingCharge, 2, '.', false);
+		}
+		return $shippingCharge;
+	}
+	
 /**
  * We could do all sorts of processing in here
  *
