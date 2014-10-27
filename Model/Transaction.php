@@ -162,6 +162,18 @@ class AppTransaction extends TransactionsAppModel {
         if (!empty($data['TransactionItem'])) {
 		    foreach($data['TransactionItem'] as $txnItem) {
 	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
+				// calculate shipping for Products
+				if ($txnItem['model'] === 'Product') {
+					App::import('Product','Products.Model');
+					$Product = new Product();
+					$product = $Product->find('first', array(
+						'conditions' => array('Product.id' => $txnItem['foreign_key']),
+						'fields' => array('Product.shipping_charge', 'Product.shipping_type')
+					));
+					if ($product['Product']['shipping_type'] === 'FIXEDSHIPPING') {
+						$shippingCharge += $product['Product']['shipping_charge'] * $txnItem['quantity'];
+					}
+				}
 		    }
 		}
 
@@ -175,7 +187,7 @@ class AppTransaction extends TransactionsAppModel {
 	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
 	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
 		$data['Transaction']['total'] = number_format($subTotal + $data['Transaction']['tax_charge'] + $shippingCharge, 2, '.', false);
-
+//debug($data);exit;
 		return $data;
 
 	}
