@@ -155,13 +155,10 @@ class AppTransaction extends TransactionsAppModel {
 	public function calculateTotal($data) {
         $data = $this->TransactionTax->applyTax($data);
 
-		$subTotal = $this->calculateSubTotal($data);
-		$shippingCharge = $this->calculateShippingCharge($data);
-
-	    $data['Transaction']['sub_total'] = number_format($subTotal, 2, '.', false);
+	    $data['Transaction']['sub_total'] = $this->calculateSubTotal($data);
 	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
-	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
-		$data['Transaction']['total'] = number_format($subTotal + $data['Transaction']['tax_charge'] + $shippingCharge, 2, '.', false);
+	    $data['Transaction']['shipping_charge'] = $this->calculateShippingCharge($data);
+		$data['Transaction']['total'] = number_format($data['Transaction']['sub_total'] + $data['Transaction']['tax_charge'] + $data['Transaction']['shipping_charge'], 2, '.', false);
 
 		return $data;
 	}
@@ -182,32 +179,37 @@ class AppTransaction extends TransactionsAppModel {
 	}
 
 /**
- * 
- * @param array $data
- * @return type
+ * Return the sum of all TransactionItem.{n}.quantity * Product.shipping_charge
+ * OR the defined __TRANSACTIONS_FLAT_SHIPPING_RATE
+ * @param array $data Array that has TransactionItem.{n}
+ * @return float The shipping charge to two decimal places
  */
 	public function calculateShippingCharge($data) {
 		$shippingCharge = 0;
 		
 		// calculate shipping for individual Products
-		if ($txnItem['model'] === 'Product') {
-			App::import('Product','Products.Model');
-			$Product = new Product();
-			$product = $Product->find('first', array(
-				'conditions' => array('Product.id' => $txnItem['foreign_key']),
-				'fields' => array('Product.shipping_charge', 'Product.shipping_type')
-			));
-			if ($product['Product']['shipping_type'] === 'FIXEDSHIPPING') {
-				$shippingCharge += $product['Product']['shipping_charge'] * $txnItem['quantity'];
+		if (!empty($data['TransactionItem'])) {
+		    foreach($data['TransactionItem'] as $txnItem) {
+				if ($txnItem['model'] === 'Product') {
+					App::import('Product','Products.Model');
+					$Product = new Product();
+					$product = $Product->find('first', array(
+						'conditions' => array('Product.id' => $txnItem['foreign_key']),
+						'fields' => array('Product.shipping_charge', 'Product.shipping_type')
+					));
+					if ($product['Product']['shipping_type'] === 'FIXEDSHIPPING') {
+						$shippingCharge += $product['Product']['shipping_charge'] * $txnItem['quantity'];
+					}
+				}
 			}
 		}
 		
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
 		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
 		if ($defaultShippingCharge !== FALSE) {
-			$shippingCharge = number_format($defaultShippingCharge, 2, '.', false);
+			$shippingCharge = $defaultShippingCharge;
 		}
-		return $shippingCharge;
+		return number_format($shippingCharge, 2, '.', false);
 	}
 	
 /**
