@@ -188,6 +188,20 @@ class AppTransaction extends TransactionsAppModel {
  */
 	public function calculateShippingCharge($data) {
 		$shippingCharge = 0;
+		
+		// calculate shipping for individual Products
+		if ($txnItem['model'] === 'Product') {
+			App::import('Product','Products.Model');
+			$Product = new Product();
+			$product = $Product->find('first', array(
+				'conditions' => array('Product.id' => $txnItem['foreign_key']),
+				'fields' => array('Product.shipping_charge', 'Product.shipping_type')
+			));
+			if ($product['Product']['shipping_type'] === 'FIXEDSHIPPING') {
+				$shippingCharge += $product['Product']['shipping_charge'] * $txnItem['quantity'];
+			}
+		}
+		
 		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
 		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
 		if ($defaultShippingCharge !== FALSE) {
