@@ -263,10 +263,10 @@ class AppTransactionItem extends TransactionsAppModel {
 				$this->create($itemData);
 			} else {
 				$data['TransactionItem']['quantity'] = $chkdata[0]['TransactionItem']['quantity'] + $data['TransactionItem']['quantity'];
-				if ($data['TransactionItem']['cart_max'] !== null) {
+				if (!empty($data['TransactionItem']['cart_max'])) {
 					$data['TransactionItem']['quantity'] = $data['TransactionItem']['quantity'] > $data['TransactionItem']['cart_max'] ? $data['TransactionItem']['cart_max'] : $data['TransactionItem']['quantity'];
 				}
-				if ($data['TransactionItem']['cart_min'] !== null) {
+				if (!empty($data['TransactionItem']['cart_min'])) {
 					$data['TransactionItem']['quantity'] = $data['TransactionItem']['quantity'] < $data['TransactionItem']['cart_min'] ? $data['TransactionItem']['cart_min'] : $data['TransactionItem']['quantity'];
 				}
 				$this->id = $chkdata[0]['TransactionItem']['id'];
