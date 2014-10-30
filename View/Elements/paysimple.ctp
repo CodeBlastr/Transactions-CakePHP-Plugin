@@ -47,8 +47,8 @@
 			<?php echo $this->Form->input('card_sec', array('class' => 'required paysimpleCc', 'label' => 'CCV Code ' . $this->Html->link('?', '#ccvHelp', array('class' => 'helpBox paysimpleCc', 'title' => 'You can find this 3 or 4 digit code on the back of your card, typically in the signature area.')), 'maxLength' => 4)); ?>
 		</div>
 	</div>
-	
-	
+
+
 	<div class="row">
 		<div class="col-sm-6">
 			<?php echo $this->Form->input('ach_routing_number', array('label' => 'Routing Number', 'class' => 'required paysimpleCheck')); //echeck info ?>

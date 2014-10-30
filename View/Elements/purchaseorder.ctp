@@ -13,7 +13,7 @@
 			$('.paysimpleCc').parent().parent().hide();
 			$('.paysimpleCheck').parent().parent().hide();
 			$('.purchaseOrder').parent().parent().show();
-			$('.pdfInvoice').show();
+			$('.purchaseOrder.pdfInvoice').show();
 			$('.payByCheck.pdfInvoice').hide();
 		};
 

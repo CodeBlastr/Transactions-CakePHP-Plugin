@@ -127,7 +127,7 @@
 				endforeach;
 				// display each payment option's element
 				foreach ( $paymentOptions as $k => $v ) :
-					echo $this->Element(strtolower($k), array('var1' => 'value1'));
+					echo $this->element(strtolower($k), array('var1' => 'value1'));
 				endforeach;
 				?>
 		    </fieldset>
@@ -135,7 +135,7 @@
 
 
 	    <div id="transactionCartRight" class="span4 col-md-4 pull-right">
-		    <?php echo $this->Element('Transactions.trust_logos'); ?>
+		    <?php echo $this->element('Transactions.trust_logos'); ?>
 		    <fieldset id="transactionItems" class="transactionItems">
 			    <legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
 			    <?php 

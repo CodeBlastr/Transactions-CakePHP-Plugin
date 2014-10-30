@@ -24,10 +24,10 @@
 
 		document.changeToCheck = function changeToCheck() {
 			$("#creditCardInfo, #echeckInfo").children().removeClass('required');
-			$('.paysimpleCc').closest('tr.input').hide();
-			$('.paysimpleCheck').closest('tr.input').hide();
-			$('.purchaseOrder').closest('tr.input').hide();
-			$('.pdfInvoice').hide();
+			$('.paysimpleCc').parent().parent().hide();
+			$('.paysimpleCheck').parent().parent().hide();
+			$('.purchaseOrder').parent().parent().show();
+			$('.purchaseOrder.pdfInvoice').hide();
 			$('.payByCheck.pdfInvoice').show();
 		};
 
