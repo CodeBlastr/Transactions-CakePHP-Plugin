@@ -153,33 +153,65 @@ class AppTransaction extends TransactionsAppModel {
  * @return array
  */
 	public function calculateTotal($data) {
-        // defaults
         $data = $this->TransactionTax->applyTax($data);
-	    $subTotal = 0;
-	    $shippingCharge = 0;
 
-        // recalculate subtotal
-        if (!empty($data['TransactionItem'])) {
+	    $data['Transaction']['sub_total'] = $this->calculateSubTotal($data);
+	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
+	    $data['Transaction']['shipping_charge'] = $this->calculateShippingCharge($data);
+		$data['Transaction']['total'] = number_format($data['Transaction']['sub_total'] + $data['Transaction']['tax_charge'] + $data['Transaction']['shipping_charge'], 2, '.', false);
+
+		return $data;
+	}
+	
+/**
+ * Returns the sum of all TransactionItem.{n}.quantity * TransactionItem.{n}.price
+ * @param array $data Array that has TransactionItem.{n}
+ * @return float The subtotal to two decimal places
+ */
+	public function calculateSubTotal($data) {
+		$subTotal = 0;
+		if (!empty($data['TransactionItem'])) {
 		    foreach($data['TransactionItem'] as $txnItem) {
 	            $subTotal += $txnItem['price'] * $txnItem['quantity'];
 		    }
 		}
-
-		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
-        // GET THIS OUT OF HERE!!!!
-		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
-		if ($defaultShippingCharge !== FALSE) {
-			$shippingCharge = number_format($defaultShippingCharge, 2, '.', false);
-		}
-	    $data['Transaction']['sub_total'] = number_format($subTotal, 2, '.', false);
-	    $data['Transaction']['tax_charge'] = number_format($data['Transaction']['tax_charge'], 2, '.', false);
-	    $data['Transaction']['shipping_charge'] = number_format($shippingCharge, 2, '.', false);
-		$data['Transaction']['total'] = number_format($subTotal + $data['Transaction']['tax_charge'] + $shippingCharge, 2, '.', false);
-
-		return $data;
-
+		return number_format($subTotal, 2, '.', false);
 	}
 
+/**
+ * Return the sum of all TransactionItem.{n}.quantity * Product.shipping_charge
+ * OR the defined __TRANSACTIONS_FLAT_SHIPPING_RATE
+ * @param array $data Array that has TransactionItem.{n}
+ * @return float The shipping charge to two decimal places
+ */
+	public function calculateShippingCharge($data) {
+		$shippingCharge = 0;
+		
+		// calculate shipping for individual Products
+		if (!empty($data['TransactionItem'])) {
+		    foreach($data['TransactionItem'] as $txnItem) {
+				if ($txnItem['model'] === 'Product') {
+					App::import('Product','Products.Model');
+					$Product = new Product();
+					$product = $Product->find('first', array(
+						'conditions' => array('Product.id' => $txnItem['foreign_key']),
+						'fields' => array('Product.shipping_charge', 'Product.shipping_type')
+					));
+					if ($product['Product']['shipping_type'] === 'FIXEDSHIPPING') {
+						$shippingCharge += $product['Product']['shipping_charge'] * $txnItem['quantity'];
+					}
+				}
+			}
+		}
+		
+		// overwrite the shipping_charge if there is a FlAT_SHIPPING_RATE set
+		$defaultShippingCharge = defined('__TRANSACTIONS_FLAT_SHIPPING_RATE') ? __TRANSACTIONS_FLAT_SHIPPING_RATE : FALSE;
+		if ($defaultShippingCharge !== FALSE) {
+			$shippingCharge = $defaultShippingCharge;
+		}
+		return number_format($shippingCharge, 2, '.', false);
+	}
+	
 /**
  * We could do all sorts of processing in here
  *
@@ -312,10 +344,10 @@ class AppTransaction extends TransactionsAppModel {
 		// check for ARB Settings (will only be one TransactionItem @ this point if it's an ARB Transaction)
 		$officialTransaction['Transaction']['is_arb'] = !empty($officialTransaction['TransactionItem'][0]['arb_settings']) ? 1 : 0;
 
-        //Check Transaction Coupon code empty or not
-        if (!empty($officialTransaction['TransactionCoupon']['code'])) {
-           $officialTransaction = $this->TransactionCoupon->apply($officialTransaction);
-        }
+		//Check Transaction Coupon code empty or not
+		if (!empty($officialTransaction['TransactionCoupon']['code'])) {
+			$officialTransaction = $this->TransactionCoupon->apply($officialTransaction, false);
+		}
 
    		$officialTransaction = $this->finalizeUserData($officialTransaction);
 

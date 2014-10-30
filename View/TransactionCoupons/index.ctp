@@ -6,6 +6,7 @@
 			<th><?php echo $this->Paginator->sort('discount');?></th>
 			<th><?php echo $this->Paginator->sort('discount_type');?></th>
 			<th><?php echo $this->Paginator->sort('code');?></th>
+			<th><?php echo $this->Paginator->sort('uses');?></th>
 			<th><?php echo $this->Paginator->sort('start_date');?></th>
 			<th><?php echo $this->Paginator->sort('end_date');?></th>
 			<th><?php echo $this->Paginator->sort('is_active');?></th>
@@ -19,6 +20,7 @@
 		<td><?php echo h($coupon['TransactionCoupon']['discount']); ?>&nbsp;</td>
 		<td><?php echo h($coupon['TransactionCoupon']['discount_type']); ?>&nbsp;</td>
 		<td><?php echo h($coupon['TransactionCoupon']['code']); ?>&nbsp;</td>
+		<td><?php echo h($coupon['TransactionCoupon']['uses']); ?>&nbsp;</td>
 		<td><?php echo h($coupon['TransactionCoupon']['start_date']); ?>&nbsp;</td>
 		<td><?php echo h($coupon['TransactionCoupon']['end_date']); ?>&nbsp;</td>
 		<td><?php echo h($coupon['TransactionCoupon']['is_active']); ?>&nbsp;</td>
@@ -30,7 +32,7 @@
 	</tr>
 <?php endforeach; ?>
 	</table>
-<?php $this->Element('paging'); ?>
+<?php echo $this->Element('paging'); ?>
 </div>
 <div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>

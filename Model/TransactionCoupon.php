@@ -124,12 +124,12 @@ public $name = 'TransactionCoupon';
 	}
 
 /**
- *
  * @param array $data
- * @return string
+ * @param boolean $onlyReturnTotal
+ * @return mixed string of the new total or the entire data array
  * @throws Exception
  */
-	public function apply($data) {
+	public function apply($data, $onlyReturnTotal = true) {
 		// find the coupon (make sure it can be applied)
 		try {
 			$data = $this->verify($data);
@@ -142,7 +142,11 @@ public $name = 'TransactionCoupon';
 		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
 		$this->validate = false;
 		if ($this->save($coupon)) {
-			return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['sub_total'];
+			if ($onlyReturnTotal) {
+				return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['sub_total'];
+			} else {
+				return $data;
+			}
 		} else {
 			throw new Exception('Code apply failed.');
 		}

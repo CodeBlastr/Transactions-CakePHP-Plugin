@@ -33,16 +33,13 @@ class BraintreePayment extends AppModel {
             Braintree_Configuration::merchantId($this->config['merchantId']);
             Braintree_Configuration::publicKey($this->config['publicKey']);
             Braintree_Configuration::privateKey($this->config['privateKey']);
-
-		}else{
+		} else{
             throw new Exception('Brain Tree config not found, please set in admin dash board');
         }
-
-
 	}
 
 
-    /**
+/**
  * Pay method
  *
  * @param array $data
@@ -51,40 +48,31 @@ class BraintreePayment extends AppModel {
  */
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
-
 		try {
-
             $paymentData = $this->doSales($data);
-            if($paymentData){
-
+            if ($paymentData->success) {
                 $data[$this->modelName]['processor_response'] = $paymentData->transaction->processorResponseText;
                 $data[$this->modelName]['processor_transaction_id'] = $paymentData->transaction->id;
                 $data[$this->modelName]['Payment'] = $paymentData;
-                $data[$this->modelName]['status'] = $paymentData->success ? $this->statusTypes['paid'] : $this->statusTypes['failed'];
-            }else{
-                throw new Exception($paymentData->message);
+                $data[$this->modelName]['status'] = $paymentData->success ? 'paid' : 'failed';
+            } else {
+            	throw new Exception($paymentData->_attributes['message']);
             }
             return $data;
-
 		} catch (Exception $exc) {
 			throw new Exception($exc->getMessage());
 		}
-
 	}
 
-
-
-    /**
-     * this is member's funding
-     * where release money will to
-     */
-    public function createSubMerchantFundingAccount($data){
-
+/**
+ * this is member's funding
+ * where release money will to
+ */
+    public function createSubMerchantFundingAccount($data) {
         $data['funding']['destination'] = Braintree_MerchantAccount::FUNDING_DESTINATION_BANK;
         $data['masterMerchantAccountId'] = $this->config['merchantAccount'];
         $data['tosAccepted'] = true;
-
-
+		
         $result = Braintree_MerchantAccount::create($data);
         if($result->success){
            return $result->success;
@@ -93,80 +81,136 @@ class BraintreePayment extends AppModel {
         }
     }
 
-    /**
-     * update member's funding account info
-     */
+/**
+ * update member's funding account info
+ */
     public function updateSubMerchantFundingAccount($data){
-
-
         $data['funding']['destination'] = Braintree_MerchantAccount::FUNDING_DESTINATION_BANK;
         $data['masterMerchantAccountId'] = $this->config['merchantAccount'];
         $data['tosAccepted'] = true;
         $accountId = $data['id'];
         unset($data['id']);
         $result = Braintree_MerchantAccount::update($accountId,$data);
-        if($result->success){
+        if ($result->success) {
             return $result->success;
-        }else{
+        } else{
             throw new Exception($result->message);
         }
     }
+
+/**
+ * get sub merchant funding account
+ */
     public function getSubMerchantFundingAccount($accountId){
-        if(!empty($accountId)){
+        if (!empty($accountId)) {
             return Braintree_MerchantAccount::find($accountId);
-        }else{
+        } else{
             throw new Exception('Funding Account Not Found: ' . $accountId);
         }
     }
 
+/**
+ * is need escrow
+ */
     private function isNeedEscrow($data){
         $item = $data['TransactionItem'][0];
-        if(is_null($item['is_virtual']) || empty($item['is_virtual'])){
-            return true;
-        }
+		// this is not a good way to check if escrow is needed
+		// we need something that checks if it IS not IS NOT
+        // if(is_null($item['is_virtual']) || empty($item['is_virtual'])){
+            // return true;
+        // }
         return false;
     }
 
-    public function doSales($data) {
-        $data['brainTree']['creditCard']['expirationDate'] = $data['brainTree']['creditCard']['month'] . '/' . $data['brainTree']['creditCard']['year'];
-        unset($data['brainTree']['creditCard']['year'],$data['brainTree']['creditCard']['month']);
-        $params['creditCard'] = $data['brainTree']['creditCard'];
+/**
+ * do sales
+ */
+    public function doSales($data) {	
+		// You should not making custom fields like this, use the Transaction key
+        // $data['brainTree']['creditCard']['expirationDate'] = $data['brainTree']['creditCard']['month'] . '/' . $data['brainTree']['creditCard']['year'];
+        // unset($data['brainTree']['creditCard']['year'],$data['brainTree']['creditCard']['month']);		
+        
+        // this is the way fields should be mapped coming in (matches paysimple)
+        // more field info here : https://www.braintreepayments.com/docs/php/transactions/create
+        
+        // card info
+        $params['creditCard']['number'] = $data['Transaction']['card_number']; // was this, but should not be... $data['brainTree']['creditCard'];
+        $params['creditCard']['expirationDate'] = $data['Transaction']['card_expire'];
+		$params['creditCard']['cardholderName'] = $data['TransactionAddress'][0]['first_name'] . ' ' . $data['TransactionAddress'][0]['last_name'];
+		$params['creditCard']['cvv'] = $data['Transaction']['card_sec'];
+		
+		// customer info
+		$params['customer']['firstName'] = $data['TransactionAddress'][0]['first_name'];
+		$params['customer']['lastName'] = $data['TransactionAddress'][0]['last_name'];
+		$params['customer']['company'] = $data['Contact']['company'];
+		$params['customer']['phone'] = $data['TransactionAddress'][0]['phone'];
+		// possible but doesn't exist on any form I know of // $params['customer']['fax'] = $data['TransactionAddress'][0][''];
+		// possible but doesn't exist on any form I know of // $params['customer']['website'] = $data['TransactionAddress'][0][''];
+		$params['customer']['email'] = $data['TransactionAddress'][0]['email'];
+		
+		// billing info
+		$params['billing']['firstName'] = $data['TransactionAddress'][0]['first_name'];
+		$params['billing']['lastName'] = $data['TransactionAddress'][0]['last_name'];
+		$params['billing']['company'] = $data['Contact']['company'];
+		$params['billing']['streetAddress'] = $data['TransactionAddress'][0]['street_address_1'];
+		$params['billing']['extendedAddress'] = $data['TransactionAddress'][0]['street_address_2'];
+		$params['billing']['locality'] = $data['TransactionAddress'][0]['city'];
+		$params['billing']['region'] = $data['TransactionAddress'][0]['state'];
+		$params['billing']['postalCode'] = $data['TransactionAddress'][0]['zip'];
+		$params['billing']['countryCodeAlpha2'] = 'US'; // needs to be updated so that it isn't hard coded
+
+		// shipping info
+		$params['shipping']['firstName'] = !empty($data['TransactionAddress'][1]['first_name']) ? $data['TransactionAddress'][1]['first_name'] : $data['TransactionAddress'][0]['first_name'];
+		$params['shipping']['lastName'] = !empty($data['TransactionAddress'][1]['last_name']) ? $data['TransactionAddress'][1]['last_name'] : $data['TransactionAddress'][0]['last_name'];
+		$params['shipping']['company'] = $data['Contact']['company'];
+		$params['shipping']['streetAddress'] = !empty($data['TransactionAddress'][1]['street_address_1']) ? $data['TransactionAddress'][1]['street_address_1'] : $data['TransactionAddress'][0]['street_address_1'];
+		$params['billing']['extendedAddress'] = !empty($data['TransactionAddress'][1]['street_address_2']) ? $data['TransactionAddress'][1]['street_address_2'] : $data['TransactionAddress'][0]['street_address_2'];
+		$params['shipping']['locality'] = !empty($data['TransactionAddress'][1]['city']) ? $data['TransactionAddress'][1]['city'] : $data['TransactionAddress'][0]['city'];
+		$params['shipping']['region'] = !empty($data['TransactionAddress'][1]['state']) ? $data['TransactionAddress'][1]['state'] : $data['TransactionAddress'][0]['state'];
+		$params['shipping']['postalCode'] = !empty($data['TransactionAddress'][1]['zip']) ? $data['TransactionAddress'][1]['zip'] : $data['TransactionAddress'][0]['zip'];
+		$params['shipping']['countryCodeAlpha2'] = 'US'; // needs to be updated so that it isn't hard coded
+		
+		// transaction info
         $params['amount'] = $data['Transaction']['total'];
         $params['orderId'] = $data['Transaction']['id'];
+		
+		// options
+        $params['options']['submitForSettlement'] = true; // probably shouldn't be set for all transaction types, eg. needs to be moved
 
-        if($this->isNeedEscrow($data)){
+        if ($this->isNeedEscrow($data)) {
             $subMerchant = $data['TransactionItem'][0]['_associated']['seller']['merchant_account'];
-            if(empty($subMerchant)){
+            if (empty($subMerchant)) {
                throw new Exception('Seller does not have funding account');
             }
             $params['options'] = array(
                 'submitForSettlement' => true,
                 'holdInEscrow' => true,
-            );
+            	);
             $params['serviceFeeAmount'] = $data['Transaction']['total'] * ($this->config['serviceFee']/100);
             $params['merchantAccountId'] = $subMerchant;
-
         }
-
         return Braintree_Transaction::sale($params);
-
-
     }
 
-
+/**
+ * get customer list
+ */
 	public function getCustomerList() {
 		return $this->_sendRequest('GET', '/customer');
 	}
 
-
+/**
+ * create customer
+ */
     public function createCustomer($data) {
 
 	}
 
-	
+/**
+ * create recurring payment
+ */
 	public function createRecurringPayment($data) {
 		$this->itemModel = !empty($this->itemModel) ? $this->itemModel : 'TransactionItem';
-		
 		// this was in the pay() function above, we moved it here, but aren't sure that $paymentData will still be equal to the right info
 		// if(empty($data[$this->itemModel][0]['price'])) {
 			// // When price is empty, there is a free trial. In this case, set up an ARB payment as usual.
