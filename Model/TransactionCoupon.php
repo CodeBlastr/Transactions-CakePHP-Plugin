@@ -1,5 +1,7 @@
 <?php
+
 App::uses('TransactionsAppModel', 'Transactions.Model');
+
 /**
  * TransactionCoupon Model
  *
@@ -7,13 +9,15 @@ App::uses('TransactionsAppModel', 'Transactions.Model');
  */
 class TransactionCoupon extends TransactionsAppModel {
 
-public $name = 'TransactionCoupon';
+	public $name = 'TransactionCoupon';
+
 /**
  * Display field
  *
  * @var string
  */
 	public $displayField = 'name';
+
 /**
  * Validation rules
  *
@@ -23,26 +27,24 @@ public $name = 'TransactionCoupon';
 		'name' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			//'message' => 'Your custom message here',
+			//'allowEmpty' => false,
+			//'required' => false,
+			//'last' => false, // Stop validation after this rule
+			//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 		'is_active' => array(
 			'boolean' => array(
 				'rule' => array('boolean'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			//'message' => 'Your custom message here',
+			//'allowEmpty' => false,
+			//'required' => false,
+			//'last' => false, // Stop validation after this rule
+			//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 	);
-
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**
  * hasMany associations
@@ -66,34 +68,32 @@ public $name = 'TransactionCoupon';
 	);
 
 /**
- *
+ * similar to apply but don't mark as used
  * @param array $data
  * @param array $conditions
  * @return array
  * @throws Exception
  */
-
 	public function verify($data, $conditions = null) {
-        // Get Current Date
-        $mktime = mktime();
-        $current_date = date('Y-m-d H:i:s', $mktime);
-
-        // Check status is in Active or not and also check start date and end date valid or not.
-        $conditions = array('TransactionCoupon.is_active' => 1,'TransactionCoupon.start_date <=' => $current_date,'TransactionCoupon.end_date >=' => $current_date);
-
-        // similar to apply but don't mark as used
 		if (!empty($data['TransactionCoupon']['code'])) {
-			$conditions = Set::merge(array('TransactionCoupon.code' => $data['TransactionCoupon']['code']), $conditions);
-			$coupon = $this->find('first', array('conditions' => $conditions));
+			$current_date = date('Y-m-d H:i:s', mktime());
+			// Check status is in Active or not and also check start date and end date valid or not.
+			$coupon = $this->find('first', array(
+				'conditions' => Set::merge(
+						array(
+							'TransactionCoupon.code' => $data['TransactionCoupon']['code'],
+							'TransactionCoupon.is_active' => 1,
+							'TransactionCoupon.start_date <=' => $current_date,
+							'TransactionCoupon.end_date >=' => $current_date
+						), $conditions
+			)));
 
 			if (empty($coupon)) {
 				throw new Exception('Code out of date or does not apply.');
 			} else {
 				$data = $this->_applyPriceChange(
-					$coupon['TransactionCoupon']['discount_type'],
-					$coupon['TransactionCoupon']['discount'],
-					$data);
-                $data['Transaction']['transaction_coupon_id']=$coupon['TransactionCoupon']['id'];
+						$coupon['TransactionCoupon']['discount_type'], $coupon['TransactionCoupon']['discount'], $data);
+				$data['Transaction']['transaction_coupon_id'] = $coupon['TransactionCoupon']['id'];
 				$data['TransactionCoupon'] = $coupon['TransactionCoupon'];
 				return $data;
 			}
@@ -110,7 +110,7 @@ public $name = 'TransactionCoupon';
  * @return type
  */
 	private function _applyPriceChange($type = 'fixed', $discount = 0, $data = null) {
-        $data['Transaction']['sub_total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
+		$data['Transaction']['sub_total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
 
 		if ($type == 'percent') {
 			// for now it does the total
@@ -119,7 +119,7 @@ public $name = 'TransactionCoupon';
 			// do fixed coupon price change
 			$data['Transaction']['sub_total'] = ZuhaInflector::pricify($data['Transaction']['sub_total'] - $discount);
 		}
-	    $data['Transaction']['total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
+		$data['Transaction']['total'] = ereg_replace(",", "", $data['Transaction']['sub_total']);
 		return $data;
 	}
 
@@ -130,6 +130,14 @@ public $name = 'TransactionCoupon';
  * @throws Exception
  */
 	public function apply($data, $onlyReturnTotal = true) {
+		if (empty($data['TransactionCoupon']['code'])) {
+			if ($onlyReturnTotal) {
+				return !empty($data['Transaction']['total']) ? $data['Transaction']['total'] : $data['Transaction']['sub_total'];
+			} else {
+				return $data;
+			}
+		}
+
 		// find the coupon (make sure it can be applied)
 		try {
 			$data = $this->verify($data);
@@ -138,8 +146,12 @@ public $name = 'TransactionCoupon';
 		}
 
 		// make the coupon as used
-		$coupon['TransactionCoupon']['id'] = $data['TransactionCoupon']['id'];
-		$coupon['TransactionCoupon']['uses'] = $data['TransactionCoupon']['uses'] + 1;
+		$coupon = array(
+			'TransactionCoupon' => array(
+				'id' => $data['TransactionCoupon']['id'],
+				'uses' => $data['TransactionCoupon']['uses'] + 1
+			)
+		);
 		$this->validate = false;
 		if ($this->save($coupon)) {
 			if ($onlyReturnTotal) {
@@ -160,7 +172,7 @@ public $name = 'TransactionCoupon';
 		return array(
 			'fixed' => 'Fixed discount for cart total.',
 			'percent' => 'Percent discount for cart total.',
-			);
+		);
 	}
 
 }
