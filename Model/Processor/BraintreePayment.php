@@ -135,7 +135,7 @@ class BraintreePayment extends AppModel {
         
         // card info
         $params['creditCard']['number'] = $data['Transaction']['card_number']; // was this, but should not be... $data['brainTree']['creditCard'];
-        $params['creditCard']['expirationDate'] = $data['Transaction']['card_expire'];
+        $params['creditCard']['expirationDate'] = !empty($data['Transaction']['card_expire']['month']) && !empty($data['Transaction']['card_expire']['year']) ? $data['Transaction']['card_expire']['month'] . '/' . $data['Transaction']['card_expire']['year'] : $data['Transaction']['card_expire'];
 		$params['creditCard']['cardholderName'] = $data['TransactionAddress'][0]['first_name'] . ' ' . $data['TransactionAddress'][0]['last_name'];
 		$params['creditCard']['cvv'] = $data['Transaction']['card_sec'];
 		

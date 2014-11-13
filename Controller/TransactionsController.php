@@ -25,6 +25,15 @@ class AppTransactionsController extends TransactionsAppController {
 	public $uses = array('Transactions.Transaction');
 
 /**
+ * Allowed Actions
+ *
+ * @var array
+ */
+	public $allowedActions = array(
+		'success'
+	);
+
+/**
  * Components
  *
  * @var array
@@ -32,15 +41,17 @@ class AppTransactionsController extends TransactionsAppController {
 	//public $components = array('Ssl', 'Transactions.Payments');
 	public $components = array('Ssl', 'Paginator');
 
-
-
+/**
+ * Before filter callback
+ * 
+ * @return void
+ */
     public function beforeFilter() {
         parent::beforeFilter();
         if(defined('__TRANSACTIONS_BRAINTREE')){
             App::uses('BraintreePayment', 'Transactions.Model/Processor');
             $this->BraintreePayment = new BraintreePayment();
         }
-
     }
 
 /**
