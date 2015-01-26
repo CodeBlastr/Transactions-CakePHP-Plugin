@@ -160,9 +160,9 @@ class BuyableBehavior extends ModelBehavior {
 			}
 			$data = $this->Processor->pay($data);
 			
-			$Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+			$data = $Transaction->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
 			if (method_exists($Model, 'afterSuccessfulPayment') && is_callable('afterSuccessfulPayment')) {
-				$Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
+				$data = $Model->afterSuccessfulPayment(CakeSession::read('Auth.User.id'), $data);
 			}
 			
             return $data;
