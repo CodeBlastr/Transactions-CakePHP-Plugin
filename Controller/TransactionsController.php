@@ -111,10 +111,18 @@ class AppTransactionsController extends TransactionsAppController {
 		if (!$this->Transaction->exists()) {
 			throw new NotFoundException(__d('transactions', 'Invalid transaction'));
 		}
-        $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
-        $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
-        $this->Transaction->contain(array('Customer' => array('Contact'), 'Assignee'));
-        $this->set('transaction', $transaction = Set::merge($this->Transaction->read(null, $id), array('TransactionItem' => $transactionItems)));
+       // $this->paginate['conditions']['TransactionItem.transaction_id'] = $id;
+      //  $transactionItems = Set::extract('{n}.TransactionItem', $this->paginate('TransactionItem'));
+//        $this->Transaction->contain(array('Customer' => array('Contact'), 'Assignee', 'TransactionItem'));
+//        $this->set('transaction', $transaction = Set::merge($this->Transaction->read(null, $id), array('TransactionItem' => $transactionItems)));
+        $this->set('transaction', $transaction = $this->Transaction->find('first', array(
+			'conditions' => array('Transaction.id' => $id),
+			'contain' => array(
+				'Customer' => array('Contact'),
+				'Assignee',
+				'TransactionItem'
+			)
+		)));
         $this->set('statuses', $this->Transaction->TransactionItem->statuses());
 		$this->set('assignees', $assignees = $this->Transaction->Assignee->find('list'));
 		$this->set('shippingAddress', $this->Transaction->TransactionAddress->find('first', array('conditions' => array('TransactionAddress.transaction_id' => $id, 'TransactionAddress.type' => 'shipping'))));
