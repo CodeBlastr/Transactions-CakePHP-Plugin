@@ -25,13 +25,28 @@
     			<div><?php echo $transaction['Customer']['email'] ?></div>
     		</td>
     		<td><?php echo ZuhaInflector::datify($transaction['Transaction']['created']); ?>&nbsp;</td>
-    		<td><?php echo $transaction['Transaction']['status']; ?>&nbsp;</td>
+    		<td>
+				<?php
+				switch ($transaction['Transaction']['status']) {
+					case 'open':
+						$statusLabelClass = 'default';
+						break;
+					case 'paid':
+						$statusLabelClass = 'success';
+						break;
+					default:
+						$statusLabelClass = 'info';
+						break;
+				}
+				?>
+				<span class="label label-<?= $statusLabelClass ?>"><?= $transaction['Transaction']['status'] ?></span>
+			</td>
     		<td><?php echo __('$%s', ZuhaInflector::pricify($transaction['Transaction']['total'])); ?>&nbsp;</td>
     		<td class="actions">
     			<?php echo $this->Html->link(__('View'), array('action' => 'view', $transaction['Transaction']['id']), array('class' => 'btn btn-default')); ?>
     			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $transaction['Transaction']['id']), array('class' => 'btn btn-warning')); ?>
     			<?php if($canUse) echo $this->Html->link(__('Post'), array('plugin'=>'classifieds','controller'=>'classifieds','action' => 'post', $itemId), array('class' => 'btn btn-warning')); ?>
-    			<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $transaction['Transaction']['id']), array('class' => 'btn btn-danger'), __('Are you sure you want to delete # %s?', $transaction['Transaction']['id'])); ?>
+    			<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $transaction['Transaction']['id']), array('class' => 'btn btn-xs btn-danger'), __('Are you sure you want to delete # %s?', $transaction['Transaction']['id'])); ?>
     		</td>
 	    </tr>
 	    <?php endforeach; ?>

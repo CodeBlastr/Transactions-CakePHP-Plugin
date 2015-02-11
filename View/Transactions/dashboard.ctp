@@ -1,5 +1,5 @@
-<?php echo $this->Html->script('http://code.highcharts.com/highcharts.js', array('inline' => false)); ?>
-<?php echo $this->Html->script('http://code.highcharts.com/modules/exporting.js', array('inline' => false)); ?>
+<?php echo $this->Html->script('//code.highcharts.com/highcharts.js', array('inline' => false)); ?>
+<?php echo $this->Html->script('//code.highcharts.com/modules/exporting.js', array('inline' => false)); ?>
 
 <div class="products row">
     <div class="span8 col-md-8">
@@ -35,7 +35,8 @@
                         chart = new Highcharts.Chart({
                             chart: {
                                 renderTo: 'ordersToday',
-                                type: 'spline'
+//                                type: 'spline'
+								zoomType: 'x'
                             },
                             credits: false,
                             title: {
@@ -47,8 +48,9 @@
                             xAxis: {
                                 type: 'datetime',
                                 dateTimeLabelFormats: { // don't display the dummy year
-                                    month: '%e. %b',
-                                    year: '%b'
+									tickInterval: 3600 * 1000,
+									min: Date.UTC(<?php echo date('Y') ?>,<?php echo date('m') ?>,<?php echo date('d') ?>),
+									max: Date.UTC(<?php echo date('Y') ?>,<?php echo date('m') ?>,<?php echo date('d') +1 ?>)
                                 }
                             },
                             yAxis: {
@@ -59,12 +61,13 @@
                             },
                             tooltip: {
                                 formatter: function() {
-                                        return '<b>'+ this.series.name +'</b><br/>'+
-                                        Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' m';
+                                        return Highcharts.dateFormat('%H:%M', this.x) +': '+ this.y +' orders';
                                 }
                             },
 
                             series: [{
+								pointStart: Date.UTC(<?php echo date('Y') ?>,<?php echo date('m') ?>,<?php echo date('d') ?>),
+								pointInterval: 24 * 3600 * 1000, // one day
                                 name: 'Orders',
                                 // Define the data points. All series have a dummy year
                                 // of 1970/71 in order to be compared on the same x axis. Note
@@ -73,7 +76,7 @@
                                 <?php
                                 $i = 0;
                                 while ($i < 24) { ?>
-                                    [<?php echo $i ?>,   <?php echo $hour[$i] ? $hour[$i] : 0; ?>],
+                                    [<?php echo $i * 3600* 1000?>,   <?php echo $hour[$i] ? $hour[$i] : 0; ?>],
                                 <?php ++$i; } ?>
                                 ]
                             }]
