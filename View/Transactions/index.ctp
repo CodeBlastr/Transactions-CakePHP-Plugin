@@ -21,7 +21,15 @@
         ?>
     	<tr>
     		<td>
-    			<?php echo !empty($transaction['Customer']['full_name']) ? $this->Html->link($transaction['Customer']['full_name'], array('plugin' => 'users', 'controller' => 'users', 'action' => 'view', $transaction['Customer']['id'])) : __('%s %s', $transaction['TransactionAddress'][0]['first_name'], $transaction['TransactionAddress'][0]['last_name']); ?>
+    			<?php
+				if (!empty($transaction['Customer']['full_name'])) {
+					echo $this->Html->link($transaction['Customer']['full_name'], array('plugin' => 'users', 'controller' => 'users', 'action' => 'view', $transaction['Customer']['id']));
+				} elseif (!empty($transaction['TransactionAddress'][0]['first_name']) || !empty($transaction['TransactionAddress'][0]['last_name'])) {
+					echo __('%s %s', $transaction['TransactionAddress'][0]['first_name'], $transaction['TransactionAddress'][0]['last_name']);
+				} else {
+					echo '<span class="text-muted">guest</span>';
+				}
+				?>
     			<div><?php echo $transaction['Customer']['email'] ?></div>
     		</td>
     		<td><?php echo ZuhaInflector::datify($transaction['Transaction']['created']); ?>&nbsp;</td>
@@ -41,7 +49,7 @@
 				?>
 				<span class="label label-<?= $statusLabelClass ?>"><?= $transaction['Transaction']['status'] ?></span>
 			</td>
-    		<td><?php echo __('$%s', ZuhaInflector::pricify($transaction['Transaction']['total'])); ?>&nbsp;</td>
+    		<td><?php echo '$' . ZuhaInflector::pricify($transaction['Transaction']['total']); ?>&nbsp;</td>
     		<td class="actions">
     			<?php echo $this->Html->link(__('View'), array('action' => 'view', $transaction['Transaction']['id']), array('class' => 'btn btn-default')); ?>
     			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $transaction['Transaction']['id']), array('class' => 'btn btn-warning')); ?>
@@ -58,7 +66,7 @@
 <?php
 // set the contextual breadcrumb items
 $this->set('context_crumbs', array('crumbs' => array(
-	$this->Html->link(__('Ecommerce Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
+	$this->Html->link(__('eCommerce Dashboard'), array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'dashboard')),
 	$page_title_for_layout,
 )));
 

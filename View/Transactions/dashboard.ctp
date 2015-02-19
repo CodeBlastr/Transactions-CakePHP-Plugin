@@ -110,6 +110,7 @@
     <div class="tagProducts span3 col-md-4 last">
         <ul class="list-group">
             <?php
+			$inCartConversionRate = number_format(($counts['paid'] / ($counts['open'] + $counts['shipped'] + $counts['paid']) * 100), 2);
             $counts['open'] = __('<span class="badge alert-warning">%s</span>', $counts['open']);
             $counts['shipped'] = __('<span class="badge alert-info">%s</span>', $counts['shipped']);
             $counts['paid'] = __('<span class="badge alert-success">%s</span>', $counts['paid']);
@@ -119,12 +120,12 @@
 					$counts[strtolower($status)] = __('<span class="badge">%s</span>', $counts[strtolower($status)]);
 				}
                 echo $this->Html->link(__('%s %s Transactions', $counts[strtolower($status)], $status), array(
-					'admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index',
+					'admin' => true, 'action' => 'index',
 					'filter' => 'status:' . $key, 'sort' => 'Transaction.created', 'direction' => 'desc'
 					), array('escape' => false, 'class' => 'list-group-item'));
             }
             echo $this->Html->link(__('%s In Cart Transactions', $counts['open']), array(
-				'admin' => true, 'plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'index',
+				'admin' => true, 'action' => 'index',
 				'filter' => 'status:open', 'sort' => 'Transaction.created', 'direction' => 'desc'
 				), array('escape' => false, 'class' => 'list-group-item'));
             echo $this->Html->link(__('My Assigned Transactions'), array(
@@ -133,6 +134,11 @@
 				), array('class' => 'list-group-item'));
 			?>
         </ul>
+		<div class="row">
+		<div class="col-md-12">
+			<!--In-Cart Conversion Rate: <?php echo $inCartConversionRate ?>%-->
+		</div>
+		</div>
     </div>
 
 </div>

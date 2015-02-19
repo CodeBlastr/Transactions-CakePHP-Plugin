@@ -93,6 +93,7 @@ class AppTransactionsController extends TransactionsAppController {
             $this->paginate['conditions'] = array('customer_id' => $this->userId);
         }
 		$this->set('transactions', $this->paginate());
+//		debug($this->paginate);
 		$type = !empty($this->request->named['filter']) ? str_replace('status:', '', $this->request->named['filter']) : 'All';
 		$this->set('title_for_layout', __('%s Transactions', Inflector::humanize($type)));
 		$this->set('page_title_for_layout', __('%s Transactions', Inflector::humanize($type)));
