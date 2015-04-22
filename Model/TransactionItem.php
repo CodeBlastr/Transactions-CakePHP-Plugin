@@ -175,7 +175,6 @@ class AppTransactionItem extends TransactionsAppModel {
 					'customer_id' => $this->Transaction->getCustomersId()
 				))
 			);
-			
 		return $itemData;
 		
 	}

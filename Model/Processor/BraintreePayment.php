@@ -49,7 +49,11 @@ class BraintreePayment extends AppModel {
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
 		try {
-            $paymentData = $this->doSales($data);
+			if ($data[$this->modelName]['is_arb']) {
+				return $this->createRecurringPayment($data);
+			} else {
+				$paymentData = $this->doSales($data);
+			}
             if ($paymentData->success) {
                 $data[$this->modelName]['processor_response'] = $paymentData->transaction->processorResponseText;
                 $data[$this->modelName]['processor_transaction_id'] = $paymentData->transaction->id;
@@ -203,13 +207,96 @@ class BraintreePayment extends AppModel {
  * create customer
  */
     public function createCustomer($data) {
+		$result = Braintree_Customer::create(array(
+			'firstName' => $data['Customer']['first_name'],
+			'lastName' => $data['Customer']['last_name'],
+//			'company' => 'Jones Co.',
+			'email' => $data['Customer']['email'],
+			'phone' => $data['TransactionAddress'][0]['phone'],
+//			'fax' => '419.555.1235',
+//			'website' => 'http://example.com'
+		));
 
+		if ($result->success) {
+			return $result->customer->id; # Generated customer id
+		} else {
+			return false;
+		}
 	}
 
 /**
- * create recurring payment
+ * 
+ * @param type $customerId
+ * @param type $data
+ * @return boolean
+ */
+	public function addCreditCard($customerId, $data) {
+		$result = Braintree_CreditCard::create(array(
+			'customerId' => $customerId,
+			'number' => $data['Transaction']['card_number'],
+			'expirationDate' => empty($data['Transaction']['card_expire']) ? $data['Transaction']['card_expire'] : $data['Transaction']['card_expire']['month'] . '/' . $data['Transaction']['card_expire']['year'],
+			'cardholderName' => $data['Customer']['first_name'] . ' ' . $data['Customer']['last_name'],
+			'cvv' => $data['Transaction']['card_sec']
+//			'options' => array(
+//				'failOnDuplicatePaymentMethod' => true
+//			)
+		));
+
+		if ($result->success) {
+			return array(
+				'Id' => $result->creditCard->token,
+				'Issuer' => $result->creditCard->cardType,
+				'CreditCardNumber' => $result->creditCard->maskedNumber,
+				'ExpirationDate' => $result->creditCard->expirationDate
+			);
+		} else {
+			return false;
+		}
+	}
+	
+/**
+ * @todo https://developers.braintreepayments.com/javascript+php/guides/recurring-billing/plans#add-ons-and-discounts
+ * @param type $data
+ * @return string
+ * @throws Exception
  */
 	public function createRecurringPayment($data) {
+		// ensure we have a Braintree Customer ID
+		$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
+//		debug($data);
+		if (empty($data['Customer']['Connection'][0]['value']['Account']['Id'])) {
+			$customerId = $this->createCustomer($data);
+			if (!$customerId) {
+				throw new Exception('Unable to create customer payment account.');
+			}
+			$data['Customer']['Connection'][0]['value']['Account']['Id'] = $customerId;
+		}
+		// ensure we have a credit card id to bill 
+		if (empty($data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['Id'])) {
+			$creditCardData = $this->addCreditCard($customerId, $data);
+			if (!$creditCardData) {
+				throw new Exception('Unable to create customer payment method.');
+			}
+			$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $creditCardData;
+		}
+		// purchase the plan
+		$arbSettings = unserialize($data['TransactionItem'][0]['arb_settings']);
+		$result = Braintree_Subscription::create(array(
+			'paymentMethodToken' => $data['Customer']['Connection'][0]['value']['Account']['CreditCard'][0]['Id'],
+			'planId' => $arbSettings['BraintreePlan']
+		));
+
+		if ($result->success) {
+			$data[$this->modelName]['Payment'] = $result;
+			$data[$this->modelName]['status'] = 'paid';
+		} else {
+			$data[$this->modelName]['status'] = 'failed';
+		}
+
+		return $data;
+	}
+	
+	public function createRecurringPaymentPS($data) {
 		$this->itemModel = !empty($this->itemModel) ? $this->itemModel : 'TransactionItem';
 		// this was in the pay() function above, we moved it here, but aren't sure that $paymentData will still be equal to the right info
 		// if(empty($data[$this->itemModel][0]['price'])) {
