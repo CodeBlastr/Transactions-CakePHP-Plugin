@@ -369,4 +369,4 @@ $this->set('context_menu', array('menus' => array(
 			$this->Html->link(__('Dashboard'), array('plugin' => 'products', 'controller' => 'products', 'action' => 'dashboard')),
 			)
 		),
-	))); ?>
+	)));

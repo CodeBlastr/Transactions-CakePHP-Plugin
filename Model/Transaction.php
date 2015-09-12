@@ -524,7 +524,6 @@ class AppTransaction extends TransactionsAppModel {
 			}
 
             $this->_sendReceipt($data);
-
 			return $data;
 
 		} catch (Exception $e) {
