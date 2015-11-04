@@ -1,11 +1,13 @@
-<h1>Thank you for your purchase !</h1>
-<p>Expect an email with further information. </p>
-<?php if(!$userId) { ?>
+<div class="jumbotron">
+	<h1>Thank you for your purchase !</h1>
+	<hr>
+	<p>You can expect an email with more information. </p>
+</div>
+<?php if(!$userId) : ?>
 	<p>Would you like to register an account with us? <br><a href="/users/users/register" class="btn btn-primary">Register Account</a></p>
-<?php } else {
-   echo __('<p>%s</p>', $this->Html->link('View Your Order History', array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'my'))); 
-}
-?>
+<?php else : ?>
+   <p><?php echo $this->Html->link('View Your Order History', array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'my'), array('class' => 'btn btn-block btn-lg btn-success')); ?></p> 
+<?php endif; ?>
 
 <?php
 // set the contextual menu items
