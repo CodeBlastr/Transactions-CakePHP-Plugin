@@ -142,20 +142,19 @@
 			    foreach ($this->request->data['TransactionItem'] as $i => $transactionItem) {
 				    echo $this->Form->hidden("TransactionItem.{$i}.id", array('value' => $transactionItem['id']));
 					$plugin = ZuhaInflector::pluginize($transactionItem['model']).'.';
-					$item = $this->_getElementFilename($plugin.'Transactions/cart_item') ? $this->Element($plugin.'Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i)) : $this->Element('Transactions.cart_item', array('transactionItem' => $transactionItem, 'i' => $i));
+					$item = $this->_getElementFilename($plugin.'Transactions/cart_item') ? $this->element($plugin.'Transactions/cart_item', array('transactionItem' => $transactionItem, 'i' => $i)) : $this->Element('Transactions.cart_item', array('transactionItem' => $transactionItem, 'i' => $i));
                     echo __('<div class="transactionItemInCart" id="TransactionItem%s">%s</div>', $i, $item);
 			    } ?>
 		    </fieldset>
 
 		    <fieldset>
 			    <legend><?php echo __d('transactions', 'Summary') ?></legend>
-			    <?php
-            	echo $this->Form->hidden('Transaction.sub_total', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($this->request->data['Transaction']['sub_total']))); 
-            	// might not need this : echo $this->Form->hidden('Transaction.tax_charge', array('type' => 'hidden')); 
-			    $orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['tax_charge']) + floatval($this->request->data['Transaction']['sub_total']);
-			    $pricifiedOrderTotal = number_format($orderTotal, 2, null, '');
-			    echo $this->Html->link(__('<small>Have a Promo Code?</small>'), '#', array('id' => 'promoCode', 'escape' => false));
-                echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => __(' %s', $this->Html->link('Apply', '#', array('id' => 'applyCode', 'class' => 'btn'))))); ?>
+			    <?php echo $this->Form->hidden('Transaction.sub_total', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($this->request->data['Transaction']['sub_total']))); ?> 
+            	<?php // might not need this : echo $this->Form->hidden('Transaction.tax_charge', array('type' => 'hidden')); ?> 
+			    <?php $orderTotal = floatval($options['defaultShippingCharge']) + floatval($this->request->data['Transaction']['tax_charge']) + floatval($this->request->data['Transaction']['sub_total']); ?>
+			    <?php $pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); ?>
+			    <?php echo $this->Html->link(__('<small>Have a Promo Code?</small>'), '#', array('id' => 'promoCode', 'escape' => false)); ?>
+                <?php echo $this->Form->input('TransactionCoupon.code', array('label' => false, 'placeholder' => 'enter code', 'after' => __(' %s', $this->Html->link('Apply', '#', array('id' => 'applyCode', 'class' => 'btn btn-xs btn-default'))))); ?>
                 <table class="table-hover">
                     <tbody>
                         <tr>
@@ -272,7 +271,7 @@ $(function() {
 	function updateSubtotal() {
 		var subtotal = 0;
 		$('#transactionItems .floatPrice').each(function(e) {
-			subtotal += parseFloat($(this).text());
+			subtotal += parseFloat($(this).text().replace(/,/g,''));
 		});
 		$('#TransactionSubtotal .floatPrice').text(subtotal.toFixed(2));		
 	}
