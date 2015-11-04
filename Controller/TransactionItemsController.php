@@ -8,11 +8,8 @@ App::uses('TransactionsAppController', 'Transactions.Controller');
 class AppTransactionItemsController extends TransactionsAppController {
 
 	public	$name = 'TransactionItems';
+	
 	public	$uses = array('Transactions.TransactionItem');
-	public	$allowedActions = array(
-		'add',
-		'delete'
-		);
 
 	/**
 	 *
