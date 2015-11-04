@@ -2,6 +2,7 @@
 App::uses('AppModel', 'Model');
 App::uses('HttpSocket', 'Network/Http');
 require_once(VENDORS . DS . 'braintree' . DS . 'lib' . DS . 'Braintree.php');
+
 class BraintreePayment extends AppModel {
 
 	public $name = 'Braintree';
@@ -49,10 +50,40 @@ class BraintreePayment extends AppModel {
 	public function pay($data = null) {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
 		try {
+			// Do we need to save a New Customer or are we using an Existing Customer     
+			if (empty($data['Customer']['Connection'])) {
+				// create their Customer
+				$userData = $this->createCustomer($data);
+              	$data['Customer']['Connection'][0]['value']['Customer']['Id'] = $userData;
+			} else {
+				// we have their customer, unserialize the data
+				$data['Customer']['Connection'][0]['value'] = unserialize($data['Customer']['Connection'][0]['value']);
+			}
+			
+			// Do we need to save a New Payment Method, or are they using a Saved Payment Method
+			if (!empty($data[$this->modelName]['card_number'])) {   
+				// Credit Card Account
+				$accountData = $this->addCreditCard($data['Customer']['Connection'][0]['value']['Customer']['Id'], $data);
+				$data['Customer']['Connection'][0]['value']['Account']['CreditCard'][] = $accountData;
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $accountData['Id'];
+				// don't know what this is for // $data[$this->modelName]['paymentSubType'] = 'Moto';
+			} else {
+				// they are using a Saved Payment Method; defined by an Id
+                $cc_count = count($data['Customer']['Connection'][0]['value']['Account']['CreditCard']);
+                if($cc_count > 0) {
+                   for($i=0; $i < $cc_count; $i++) {
+                        if ($data[$this->modelName]['paysimple_account'] == $data['Customer']['Connection'][0]['value']['Account']['CreditCard'][$i]['Id']) {
+                        	 $data[$this->modelName]['paymentSubType'] = 'Moto';  
+						} 
+                   } 
+                }
+				$data['Customer']['Connection'][0]['value']['Account']['Id'] = $data[$this->modelName]['braintree_account'];
+			}
+
 			if ($data[$this->modelName]['is_arb']) {
 				return $this->createRecurringPayment($data);
 			} else {
-				$paymentData = $this->doSales($data);
+				$paymentData = $this->doSales($data); // this function checks for the 'braintree_account' field and whether to charge new card, or old payment method
 			}
             if ($paymentData->success) {
                 $data[$this->modelName]['processor_response'] = $paymentData->transaction->processorResponseText;
@@ -138,10 +169,14 @@ class BraintreePayment extends AppModel {
         // more field info here : https://www.braintreepayments.com/docs/php/transactions/create
         
         // card info
-        $params['creditCard']['number'] = $data['Transaction']['card_number']; // was this, but should not be... $data['brainTree']['creditCard'];
-        $params['creditCard']['expirationDate'] = !empty($data['Transaction']['card_expire']['month']) && !empty($data['Transaction']['card_expire']['year']) ? $data['Transaction']['card_expire']['month'] . '/' . $data['Transaction']['card_expire']['year'] : $data['Transaction']['card_expire'];
-		$params['creditCard']['cardholderName'] = $data['TransactionAddress'][0]['first_name'] . ' ' . $data['TransactionAddress'][0]['last_name'];
-		$params['creditCard']['cvv'] = $data['Transaction']['card_sec'];
+        if (!empty($data['Transaction']['braintree_account'])) {
+        	$params['paymentMethodToken'] = $data['Transaction']['braintree_account'];
+        } else {
+	        $params['creditCard']['number'] = $data['Transaction']['card_number']; // was this, but should not be... $data['brainTree']['creditCard'];
+	        $params['creditCard']['expirationDate'] = !empty($data['Transaction']['card_expire']['month']) && !empty($data['Transaction']['card_expire']['year']) ? $data['Transaction']['card_expire']['month'] . '/' . $data['Transaction']['card_expire']['year'] : $data['Transaction']['card_expire'];
+			$params['creditCard']['cardholderName'] = $data['TransactionAddress'][0]['first_name'] . ' ' . $data['TransactionAddress'][0]['last_name'];
+			$params['creditCard']['cvv'] = $data['Transaction']['card_sec'];
+		}
 		
 		// customer info
 		$params['customer']['firstName'] = $data['TransactionAddress'][0]['first_name'];
@@ -227,7 +262,7 @@ class BraintreePayment extends AppModel {
 		));
 
 		if ($result->success) {
-			return $result->customer->id; # Generated customer id
+			return $result->customer->id; // Generated customer id
 		} else {
 			return false;
 		}
