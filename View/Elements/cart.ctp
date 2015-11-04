@@ -1,12 +1,7 @@
-<?php
-if ($this->request->action !== 'merge' && $this->request->action !== 'cart') { // transactions/transactions/merge causes an infinite redirect
-    $transaction = $this->requestAction(
-        array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'cart'),
-        array()
-    ); ?>
-    
+<?php if ($this->request->action !== 'merge' && $this->request->action !== 'cart') : // transactions/transactions/merge causes an infinite redirect ?>
+    <?php $transaction = $this->requestAction(array('plugin' => 'transactions', 'controller' => 'transactions', 'action' => 'cart'), array()); ?>
     <div id="transactionCartRight" class="transactionCart span4 pull-right">
-        <?php echo $this->Element('Transactions.trust_logos'); ?>
+        <?php echo $this->element('Transactions.trust_logos'); ?>
         <fieldset id="transactionItems" class="transactionItems">
     	    <legend><?php echo __d('transactions', 'Shopping Cart') ?></legend>
     	    <?php 
@@ -22,11 +17,10 @@ if ($this->request->action !== 'merge' && $this->request->action !== 'cart') { /
         <?php if (!empty($transaction['TransactionItem'])) { ?>
         <fieldset>
     	    <legend><?php echo __d('transactions', 'Summary') ?></legend>
-    	    <?php
-        	echo $this->Form->hidden('Transaction.sub_total', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($transaction['Transaction']['sub_total']))); 
-        	// might not need this : echo $this->Form->hidden('Transaction.tax_charge', array('type' => 'hidden')); 
-    	    $orderTotal = floatval($transaction['options']['defaultShippingCharge']) + floatval($transaction['Transaction']['tax_charge']) + floatval($transaction['Transaction']['sub_total']);
-    	    $pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); ?>
+    	    <?php echo $this->Form->hidden('Transaction.sub_total', array('label'=>'Sub-Total', 'readonly' => true, 'value' => ZuhaInflector::pricify($transaction['Transaction']['sub_total']))); ?> 
+        	<?php // might not need this : echo $this->Form->hidden('Transaction.tax_charge', array('type' => 'hidden')); ?>
+    	    <?php $orderTotal = floatval($transaction['options']['defaultShippingCharge']) + floatval($transaction['Transaction']['tax_charge']) + floatval($transaction['Transaction']['sub_total']); ?>
+    	    <?php $pricifiedOrderTotal = number_format($orderTotal, 2, null, ''); ?>
             <table class="table-hover">
                 <tbody>
                     <tr>
@@ -53,5 +47,4 @@ if ($this->request->action !== 'merge' && $this->request->action !== 'cart') { /
     		$('.productAddCart form, .transactionCart form').prepend('<input type="hidden" name="data[Override][redirect]" value="' + window.location.href + '">');
         })
     </script>
-<?php 
-} ?>
+<?php endif; ?>
