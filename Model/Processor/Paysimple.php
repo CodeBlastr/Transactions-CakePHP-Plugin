@@ -61,7 +61,6 @@ class Paysimple extends AppModel {
 		$this->modelName = !empty($this->modelName) ? $this->modelName : 'Transaction';
 		
 		try {
-				      
 			// Do we need to save a New Customer or are we using an Existing Customer     
 			if (empty($data['Customer']['Connection'])) {
 				// create their Customer
