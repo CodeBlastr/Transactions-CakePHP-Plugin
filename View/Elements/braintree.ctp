@@ -44,9 +44,12 @@
     	</div>
     </div>
 </div>
-	
-	<script type="text/javascript">
+
+<script type="text/javascript">
 $(function() {
+	if ($('.savedCredit').prop('checked')) {
+		hidepayment();
+	}
 	// clear the new payment method inputs when they choose a previous payment method
 	$(".savedCredit, .savedAch").click(function(){
 		var clickedCheckboxId = $(this).attr('id');
@@ -69,13 +72,16 @@ $(function() {
 			$(this).removeClass('required');
 			$(this).removeAttr('required');
 		});
+		hidepayment();
+	});
+
+	function hidepayment() {
 		// hide cc and check inputs
 		$('.new-payment-title').hide('slow');
 		$('.new-payment-fields').hide('slow');
 		$('.purchaseOrder').parent().parent().hide();
 		$('.pdfInvoice').hide();
-	});
-
+	}
 	// delect saved payment account when they type in a new account
 	$('.new-payment-fields input').keypress(function(){
 		$(".savedCredit, .savedAch").prop('checked', false);
