@@ -10,7 +10,10 @@ App::uses('TransactionsAppController', 'Transactions.Controller');
 class TransactionCouponsController extends TransactionsAppController {
 
 	public $name = 'TransactionCoupons';
+	
 	public $uses = 'Transactions.TransactionCoupon';
+	
+	public $allowedActions = array('verify');
 
 /**
  * index method
