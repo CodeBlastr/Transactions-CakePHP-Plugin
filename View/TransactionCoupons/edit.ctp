@@ -2,17 +2,15 @@
 <?php echo $this->Form->create('TransactionCoupon');?>
 	<fieldset>
 		<legend><?php echo __('Edit Checkout Coupon'); ?></legend>
-	<?php
-		echo $this->Form->input('TransactionCoupon.id');
-		echo $this->Form->input('TransactionCoupon.name');
-		echo $this->Form->input('TransactionCoupon.description');
-		echo $this->Form->input('TransactionCoupon.discount');
-		echo $this->Form->input('TransactionCoupon.discount_type');
-		echo $this->Form->input('TransactionCoupon.code', array('after' => 'if blank, all matching transactions receive discount'));
-		echo $this->Form->input('TransactionCoupon.start_date');
-		echo $this->Form->input('TransactionCoupon.end_date');
-		echo $this->Form->input('TransactionCoupon.is_active');
-	?>
+		<?php echo $this->Form->input('TransactionCoupon.id'); ?>
+		<?php echo $this->Form->input('TransactionCoupon.name'); ?>
+		<?php echo $this->Form->input('TransactionCoupon.description'); ?>
+		<?php echo $this->Form->input('TransactionCoupon.discount'); ?>
+		<?php echo $this->Form->input('TransactionCoupon.discount_type'); ?>
+		<?php echo $this->Form->input('TransactionCoupon.code', array('after' => 'if blank, all matching transactions receive discount')); ?>
+		<?php echo $this->Form->input('TransactionCoupon.start_date', array('type' => 'datepicker')); ?>
+		<?php echo $this->Form->input('TransactionCoupon.end_date', array('type' => 'datepicker')); ?>
+		<?php echo $this->Form->input('TransactionCoupon.is_active'); ?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit'));?>
 </div>
@@ -27,4 +25,3 @@ $this->set('context_menu', array('menus' => array(
 			)
 		),
 	)));
-?>
