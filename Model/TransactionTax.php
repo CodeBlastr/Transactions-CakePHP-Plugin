@@ -207,7 +207,7 @@ class TransactionTax extends TransactionsAppModel {
 
         if (!empty($data['TransactionAddress'][0])) {
             $addresses = Set::combine($data['TransactionAddress'], '{n}.country', '{n}.state', '{n}.type');
-            $country = key($addresses['billing']);
+            $country = is_array($addresses['billing']) ? key($addresses['billing']) : null;
             $state = $addresses['billing'][$country];
             $this->bindModel(array('hasOne' => array('Child' => array('className' => 'Transactions.TransactionTax', 'foreignKey' => 'parent_id', 'conditions' => array('Child.code' => $state)))));
             $tax = $this->find('first', array('conditions' => array('TransactionTax.code' => $country), 'contain' => array('Child')));
