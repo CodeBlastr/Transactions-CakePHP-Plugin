@@ -184,6 +184,83 @@
 
 
 <script type="text/javascript">
+
+
+function updateItemTotals(itemQty) {
+	var transactionItemX = itemQty.prop('id').replace('Quantity', '');
+	if($.isNumeric(itemQty.val()) === false) itemQty.val('0');
+	// calculate the item total
+	var itemTotal = $('#' + transactionItemX + ' .priceOfOne').text() * itemQty.val();
+	// update the item total
+	$('#' + transactionItemX + ' .floatPrice').text(itemTotal.toFixed(2));	
+}
+
+function updateSubtotal() {
+	var subtotal = 0;
+	$('#transactionItems .floatPrice').each(function(e) {
+		subtotal += parseFloat($(this).text().replace(/,/g,''));
+	});
+	$('#TransactionSubtotal .floatPrice').text(subtotal.toFixed(2));		
+}
+
+function toggleShippingAddress() {
+	if ( $('#TransactionAddress0Shipping').prop("checked") ) {
+		$('#shippingAddress').show('slow');
+  	} else {
+		$('#shippingAddress').hide('slow');
+  	}
+}
+
+function updateTaxRate() {
+    if ($('#TransactionAddress0Country').val() && $('#TransactionAddress0State').val()) {
+        $.ajax({
+            type: "POST",
+            data: $('#TransactionCartForm').serialize(),
+            url: "/transactions/transaction_taxes/rate.json",
+            dataType: "text",
+            success:function(data){
+                var response = JSON.parse(data);
+                var rate = response['transactionTax']['Transaction']['tax_rate'];
+                $('#jsTaxRate').remove();
+                if(typeof rate !== 'undefined') {
+                    // nothing it's already set
+                } else {
+                    rate = 0;
+                }
+                
+                $('body').append('<span id="jsTaxRate" style="visibility: hidden;">' + rate + '</span>');
+                updateTaxTotal();
+                updateOrderTotal();
+            }
+        });
+    }
+}
+
+function updateTaxTotal() {
+    var rate = $('#jsTaxRate').text();
+    var tax = parseFloat(rate * parseFloat($('#TransactionSubtotal .floatPrice').text())).toFixed(2);
+    $('#TransactionTax .floatPrice').text(tax);
+}
+
+function updateShippingTotal() {
+	
+}
+
+function updateOrderTotal() {
+	var subtotal = parseFloat($('#TransactionSubtotal .floatPrice').text());
+	var taxTotal = parseFloat($('#TransactionTax .floatPrice').text());
+	var shippingTotal = parseFloat($('#TransactionShipping .floatPrice').text());
+	var discountTotal = parseFloat($('#TransactionDiscount .floatPrice').text());
+	if($.isNumeric(discountTotal) === false) discountTotal = 0;
+	
+	var orderTotal = subtotal + taxTotal + shippingTotal - discountTotal;
+	
+	$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
+	
+}
+
+
+
 $(function() {
 	// init
 	toggleShippingAddress();
@@ -258,79 +335,6 @@ $(function() {
 		updateTaxTotal();
 		updateOrderTotal();
     });
-	
-	function updateItemTotals(itemQty) {
-		var transactionItemX = itemQty.prop('id').replace('Quantity', '');
-		if($.isNumeric(itemQty.val()) === false) itemQty.val('0');
-		// calculate the item total
-		var itemTotal = $('#' + transactionItemX + ' .priceOfOne').text() * itemQty.val();
-		// update the item total
-		$('#' + transactionItemX + ' .floatPrice').text(itemTotal.toFixed(2));	
-	}
-	
-	function updateSubtotal() {
-		var subtotal = 0;
-		$('#transactionItems .floatPrice').each(function(e) {
-			subtotal += parseFloat($(this).text().replace(/,/g,''));
-		});
-		$('#TransactionSubtotal .floatPrice').text(subtotal.toFixed(2));		
-	}
-	
-	function toggleShippingAddress() {
-		if ( $('#TransactionAddress0Shipping').prop("checked") ) {
-			$('#shippingAddress').show('slow');
-	  	} else {
-			$('#shippingAddress').hide('slow');
-	  	}
-	}
-
-    function updateTaxRate() {
-        if ($('#TransactionAddress0Country').val() && $('#TransactionAddress0State').val()) {
-            $.ajax({
-                type: "POST",
-                data: $('#TransactionCartForm').serialize(),
-                url: "/transactions/transaction_taxes/rate.json",
-                dataType: "text",
-                success:function(data){
-                    var response = JSON.parse(data);
-                    var rate = response['transactionTax']['Transaction']['tax_rate'];
-                    $('#jsTaxRate').remove();
-                    if(typeof rate !== 'undefined') {
-                        // nothing it's already set
-                    } else {
-                        rate = 0;
-                    }
-                    
-                    $('body').append('<span id="jsTaxRate" style="visibility: hidden;">' + rate + '</span>');
-                    updateTaxTotal();
-                    updateOrderTotal();
-                }
-            });
-        }
-    }
-    
-    function updateTaxTotal() {
-        var rate = $('#jsTaxRate').text();
-        var tax = parseFloat(rate * parseFloat($('#TransactionSubtotal .floatPrice').text())).toFixed(2);
-        $('#TransactionTax .floatPrice').text(tax);
-    }
-
-	function updateShippingTotal() {
-		
-	}
-
-	function updateOrderTotal() {
-		var subtotal = parseFloat($('#TransactionSubtotal .floatPrice').text());
-		var taxTotal = parseFloat($('#TransactionTax .floatPrice').text());
-		var shippingTotal = parseFloat($('#TransactionShipping .floatPrice').text());
-		var discountTotal = parseFloat($('#TransactionDiscount .floatPrice').text());
-		if($.isNumeric(discountTotal) === false) discountTotal = 0;
-		
-		var orderTotal = subtotal + taxTotal + shippingTotal - discountTotal;
-		
-		$('#TransactionTotal .floatPrice').text(orderTotal.toFixed(2));
-		
-	}
 	
     document.changePaymentInputs = function () {
 		if ( $('#TransactionMode').val() === 'PAYSIMPLE.CC' ) {
